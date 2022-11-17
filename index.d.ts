@@ -6,6 +6,7 @@
 export interface GitContext {
   dir: string
 }
+export function removeRef(gitRef: string, context: GitContext): void
 export function getSha(gitRef: string, context: GitContext): string
 export function getHeadSha(context: GitContext): string
 export function getGitRootPath(context: GitContext): string
@@ -25,4 +26,4 @@ export interface CreateTagResult {
   oid: string
 }
 export function createTag(options: CreateTagOptions, context: GitContext): CreateTagResult
-export function removeRef(gitRef: string, context: GitContext): void
+export function deleteTag(tagName: string, context: GitContext): void
