@@ -4,6 +4,6 @@
 extern crate napi_derive;
 
 pub mod context;
+pub mod reference;
 pub mod repository;
 pub mod tag;
-pub mod reference;

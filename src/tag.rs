@@ -29,3 +29,11 @@ pub fn create_tag(
     oid: oid.to_string(),
   })
 }
+
+#[napi]
+pub fn delete_tag(tag_name: String, context: GitContext) -> anyhow::Result<()> {
+  let repo = Repository::open(context.dir)?;
+  repo.tag_delete(&tag_name)?;
+
+  Ok(())
+}
