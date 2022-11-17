@@ -26,4 +26,4 @@ export interface CreateTagResult {
   oid: string
 }
 export function createTag(options: CreateTagOptions, context: GitContext): CreateTagResult
-export function deleteTag(tagName: string, context: GitContext): void
+export function deleteTag(name: string, context: GitContext): void

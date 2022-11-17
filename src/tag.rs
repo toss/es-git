@@ -31,9 +31,9 @@ pub fn create_tag(
 }
 
 #[napi]
-pub fn delete_tag(tag_name: String, context: GitContext) -> anyhow::Result<()> {
+pub fn delete_tag(name: String, context: GitContext) -> anyhow::Result<()> {
   let repo = Repository::open(context.dir)?;
-  repo.tag_delete(&tag_name)?;
+  repo.tag_delete(&name)?;
 
   Ok(())
 }
