@@ -19,7 +19,7 @@ pub fn create_tag(
   options: CreateTagOptions,
   context: GitContext,
 ) -> anyhow::Result<CreateTagResult> {
-  let repo = Repository::open(&context.dir)?;
+  let repo = Repository::open(context.dir)?;
   let sig = repo.signature()?;
   let obj = repo.revparse_single(&options.sha)?;
 

@@ -1,13 +1,13 @@
 use std::ffi::CString;
 
 use anyhow::Error;
-use git2::{Index, Repository, IndexEntry};
+use git2::{Index, IndexEntry, Repository};
 
 use crate::context::GitContext;
 
 #[napi]
 pub fn get_sha(git_ref: String, context: GitContext) -> anyhow::Result<String> {
-  let repo = Repository::open(&context.dir)?;
+  let repo = Repository::open(context.dir)?;
   let obj = repo.revparse_single(&git_ref)?;
 
   Ok(obj.id().to_string())
@@ -22,7 +22,7 @@ pub fn get_head_sha(context: GitContext) -> anyhow::Result<String> {
 
 #[napi]
 pub fn get_git_root_path(context: GitContext) -> anyhow::Result<String> {
-  let repo = Repository::open(&context.dir)?;
+  let repo = Repository::open(context.dir)?;
   let path = repo
     .path()
     .to_str()
@@ -53,7 +53,7 @@ pub struct Conflict {
 pub fn get_conflicting_files(
   ref1: String,
   ref2: String,
-  context: GitContext
+  context: GitContext,
 ) -> anyhow::Result<Vec<Conflict>> {
   let tree = get_merge_tree(ref1, ref2, context)?;
   let conflicts_list = tree.conflicts();
@@ -89,7 +89,7 @@ fn parse_index_entry(entry: IndexEntry) -> Option<String> {
 }
 
 pub fn get_merge_tree(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<Index> {
-  let repo = Repository::open(&context.dir)?;
+  let repo = Repository::open(context.dir)?;
   let obj1 = repo.revparse_single(&ref1)?;
   let obj2 = repo.revparse_single(&ref2)?;
 
