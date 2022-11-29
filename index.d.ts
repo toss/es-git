@@ -7,6 +7,7 @@ export interface GitContext {
   dir: string
 }
 export function removeRef(gitRef: string, context: GitContext): void
+export function getRemoteUrl(name: string, context: GitContext): string | null
 export function getSha(gitRef: string, context: GitContext): string
 export function getHeadSha(context: GitContext): string
 export function getGitRootPath(context: GitContext): string
