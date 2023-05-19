@@ -15,9 +15,6 @@ export interface CreateBranchOptions {
 export interface GetBranchOptions {
   branchName: string
 }
-export interface FindBranchOptions {
-  branchName: string
-}
 export interface DeleteBranchOptions {
   branchName: string
 }
