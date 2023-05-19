@@ -12,7 +12,18 @@ export interface CreateBranchOptions {
   targetSha: string
   force?: boolean
 }
+export interface GetBranchOptions {
+  branchName: string
+}
+export interface FindBranchOptions {
+  branchName: string
+}
+export interface DeleteBranchOptions {
+  branchName: string
+}
 export function createBranch(options: CreateBranchOptions, context: GitContext): Branch
+export function getBranch(options: GetBranchOptions, context: GitContext): Branch
+export function deleteBranch(options: DeleteBranchOptions, context: GitContext): void
 export interface GitContext {
   dir: string
 }
