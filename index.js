@@ -236,12 +236,13 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { getSha, getHeadSha, getGitRootPath, hasMergeConflicts, getConflictingFiles, createTag, removeRef } = nativeBinding
+const { createBranch, removeRef, getSha, getHeadSha, getGitRootPath, hasMergeConflicts, getConflictingFiles, createTag } = nativeBinding
 
+module.exports.createBranch = createBranch
+module.exports.removeRef = removeRef
 module.exports.getSha = getSha
 module.exports.getHeadSha = getHeadSha
 module.exports.getGitRootPath = getGitRootPath
 module.exports.hasMergeConflicts = hasMergeConflicts
 module.exports.getConflictingFiles = getConflictingFiles
 module.exports.createTag = createTag
-module.exports.removeRef = removeRef
