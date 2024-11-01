@@ -1,0 +1,4 @@
+/.yarn/**            linguist-vendored
+/.yarn/releases/*    binary
+/index.js            linguist-generated=true text=auto eol=lf
+/index.d.ts          linguist-generated=true text=auto eol=lf
