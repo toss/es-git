@@ -3,6 +3,7 @@
   "version": "0.0.9",
   "main": "index.js",
   "types": "index.d.ts",
+  "packageManager": "yarn@4.5.1",
   "napi": {
     "name": "esgit",
     "triples": {
