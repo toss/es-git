@@ -195,3 +195,6 @@ Cargo.lock
 !.yarn/versions
 
 *.node
+
+# IDE
+/.idea
