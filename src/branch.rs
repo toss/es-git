@@ -1,5 +1,5 @@
+use git2::BranchType as Git2BranchType;
 use git2::Repository;
-use git2::{BranchType as Git2BranchType};
 
 use crate::context::GitContext;
 
@@ -15,7 +15,6 @@ pub struct CreateBranchOptions {
   pub target_sha: String,
   pub force: Option<bool>,
 }
-
 
 #[napi(object)]
 pub struct GetBranchOptions {
@@ -51,14 +50,14 @@ pub fn get_branch(options: GetBranchOptions, context: GitContext) -> anyhow::Res
 
   let branch = repo.find_branch(&options.branch_name, Git2BranchType::Local)?;
 
-   let name = branch
+  let name = branch
     .name()?
     .map(|name| name.to_string())
     .expect("Branch name should be a valid UTF-8 string");
 
   let oid = branch.get().peel_to_commit()?.id().to_string();
 
-  Ok(Branch{name, oid})
+  Ok(Branch { name, oid })
 }
 
 #[napi]

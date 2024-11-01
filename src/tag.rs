@@ -15,19 +15,14 @@ pub struct CreateTagResult {
 }
 
 #[napi]
-pub fn create_tag(
-  options: CreateTagOptions,
-  context: GitContext,
-) -> anyhow::Result<CreateTagResult> {
+pub fn create_tag(options: CreateTagOptions, context: GitContext) -> anyhow::Result<CreateTagResult> {
   let repo = Repository::open(context.dir)?;
   let sig = repo.signature()?;
   let obj = repo.revparse_single(&options.sha)?;
 
   let oid = repo.tag(&options.name, &obj, &sig, &options.message, false)?;
 
-  Ok(CreateTagResult {
-    oid: oid.to_string(),
-  })
+  Ok(CreateTagResult { oid: oid.to_string() })
 }
 
 #[napi]

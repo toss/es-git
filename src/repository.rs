@@ -23,20 +23,13 @@ pub fn get_head_sha(context: GitContext) -> anyhow::Result<String> {
 #[napi]
 pub fn get_git_root_path(context: GitContext) -> anyhow::Result<String> {
   let repo = Repository::open(context.dir)?;
-  let path = repo
-    .path()
-    .to_str()
-    .ok_or(Error::msg("Repository path is not valid"))?;
+  let path = repo.path().to_str().ok_or(Error::msg("Repository path is not valid"))?;
 
   Ok(String::from(path))
 }
 
 #[napi]
-pub fn has_merge_conflicts(
-  ref1: String,
-  ref2: String,
-  context: GitContext,
-) -> anyhow::Result<bool> {
+pub fn has_merge_conflicts(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<bool> {
   let tree = get_merge_tree(ref1, ref2, context)?;
 
   Ok(tree.has_conflicts())
@@ -50,11 +43,7 @@ pub struct Conflict {
 }
 
 #[napi]
-pub fn get_conflicting_files(
-  ref1: String,
-  ref2: String,
-  context: GitContext,
-) -> anyhow::Result<Vec<Conflict>> {
+pub fn get_conflicting_files(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<Vec<Conflict>> {
   let tree = get_merge_tree(ref1, ref2, context)?;
   let conflicts_list = tree.conflicts();
 
@@ -68,11 +57,7 @@ pub fn get_conflicting_files(
       let our = conflict.our.and_then(parse_index_entry);
       let their = conflict.their.and_then(parse_index_entry);
 
-      let conflict = Conflict {
-        ancestor,
-        our,
-        their,
-      };
+      let conflict = Conflict { ancestor, our, their };
 
       files.push(conflict);
     }
