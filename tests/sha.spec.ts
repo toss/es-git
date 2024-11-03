@@ -1,12 +1,11 @@
-import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getSha } from '../index';
+import { useFixture } from './fixtures';
 
 describe('getSha', () => {
-  const gitContext = { dir: path.resolve(__dirname, '..') };
-
-  it('sha를 가져올 수 있다.', () => {
-    const sha = getSha('main', gitContext);
+  it('sha를 가져올 수 있다.', async () => {
+    const dir = await useFixture('empty');
+    const sha = getSha('main', { dir });
     expect(typeof sha).toBe('string');
   });
 });
