@@ -54,7 +54,7 @@ jobs:
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
               yarn build --target aarch64-apple-darwin
               strip -x *.node
-    name: stable - ${{ matrix.settings.target }} - node@16
+    name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v3
