@@ -1,12 +1,11 @@
 use std::ffi::CString;
 
-use anyhow::Error;
 use git2::{Index, IndexEntry, Repository};
 
 use crate::context::GitContext;
 
 #[napi]
-pub fn get_sha(git_ref: String, context: GitContext) -> anyhow::Result<String> {
+pub fn get_sha(git_ref: String, context: GitContext) -> crate::Result<String> {
   let repo = Repository::open(context.dir)?;
   let obj = repo.revparse_single(&git_ref)?;
 
@@ -14,22 +13,22 @@ pub fn get_sha(git_ref: String, context: GitContext) -> anyhow::Result<String> {
 }
 
 #[napi]
-pub fn get_head_sha(context: GitContext) -> anyhow::Result<String> {
+pub fn get_head_sha(context: GitContext) -> crate::Result<String> {
   let head = String::from("HEAD");
 
   get_sha(head, context)
 }
 
 #[napi]
-pub fn get_git_root_path(context: GitContext) -> anyhow::Result<String> {
+pub fn get_git_root_path(context: GitContext) -> crate::Result<String> {
   let repo = Repository::open(context.dir)?;
-  let path = repo.path().to_str().ok_or(Error::msg("Repository path is not valid"))?;
+  let path = repo.path().to_string_lossy();
 
   Ok(String::from(path))
 }
 
 #[napi]
-pub fn has_merge_conflicts(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<bool> {
+pub fn has_merge_conflicts(ref1: String, ref2: String, context: GitContext) -> crate::Result<bool> {
   let tree = get_merge_tree(ref1, ref2, context)?;
 
   Ok(tree.has_conflicts())
@@ -43,7 +42,7 @@ pub struct Conflict {
 }
 
 #[napi]
-pub fn get_conflicting_files(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<Vec<Conflict>> {
+pub fn get_conflicting_files(ref1: String, ref2: String, context: GitContext) -> crate::Result<Vec<Conflict>> {
   let tree = get_merge_tree(ref1, ref2, context)?;
   let conflicts_list = tree.conflicts();
 
@@ -73,7 +72,7 @@ fn parse_index_entry(entry: IndexEntry) -> Option<String> {
   Some(str.to_owned())
 }
 
-pub fn get_merge_tree(ref1: String, ref2: String, context: GitContext) -> anyhow::Result<Index> {
+pub fn get_merge_tree(ref1: String, ref2: String, context: GitContext) -> crate::Result<Index> {
   let repo = Repository::open(context.dir)?;
   let obj1 = repo.revparse_single(&ref1)?;
   let obj2 = repo.revparse_single(&ref2)?;

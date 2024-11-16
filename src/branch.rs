@@ -27,7 +27,7 @@ pub struct DeleteBranchOptions {
 }
 
 #[napi]
-pub fn create_branch(options: CreateBranchOptions, context: GitContext) -> anyhow::Result<Branch> {
+pub fn create_branch(options: CreateBranchOptions, context: GitContext) -> crate::Result<Branch> {
   let repo = Repository::open(&context.dir)?;
 
   let force = options.force.unwrap_or(false);
@@ -45,7 +45,7 @@ pub fn create_branch(options: CreateBranchOptions, context: GitContext) -> anyho
 }
 
 #[napi]
-pub fn get_branch(options: GetBranchOptions, context: GitContext) -> anyhow::Result<Branch> {
+pub fn get_branch(options: GetBranchOptions, context: GitContext) -> crate::Result<Branch> {
   let repo = Repository::open(&context.dir)?;
 
   let branch = repo.find_branch(&options.branch_name, Git2BranchType::Local)?;
@@ -61,7 +61,7 @@ pub fn get_branch(options: GetBranchOptions, context: GitContext) -> anyhow::Res
 }
 
 #[napi]
-pub fn delete_branch(options: DeleteBranchOptions, context: GitContext) -> anyhow::Result<()> {
+pub fn delete_branch(options: DeleteBranchOptions, context: GitContext) -> crate::Result<()> {
   let repo = Repository::open(&context.dir)?;
   let mut branch = repo.find_branch(&options.branch_name, Git2BranchType::Local)?;
 

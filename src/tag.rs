@@ -15,7 +15,7 @@ pub struct CreateTagResult {
 }
 
 #[napi]
-pub fn create_tag(options: CreateTagOptions, context: GitContext) -> anyhow::Result<CreateTagResult> {
+pub fn create_tag(options: CreateTagOptions, context: GitContext) -> crate::Result<CreateTagResult> {
   let repo = Repository::open(context.dir)?;
   let sig = repo.signature()?;
   let obj = repo.revparse_single(&options.sha)?;
@@ -26,7 +26,7 @@ pub fn create_tag(options: CreateTagOptions, context: GitContext) -> anyhow::Res
 }
 
 #[napi]
-pub fn delete_tag(name: String, context: GitContext) -> anyhow::Result<()> {
+pub fn delete_tag(name: String, context: GitContext) -> crate::Result<()> {
   let repo = Repository::open(context.dir)?;
   repo.tag_delete(&name)?;
 
