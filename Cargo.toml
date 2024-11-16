@@ -8,11 +8,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-anyhow      = "1"
 git2        = { version = "0.19.0", features = ["vendored-libgit2", "vendored-openssl"] }
-napi        = { version = "2.16.13", default-features = false, features = ["napi4", "error_anyhow"] }
+napi        = { version = "2.16.13", default-features = false, features = ["napi4"] }
 napi-derive = "2.16.12"
 serde       = { version = "1", features = ["derive"] }
+thiserror   = "2.0.3"
 
 [build-dependencies]
 napi-build = "2.1.3"
