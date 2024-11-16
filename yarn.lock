@@ -433,19 +433,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tossteam/esgit@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@tossteam/esgit@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:^1.9.4"
-    "@napi-rs/cli": "npm:^2.18.4"
-    "@types/node": "npm:^22.8.4"
-    tiny-glob: "npm:^0.2.9"
-    typescript: "npm:^5.6.3"
-    vitest: "npm:^2.1.4"
-  languageName: unknown
-  linkType: soft
-
 "@types/estree@npm:1.0.6, @types/estree@npm:^1.0.0":
   version: 1.0.6
   resolution: "@types/estree@npm:1.0.6"
@@ -801,6 +788,19 @@ __metadata:
   checksum: 10c0/b642f7b4dd4a376e954947550a3065a9ece6733ab8e51ad80db727aaae0817c2e99b02a97a3d6cecc648a97848305e728289cf312d09af395403a90c9d4d8a66
   languageName: node
   linkType: hard
+
+"es-git@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "es-git@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:^1.9.4"
+    "@napi-rs/cli": "npm:^2.18.4"
+    "@types/node": "npm:^22.8.4"
+    tiny-glob: "npm:^0.2.9"
+    typescript: "npm:^5.6.3"
+    vitest: "npm:^2.1.4"
+  languageName: unknown
+  linkType: soft
 
 "esbuild@npm:^0.21.3":
   version: 0.21.5
