@@ -11,4 +11,5 @@ pub mod remote;
 pub mod repository;
 pub mod tag;
 
-pub type Result<T> = std::result::Result<T, error::Error>;
+pub use error::Error;
+pub type Result<T> = std::result::Result<T, Error>;
