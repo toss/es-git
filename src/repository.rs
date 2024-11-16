@@ -44,22 +44,19 @@ pub struct Conflict {
 #[napi]
 pub fn get_conflicting_files(ref1: String, ref2: String, context: GitContext) -> crate::Result<Vec<Conflict>> {
   let tree = get_merge_tree(ref1, ref2, context)?;
-  let conflicts_list = tree.conflicts();
+  let conflicts = tree.conflicts()?;
 
   let mut files = vec![];
 
-  for conflicts in conflicts_list {
-    for conflict in conflicts {
-      let conflict = conflict?;
+  for conflict in conflicts {
+    let conflict = conflict?;
+    let ancestor = conflict.ancestor.and_then(parse_index_entry);
+    let our = conflict.our.and_then(parse_index_entry);
+    let their = conflict.their.and_then(parse_index_entry);
 
-      let ancestor = conflict.ancestor.and_then(parse_index_entry);
-      let our = conflict.our.and_then(parse_index_entry);
-      let their = conflict.their.and_then(parse_index_entry);
+    let conflict = Conflict { ancestor, our, their };
 
-      let conflict = Conflict { ancestor, our, their };
-
-      files.push(conflict);
-    }
+    files.push(conflict);
   }
 
   Ok(files)
