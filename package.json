@@ -1,5 +1,5 @@
 {
-  "name": "@tossteam/esgit",
+  "name": "es-git",
   "version": "0.0.9",
   "main": "index.js",
   "types": "index.d.ts",
