@@ -164,6 +164,7 @@ jobs:
         node:
           - "18"
           - "20"
+    runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup node
