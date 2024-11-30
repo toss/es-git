@@ -1,87 +1,223 @@
-use std::ffi::CString;
+use crate::util;
+use std::path::Path;
 
-use git2::{Index, IndexEntry, Repository};
+use crate::remote::FetchOptions;
+use napi::{bindgen_prelude::*, JsString};
+use napi_derive::napi;
 
-use crate::context::GitContext;
-
-#[napi]
-pub fn get_sha(git_ref: String, context: GitContext) -> crate::Result<String> {
-  let repo = Repository::open(context.dir)?;
-  let obj = repo.revparse_single(&git_ref)?;
-
-  Ok(obj.id().to_string())
+#[napi(string_enum)]
+pub enum RepositoryState {
+  Clean,
+  Merge,
+  Revert,
+  RevertSequence,
+  CherryPick,
+  CherryPickSequence,
+  Bisect,
+  Rebase,
+  RebaseInteractive,
+  RebaseMerge,
+  ApplyMailbox,
+  ApplyMailboxOrRebase,
 }
 
-#[napi]
-pub fn get_head_sha(context: GitContext) -> crate::Result<String> {
-  let head = String::from("HEAD");
-
-  get_sha(head, context)
-}
-
-#[napi]
-pub fn get_git_root_path(context: GitContext) -> crate::Result<String> {
-  let repo = Repository::open(context.dir)?;
-  let path = repo.path().to_string_lossy();
-
-  Ok(String::from(path))
-}
-
-#[napi]
-pub fn has_merge_conflicts(ref1: String, ref2: String, context: GitContext) -> crate::Result<bool> {
-  let tree = get_merge_tree(ref1, ref2, context)?;
-
-  Ok(tree.has_conflicts())
+impl From<git2::RepositoryState> for RepositoryState {
+  fn from(value: git2::RepositoryState) -> Self {
+    match value {
+      git2::RepositoryState::ApplyMailbox => Self::ApplyMailbox,
+      git2::RepositoryState::ApplyMailboxOrRebase => Self::ApplyMailboxOrRebase,
+      git2::RepositoryState::Bisect => Self::Bisect,
+      git2::RepositoryState::Rebase => Self::Rebase,
+      git2::RepositoryState::RebaseInteractive => Self::RebaseInteractive,
+      git2::RepositoryState::RebaseMerge => Self::RebaseMerge,
+      git2::RepositoryState::CherryPick => Self::CherryPick,
+      git2::RepositoryState::CherryPickSequence => Self::CherryPickSequence,
+      git2::RepositoryState::Merge => Self::Merge,
+      git2::RepositoryState::Revert => Self::Revert,
+      git2::RepositoryState::RevertSequence => Self::RevertSequence,
+      git2::RepositoryState::Clean => Self::Clean,
+    }
+  }
 }
 
 #[napi(object)]
-pub struct Conflict {
-  pub ancestor: Option<String>,
-  pub our: Option<String>,
-  pub their: Option<String>,
+pub struct RepositoryInitOptions {
+  pub bare: Option<bool>,
+  pub initial_head: Option<String>,
+  pub origin_url: Option<String>,
+}
+
+impl From<RepositoryInitOptions> for git2::RepositoryInitOptions {
+  fn from(value: RepositoryInitOptions) -> Self {
+    let mut opts = git2::RepositoryInitOptions::new();
+    if let Some(bare) = value.bare {
+      opts.bare(bare);
+    }
+    if let Some(ref initial_head) = value.initial_head {
+      opts.initial_head(initial_head);
+    }
+    if let Some(ref origin_url) = value.origin_url {
+      opts.origin_url(origin_url);
+    }
+    opts
+  }
+}
+
+#[napi(object)]
+pub struct RepositoryOpenOptions {
+  pub flags: RepositoryOpenFlags,
+  pub ceiling_dirs: Option<Vec<String>>,
+}
+
+#[napi(string_enum)]
+pub enum RepositoryOpenFlags {
+  /// Only open the specified path; don't walk upward searching.
+  NoSearch,
+  /// Search across filesystem boundaries.
+  CrossFS,
+  /// Force opening as bare repository, and defer loading its config.
+  Bare,
+  /// Don't try appending `/.git` to the specified repository path.
+  NoDotGit,
+  /// Respect environment variables like `$GIT_DIR`.
+  FromEnv,
+}
+
+impl From<RepositoryOpenFlags> for git2::RepositoryOpenFlags {
+  fn from(val: RepositoryOpenFlags) -> Self {
+    match val {
+      RepositoryOpenFlags::NoSearch => git2::RepositoryOpenFlags::NO_SEARCH,
+      RepositoryOpenFlags::CrossFS => git2::RepositoryOpenFlags::CROSS_FS,
+      RepositoryOpenFlags::Bare => git2::RepositoryOpenFlags::BARE,
+      RepositoryOpenFlags::NoDotGit => git2::RepositoryOpenFlags::NO_DOTGIT,
+      RepositoryOpenFlags::FromEnv => git2::RepositoryOpenFlags::FROM_ENV,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct RepositoryCloneOptions {
+  pub recursive: Option<bool>,
+  pub fetch: Option<FetchOptions>,
 }
 
 #[napi]
-pub fn get_conflicting_files(ref1: String, ref2: String, context: GitContext) -> crate::Result<Vec<Conflict>> {
-  let tree = get_merge_tree(ref1, ref2, context)?;
-  let conflicts = tree.conflicts()?;
+pub struct Repository {
+  pub(crate) inner: git2::Repository,
+}
 
-  let mut files = vec![];
-
-  for conflict in conflicts {
-    let conflict = conflict?;
-    let ancestor = conflict.ancestor.and_then(parse_index_entry);
-    let our = conflict.our.and_then(parse_index_entry);
-    let their = conflict.their.and_then(parse_index_entry);
-
-    let conflict = Conflict { ancestor, our, their };
-
-    files.push(conflict);
+#[napi]
+impl Repository {
+  #[napi(factory)]
+  pub fn init(path: String, options: Option<RepositoryInitOptions>) -> crate::Result<Self> {
+    let inner = if let Some(opts) = options {
+      git2::Repository::init_opts(path, &opts.into())
+    } else {
+      git2::Repository::init(path)
+    }?;
+    Ok(Self { inner })
   }
 
-  Ok(files)
-}
+  #[napi(factory)]
+  pub fn open(path: String, options: Option<RepositoryOpenOptions>) -> crate::Result<Self> {
+    let inner = if let Some(opts) = options {
+      let flags = opts.flags.into();
+      let ceiling_dirs = opts.ceiling_dirs.unwrap_or_default();
+      git2::Repository::open_ext(path, flags, ceiling_dirs)
+    } else {
+      git2::Repository::open(path)
+    }?;
+    Ok(Self { inner })
+  }
 
-fn parse_index_entry(entry: IndexEntry) -> Option<String> {
-  let str = CString::new(&entry.path[..]).ok()?;
-  let str = str.to_str().ok()?;
+  #[napi(factory)]
+  pub fn discover(path: String) -> crate::Result<Self> {
+    let inner = git2::Repository::discover(path)?;
+    Ok(Self { inner })
+  }
 
-  Some(str.to_owned())
-}
+  #[napi(factory)]
+  pub fn clone(env: Env, url: String, path: String, options: Option<RepositoryCloneOptions>) -> crate::Result<Self> {
+    let mut builder = git2::build::RepoBuilder::new();
+    let mut recursive = false;
+    if let Some(opts) = options {
+      if let Some(fetch) = opts.fetch {
+        builder.fetch_options(fetch.into_git2_fetch_options(env)?);
+      }
+      if let Some(true) = opts.recursive {
+        recursive = true;
+      }
+    }
+    let this = Self {
+      inner: builder.clone(&url, Path::new(&path))?,
+    };
+    if recursive {
+      this.update_submodules()?;
+    }
+    Ok(this)
+  }
 
-pub fn get_merge_tree(ref1: String, ref2: String, context: GitContext) -> crate::Result<Index> {
-  let repo = Repository::open(context.dir)?;
-  let obj1 = repo.revparse_single(&ref1)?;
-  let obj2 = repo.revparse_single(&ref2)?;
+  #[napi]
+  pub fn is_bare(&self) -> bool {
+    self.inner.is_bare()
+  }
 
-  let commit1 = obj1.peel_to_commit()?;
-  let commit2 = obj2.peel_to_commit()?;
+  #[napi]
+  pub fn is_shallow(&self) -> bool {
+    self.inner.is_shallow()
+  }
 
-  let base = repo
-    .merge_base(commit1.id(), commit2.id())
-    .and_then(|oid| repo.find_commit(oid))?;
+  #[napi]
+  pub fn is_worktree(&self) -> bool {
+    self.inner.is_worktree()
+  }
 
-  let merge_tree = repo.merge_trees(&base.tree()?, &commit1.tree()?, &commit2.tree()?, None)?;
+  #[napi]
+  pub fn is_empty(&self) -> crate::Result<bool> {
+    Ok(self.inner.is_empty()?)
+  }
 
-  Ok(merge_tree)
+  #[napi]
+  pub fn path(&self, env: Env) -> crate::Result<JsString> {
+    let path = util::path_to_js_string(&env, self.inner.path())?;
+    Ok(path)
+  }
+
+  #[napi]
+  pub fn state(&self) -> RepositoryState {
+    self.inner.state().into()
+  }
+
+  #[napi]
+  pub fn workdir(&self, env: Env) -> Option<JsString> {
+    self
+      .inner
+      .workdir()
+      .and_then(|path| util::path_to_js_string(&env, path).ok())
+  }
+
+  #[napi]
+  pub fn remote_names(&self) -> crate::Result<Vec<String>> {
+    let remotes = self
+      .inner
+      .remotes()
+      .map(|remotes| remotes.into_iter().flatten().map(|x| x.to_owned()).collect::<Vec<_>>())?;
+    Ok(remotes)
+  }
+
+  fn update_submodules(&self) -> crate::Result<()> {
+    fn add_subrepos(repo: &git2::Repository, list: &mut Vec<git2::Repository>) -> crate::Result<()> {
+      for mut subm in repo.submodules()? {
+        subm.update(true, None)?;
+        list.push(subm.open()?);
+      }
+      Ok(())
+    }
+    let mut repos = Vec::new();
+    add_subrepos(&self.inner, &mut repos)?;
+    while let Some(repo) = repos.pop() {
+      add_subrepos(&repo, &mut repos)?
+    }
+    Ok(())
+  }
 }

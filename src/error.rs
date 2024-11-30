@@ -1,15 +1,17 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
   #[error(transparent)]
-  Git2(#[from] git2::Error)
+  Git2(#[from] git2::Error),
+  #[error(transparent)]
+  Napi(#[from] napi::Error),
 }
 
 impl From<Error> for napi::Error {
   fn from(value: Error) -> Self {
-    napi::Error::new(
-      napi::Status::GenericFailure,
-      format!("libgit2 error: {value}"),
-    )
+    match value {
+      Error::Git2(e) => napi::Error::new(napi::Status::GenericFailure, format!("libgit2 error: {e}")),
+      Error::Napi(e) => e,
+    }
   }
 }
 

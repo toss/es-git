@@ -37,7 +37,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.android-arm64.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-android-arm64')
+            nativeBinding = require('es-git-android-arm64')
           }
         } catch (e) {
           loadError = e
@@ -49,7 +49,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.android-arm-eabi.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-android-arm-eabi')
+            nativeBinding = require('es-git-android-arm-eabi')
           }
         } catch (e) {
           loadError = e
@@ -69,7 +69,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.win32-x64-msvc.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-win32-x64-msvc')
+            nativeBinding = require('es-git-win32-x64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -83,7 +83,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.win32-ia32-msvc.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-win32-ia32-msvc')
+            nativeBinding = require('es-git-win32-ia32-msvc')
           }
         } catch (e) {
           loadError = e
@@ -97,7 +97,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.win32-arm64-msvc.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-win32-arm64-msvc')
+            nativeBinding = require('es-git-win32-arm64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -113,7 +113,7 @@ switch (platform) {
       if (localFileExisted) {
         nativeBinding = require('./esgit.darwin-universal.node')
       } else {
-        nativeBinding = require('@tossteam/esgit-darwin-universal')
+        nativeBinding = require('es-git-darwin-universal')
       }
       break
     } catch {}
@@ -124,7 +124,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.darwin-x64.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-darwin-x64')
+            nativeBinding = require('es-git-darwin-x64')
           }
         } catch (e) {
           loadError = e
@@ -138,7 +138,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.darwin-arm64.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-darwin-arm64')
+            nativeBinding = require('es-git-darwin-arm64')
           }
         } catch (e) {
           loadError = e
@@ -157,7 +157,7 @@ switch (platform) {
       if (localFileExisted) {
         nativeBinding = require('./esgit.freebsd-x64.node')
       } else {
-        nativeBinding = require('@tossteam/esgit-freebsd-x64')
+        nativeBinding = require('es-git-freebsd-x64')
       }
     } catch (e) {
       loadError = e
@@ -174,7 +174,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-x64-musl.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-x64-musl')
+              nativeBinding = require('es-git-linux-x64-musl')
             }
           } catch (e) {
             loadError = e
@@ -187,7 +187,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-x64-gnu.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-x64-gnu')
+              nativeBinding = require('es-git-linux-x64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -203,7 +203,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-arm64-musl.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-arm64-musl')
+              nativeBinding = require('es-git-linux-arm64-musl')
             }
           } catch (e) {
             loadError = e
@@ -216,7 +216,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-arm64-gnu.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-arm64-gnu')
+              nativeBinding = require('es-git-linux-arm64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -232,7 +232,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-arm-musleabihf.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-arm-musleabihf')
+              nativeBinding = require('es-git-linux-arm-musleabihf')
             }
           } catch (e) {
             loadError = e
@@ -245,7 +245,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-arm-gnueabihf.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-arm-gnueabihf')
+              nativeBinding = require('es-git-linux-arm-gnueabihf')
             }
           } catch (e) {
             loadError = e
@@ -261,7 +261,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-riscv64-musl.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-riscv64-musl')
+              nativeBinding = require('es-git-linux-riscv64-musl')
             }
           } catch (e) {
             loadError = e
@@ -274,7 +274,7 @@ switch (platform) {
             if (localFileExisted) {
               nativeBinding = require('./esgit.linux-riscv64-gnu.node')
             } else {
-              nativeBinding = require('@tossteam/esgit-linux-riscv64-gnu')
+              nativeBinding = require('es-git-linux-riscv64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -289,7 +289,7 @@ switch (platform) {
           if (localFileExisted) {
             nativeBinding = require('./esgit.linux-s390x-gnu.node')
           } else {
-            nativeBinding = require('@tossteam/esgit-linux-s390x-gnu')
+            nativeBinding = require('es-git-linux-s390x-gnu')
           }
         } catch (e) {
           loadError = e
@@ -310,17 +310,12 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { createBranch, getBranch, deleteBranch, removeRef, getRemoteUrl, getSha, getHeadSha, getGitRootPath, hasMergeConflicts, getConflictingFiles, createTag, deleteTag } = nativeBinding
+const { CredentialType, FetchPrune, AutotagOption, RemoteRedirect, RepositoryState, RepositoryOpenFlags, Repository } = nativeBinding
 
-module.exports.createBranch = createBranch
-module.exports.getBranch = getBranch
-module.exports.deleteBranch = deleteBranch
-module.exports.removeRef = removeRef
-module.exports.getRemoteUrl = getRemoteUrl
-module.exports.getSha = getSha
-module.exports.getHeadSha = getHeadSha
-module.exports.getGitRootPath = getGitRootPath
-module.exports.hasMergeConflicts = hasMergeConflicts
-module.exports.getConflictingFiles = getConflictingFiles
-module.exports.createTag = createTag
-module.exports.deleteTag = deleteTag
+module.exports.CredentialType = CredentialType
+module.exports.FetchPrune = FetchPrune
+module.exports.AutotagOption = AutotagOption
+module.exports.RemoteRedirect = RemoteRedirect
+module.exports.RepositoryState = RepositoryState
+module.exports.RepositoryOpenFlags = RepositoryOpenFlags
+module.exports.Repository = Repository
