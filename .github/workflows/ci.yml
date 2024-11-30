@@ -27,8 +27,43 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn install
-      - name: Check
+      - name: Run biome check
         run: yarn biome check
+  format:
+    if: '!contains(github.event.head_commit.message, ''skip ci'')'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          check-latest: true
+          cache: yarn
+      - name: Install rust
+        uses: moonrepo/setup-rust@v1
+        with:
+          components: rustfmt
+          bins: taplo-cli
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Install dependencies
+        run: yarn install
+      - name: Run rustfmt
+        run: cargo fmt --all --check
+      - name: Run taplo
+        run: taplo format --check
+  clippy:
+    if: '!contains(github.event.head_commit.message, ''skip ci'')'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rust
+        uses: moonrepo/setup-rust@v1
+        with:
+          components: clippy
+      - name: Run clippy
+        run: cargo clippy
   build:
     if: '!contains(github.event.head_commit.message, ''skip ci'')'
     strategy:
