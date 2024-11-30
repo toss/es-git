@@ -40,12 +40,13 @@ describe('Repository', () => {
   it('clone from remote', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
     const onTransferProgress = vi.fn();
-    Repository.clone('https://github.com/toss/es-toolkit', p, {
+    const repo = Repository.clone('https://github.com/toss/es-toolkit', p, {
       fetch: {
         onTransferProgress,
       },
     });
     expect(onTransferProgress).toHaveBeenCalled();
+    expect(repo.state()).toBe('Clean');
   });
 
   it('clone from remote with credential', { skip: CI || LINUX }, async () => {
