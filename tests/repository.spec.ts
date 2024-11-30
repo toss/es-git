@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { Repository } from '../index';
+import { LINUX } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -36,7 +37,7 @@ describe('Repository', () => {
     await expect(fs.readFile(path.join(p, 'first'), 'utf8')).resolves.toEqual(expect.stringContaining('first'));
   });
 
-  it('clone from remote', async () => {
+  it('clone from remote', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
     const onTransferProgress = vi.fn();
     Repository.clone('https://github.com/toss/es-toolkit', p, {
@@ -47,7 +48,7 @@ describe('Repository', () => {
     expect(onTransferProgress).toHaveBeenCalled();
   });
 
-  it('clone from remote with credential', { skip: CI }, async () => {
+  it('clone from remote with credential', { skip: CI || LINUX }, async () => {
     const p = await makeTmpDir('clone');
     Repository.clone('git@github.com:toss/es-toolkit', p, {
       fetch: {
