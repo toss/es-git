@@ -1,4 +1,3 @@
 /.yarn/**            linguist-vendored
 /.yarn/releases/*    binary
-/es-git.js           linguist-generated=true text=auto eol=lf
-/es-git.d.ts         linguist-generated=true text=auto eol=lf
+/index.js           linguist-generated=true text=auto eol=lf
