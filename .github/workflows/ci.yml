@@ -171,6 +171,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: yarn
           architecture: ${{ matrix.settings.architecture }}
       - name: Install dependencies
