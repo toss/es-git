@@ -1,0 +1,153 @@
+name: Release
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*.*.*'
+env:
+  DEBUG: napi:*
+  APP_NAME: es-git
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            build: |
+              yarn build
+              strip -x *.node
+          - host: windows-latest
+            build: yarn build
+            target: x86_64-pc-windows-msvc
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-zig
+            build: |-
+              set -e &&
+              apt update && 
+              apt install -y pkg-config build-essential libssl-dev librust-openssl-dev openssl libz-dev zlib1g-dev lib32z1-dev &&
+              RUSTFLAGS='-C link-args=-L/usr/lib/x86_64-linux-gnu/' yarn build --target x86_64-unknown-linux-gnu --zig --zig-abi-suffix 2.17 &&
+              strip *.node
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: set -e && apk add --no-cache --update perl musl-dev pkgconfig openssl-dev && yarn build && strip *.node
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: |
+              sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*;
+              export CC=$(xcrun -f clang);
+              export CXX=$(xcrun -f clang++);
+              SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
+              export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
+              yarn build --target aarch64-apple-darwin
+              strip -x *.node
+    name: stable - ${{ matrix.settings.target }} - node@20
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        if: ${{ !matrix.settings.docker }}
+        with:
+          node-version: 20
+          check-latest: true
+          cache: yarn
+      - name: Install rust
+        uses: moonrepo/setup-rust@v1
+        if: ${{ !matrix.settings.docker }}
+        with:
+          profile: minimal
+          targets: ${{ matrix.settings.target }}
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+      - name: Install dependencies
+        run: yarn install
+      - name: Build in docker
+        uses: addnab/docker-run-action@v3
+        if: ${{ matrix.settings.docker }}
+        with:
+          image: ${{ matrix.settings.docker }}
+          options: '--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build'
+          run: ${{ matrix.settings.build }}
+      - name: Build
+        run: ${{ matrix.settings.build }}
+        if: ${{ !matrix.settings.docker }}
+        shell: bash
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      deployments: write
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          check-latest: true
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+      - name: Create npm dirs
+        run: yarn napi create-npm-dir -t .
+      - name: Move artifacts
+        run: yarn napi artifacts -d release-artifacts
+      - name: List packages
+        run: ls -R .npm
+        shell: bash
+      - id: extract-changelog
+        uses: dahlia/submark@5a5ff0a58382fb812616a5801402f5aef00f90ce
+        with:
+          input-file: CHANGELOG.md
+          heading-level: 2
+          heading-title-text: version ${{ github.ref_name }}
+          ignore-case: true
+          omit-heading: true
+      - run: 'cat ${{ steps.extract-changelog.outputs.output-file }}'
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: ${{ steps.extract-changelog.outputs.output-file }}
+          repository: toss/es-git
+          generate_release_notes: false
+          token: ${{ github.token }}
+          files: "release-artifacts/*.node"
+      - if: |
+          github.event_name == 'push' &&
+          (github.ref_type == 'tag' || github.ref == 'refs/heads/main')
+        run: |
+          set -ex
+          npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
+          npm whoami
+          if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
+            npm publish --provenance --access public
+          fi
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
