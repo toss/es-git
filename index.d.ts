@@ -9,14 +9,49 @@ import { RepositoryState } from './es-git';
  * This feature will be provided starting from v3, so create a custom TypeScript until the v3 stable releases.
  */
 
+export interface RemoteObject {
+  name: string;
+  url: string;
+  pushUrl?: string;
+  refspecs: Array<RefspecObject>;
+}
+export const enum Direction {
+  Fetch = 'Fetch',
+  Push = 'Push'
+}
+export interface RefspecObject {
+  direction: Direction;
+  src: string;
+  dst: string;
+  force: boolean;
+}
 export type Credential =
+  /** Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication. */
   | { type: 'Default' }
+  /**
+   * Create a new ssh key credential object used for querying an ssh-agent.
+   * The username specified is the username to authenticate.
+   */
   | { type: 'SSHKeyFromAgent'; username?: string }
+  /** Create a new passphrase-protected ssh key credential object. */
   | { type: 'SSHKeyFromPath'; username?: string; publicKeyPath?: string; privateKeyPath: string; passphrase?: string }
+  /** Create a new ssh key credential object reading the keys from memory. */
   | { type: 'SSHKey'; username?: string; publicKey?: string; privateKey: string; passphrase?: string }
+  /** Create a new plain-text username and password credential object. */
   | { type: 'Plain'; username?: string; password: string };
+/** Options which can be specified to various fetch operations. */
 export interface ProxyOptions {
+  /**
+   * Try to auto-detect the proxy from the git configuration.
+   *
+   * Note that this will override `url` specified before.
+   */
   auto?: boolean
+  /**
+   * Specify the exact URL of the proxy to use.
+   *
+   * Note that this will override `auto` specified before.
+   */
   url?: string
 }
 export type FetchPrune =
@@ -26,6 +61,7 @@ export type FetchPrune =
   | 'On'
   /** Force pruning off */
   | 'Off';
+/** Automatic tag following options. */
 export type AutotagOption =
   /** Use the setting from the remote's configuration */
   | 'Unspecified'
@@ -35,6 +71,13 @@ export type AutotagOption =
   | 'None'
   /** Ask for all the tags */
   | 'All';
+/**
+ * Remote redirection settings; whether redirects to another host are
+ * permitted.
+ *
+ * By default, git will follow a redirect on the initial request
+ * (`/info/refs`), but not subsequent requests.
+ */
 export type RemoteRedirect =
   /** Do not follow any off-site redirects at any stage of the fetch or push. */
   | 'None'
@@ -45,30 +88,72 @@ export type RemoteRedirect =
   | 'Initial'
   /** Allow redirects at any stage in the fetch or push. */
   | 'All';
-export interface Progress {
-  totalObjects: number
-  indexedObjects: number
-  receivedObjects: number
-  localObjects: number
-  totalDeltas: number
-  indexedDeltas: number
-  receivedBytes: number
-}
-export interface PushProgress {
-  current: number
-  total: number
-  bytes: number
-}
+/** Options which can be specified to various fetch operations. */
 export interface FetchOptions {
-  credential?: Credential
-  proxy?: ProxyOptions
-  prune?: FetchPrune
-  depth?: number
-  downloadTags?: AutotagOption
-  followRedirects?: RemoteRedirect
-  customHeaders?: Array<string>
-  onTransferProgress?: (progress: Progress) => void
-  onPushTransferProgress?: (progress: PushProgress) => void
+  credential?: Credential;
+  /** Set the proxy options to use for the fetch operation. */
+  proxy?: ProxyOptions;
+  /** Set whether to perform a prune after the fetch. */
+  prune?: FetchPrune;
+  /**
+   * Set fetch depth, a value less or equal to 0 is interpreted as pull
+   * everything (effectively the same as not declaring a limit depth).
+   */
+  depth?: number;
+  /**
+   * Set how to behave regarding tags on the remote, such as auto-downloading
+   * tags for objects we're downloading or downloading all of them.
+   *
+   * The default is to auto-follow tags.
+   */
+  downloadTags?: AutotagOption;
+  /**
+   * Set remote redirection settings; whether redirects to another host are
+   * permitted.
+   *
+   * By default, git will follow a redirect on the initial request
+   * (`/info/refs`), but not subsequent requests.
+   */
+  followRedirects?: RemoteRedirect;
+  /** Set extra headers for this fetch operation. */
+  customHeaders?: Array<string>;
+}
+/** Options to control the behavior of a git push. */
+export interface PushOptions {
+  credential?: Credential;
+  /** Set the proxy options to use for the push operation. */
+  proxy?: ProxyOptions;
+  /**
+   * If the transport being used to push to the remote requires the creation
+   * of a pack file, this controls the number of worker threads used by the
+   * packbuilder when creating that pack file to be sent to the remote.
+   *
+   * if set to 0 the packbuilder will auto-detect the number of threads to
+   * create, and the default value is 1.
+   */
+  pbParallelism?: number;
+  /**
+   * Set remote redirection settings; whether redirects to another host are
+   * permitted.
+   *
+   * By default, git will follow a redirect on the initial request
+   * (`/info/refs`), but not subsequent requests.
+   */
+  followRedirects?: RemoteRedirect;
+  /** Set extra headers for this push operation. */
+  customHeaders?: Array<string>;
+  /** Set "push options" to deliver to the remote. */
+  remoteOptions?: Array<string>;
+}
+export interface CreateRemoteOptions {
+  fetchRefspec?: string;
+}
+export interface FetchRemoteOptions {
+  fetch?: FetchOptions;
+  reflogMsg?: string;
+}
+export interface PruneOptions {
+  credential?: Credential;
 }
 export type RepositoryState =
   | 'Clean'
@@ -84,16 +169,16 @@ export type RepositoryState =
   | 'ApplyMailbox'
   | 'ApplyMailboxOrRebase';
 export interface RepositoryInitOptions {
-  bare?: boolean
-  initialHead?: string
-  originUrl?: string
+  bare?: boolean;
+  initialHead?: string;
+  originUrl?: string;
 }
 export interface RepositoryOpenOptions {
-  flags: RepositoryOpenFlags
-  ceilingDirs?: Array<string>
+  flags: RepositoryOpenFlags;
+  ceilingDirs?: Array<string>;
 }
 export type RepositoryOpenFlags =
-  /** Only open the specified path; don't walk upward searching. */
+/** Only open the specified path; don't walk upward searching. */
   | 'NoSearch'
   /** Search across filesystem boundaries. */
   | 'CrossFS'
@@ -104,14 +189,39 @@ export type RepositoryOpenFlags =
   /** Respect environment variables like `$GIT_DIR`. */
   | 'FromEnv';
 export interface RepositoryCloneOptions {
-  recursive?: boolean
-  fetch?: FetchOptions
+  recursive?: boolean;
+  fetch?: FetchOptions;
 }
+
+export declare function initRepository(path: string, options?: RepositoryInitOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
+export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare class Repository {
-  static init(path: string, options?: RepositoryInitOptions | undefined | null): Repository
-  static open(path: string, options?: RepositoryOpenOptions | undefined | null): Repository
-  static discover(path: string): Repository
-  static clone(url: string, path: string, options?: RepositoryCloneOptions | undefined | null): Repository
+  /** List all remotes for a given repository */
+  remoteNames(): Array<string>
+  /** Get remote or throws error is not exists. */
+  getRemote(name: string): RemoteObject
+  /** Find remote */
+  findRemote(name: string): RemoteObject | null
+  /** Add a remote with the default fetch refspec to the repository’s configuration. */
+  createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): RemoteObject
+  /**
+   * Download new data and update tips
+   *
+   * Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
+   */
+  fetchRemote(name: string, refspecs: Array<string>, options?: FetchRemoteOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  /**
+   * Perform a push
+   *
+   * Perform all the steps for a push. If no refspecs are passed then the configured refspecs will be used.
+   */
+  pushRemote(name: string, refspecs: Array<string>, options?: PushOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  /** Prune tracking refs that are no longer present on remote */
+  pruneRemote(name: string, options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  /** Get the remote’s default branch. */
+  getRemoteDefaultBranch(name: string, signal?: AbortSignal | undefined | null): Promise<string>
   isBare(): boolean
   isShallow(): boolean
   isWorktree(): boolean
@@ -119,5 +229,4 @@ export declare class Repository {
   path(): string
   state(): RepositoryState
   workdir(): string | null
-  remoteNames(): Array<string>
 }
