@@ -8,7 +8,7 @@ const tmpDirs: string[] = [];
 
 afterAll(async () => {
   const removes = tmpDirs.map(dir => fs.rm(dir, { recursive: true, force: true }));
-  await Promise.all(removes);
+  await Promise.allSettled(removes);
 });
 
 export async function makeTmpDir(prefix?: string) {
