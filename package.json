@@ -5,10 +5,13 @@
   "types": "index.d.ts",
   "packageManager": "yarn@4.5.1",
   "napi": {
-    "name": "esgit",
+    "name": "es-git",
     "triples": {
       "additional": [
+        "x86_64-apple-darwin",
         "aarch64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-musl",
         "x86_64-unknown-linux-musl"
       ]
     }
@@ -18,11 +21,10 @@
     "node": ">= 10"
   },
   "scripts": {
-    "artifacts": "napi artifacts",
     "build": "napi build --platform --release --dts=es-git.d.ts",
     "build:debug": "napi build --platform --dts=es-git.d.ts",
-    "prepublishOnly": "napi prepublish -t npm",
-    "version": "napi version"
+    "check": "biome check",
+    "check:fix": "biome check --write --unsafe"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
