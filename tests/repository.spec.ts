@@ -25,9 +25,7 @@ describe('Repository', () => {
 
   it('error if given path is not git repository', async () => {
     const p = await useFixture('notgit');
-    await expect(
-      openRepository(p)
-    ).rejects.toThrowError(/libgit2 error: could not find repository/);
+    await expect(openRepository(p)).rejects.toThrowError(/libgit2 error: could not find repository/);
   });
 
   it('clone from local', async () => {
@@ -49,9 +47,9 @@ describe('Repository', () => {
       fetch: {
         followRedirects: 'All',
         credential: {
-          type: 'SSHKeyFromAgent'
-        }
-      }
+          type: 'SSHKeyFromAgent',
+        },
+      },
     });
     expect(repo.state()).toBe('Clean');
   });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { LINUX } from './env';
-import { makeTmpDir } from './tmp';
 import { cloneRepository, openRepository } from '../index';
+import { LINUX } from './env';
 import { useFixture } from './fixtures';
+import { makeTmpDir } from './tmp';
 
 describe('remote', () => {
   it('get remote names', { skip: LINUX }, async () => {
@@ -31,7 +31,7 @@ describe('remote', () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
     const remote = repo.createRemote('origin', 'git@github.com:toss/empty.git', {
-      fetchRefspec: '+refs/*:refs/*'
+      fetchRefspec: '+refs/*:refs/*',
     });
     expect(remote.name).toEqual('origin');
   });
