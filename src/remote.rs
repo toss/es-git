@@ -5,26 +5,6 @@ use napi_derive::napi;
 use std::path::Path;
 use std::sync::RwLock;
 
-#[napi(object)]
-pub struct RemoteObject {
-  pub name: String,
-  pub url: String,
-  pub push_url: Option<String>,
-  pub refspecs: Vec<RefspecObject>,
-}
-
-impl<'a> From<git2::Remote<'a>> for RemoteObject {
-  fn from(value: git2::Remote<'a>) -> Self {
-    let refspecs = value.refspecs().map(RefspecObject::from).collect::<Vec<_>>();
-    Self {
-      name: value.name().unwrap().to_string(),
-      url: value.url().unwrap().to_string(),
-      push_url: value.pushurl().map(|x| x.to_string()),
-      refspecs,
-    }
-  }
-}
-
 #[napi(string_enum)]
 pub enum Direction {
   Fetch,
@@ -48,14 +28,18 @@ pub struct RefspecObject {
   pub force: bool,
 }
 
-impl<'a> From<git2::Refspec<'a>> for RefspecObject {
-  fn from(value: git2::Refspec<'a>) -> Self {
-    Self {
+impl<'a> TryFrom<git2::Refspec<'a>> for RefspecObject {
+  type Error = crate::Error;
+
+  fn try_from(value: git2::Refspec<'a>) -> std::result::Result<Self, Self::Error> {
+    let src = std::str::from_utf8(value.src_bytes())?.to_string();
+    let dst = std::str::from_utf8(value.dst_bytes())?.to_string();
+    Ok(Self {
       direction: value.direction().into(),
-      src: value.src().unwrap().to_string(),
-      dst: value.dst().unwrap().to_string(),
+      src,
+      dst,
       force: value.is_force(),
-    }
+    })
   }
 }
 
@@ -331,11 +315,12 @@ pub struct PruneOptions {
 }
 
 pub struct FetchRemoteTask {
-  repo: RwLock<Reference<Repository>>,
-  name: String,
+  remote: RwLock<Reference<Remote>>,
   refspecs: Vec<String>,
   options: Option<FetchRemoteOptions>,
 }
+
+unsafe impl Send for FetchRemoteTask {}
 
 #[napi]
 impl Task for FetchRemoteTask {
@@ -343,11 +328,10 @@ impl Task for FetchRemoteTask {
   type JsValue = ();
 
   fn compute(&mut self) -> Result<Self::Output> {
-    let repo = self
-      .repo
-      .read()
+    let mut remote = self
+      .remote
+      .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
-    let mut remote = repo.inner.find_remote(&self.name).map_err(crate::Error::from)?;
     let mut fetch_options = match &self.options {
       Some(FetchRemoteOptions { fetch: Some(fetch), .. }) => Some(fetch.to_git2_fetch_options()),
       _ => None,
@@ -360,6 +344,7 @@ impl Task for FetchRemoteTask {
       _ => None,
     };
     remote
+      .inner
       .fetch(&self.refspecs, fetch_options.as_mut(), reflog_msg)
       .map_err(crate::Error::from)?;
     Ok(())
@@ -371,11 +356,12 @@ impl Task for FetchRemoteTask {
 }
 
 pub struct PushRemoteTask {
-  repo: RwLock<Reference<Repository>>,
-  name: String,
+  remote: RwLock<Reference<Remote>>,
   refspecs: Vec<String>,
   options: Option<PushOptions>,
 }
+
+unsafe impl Send for PushRemoteTask {}
 
 #[napi]
 impl Task for PushRemoteTask {
@@ -383,13 +369,13 @@ impl Task for PushRemoteTask {
   type JsValue = ();
 
   fn compute(&mut self) -> Result<Self::Output> {
-    let repo = self
-      .repo
-      .read()
+    let mut remote = self
+      .remote
+      .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
-    let mut remote = repo.inner.find_remote(&self.name).map_err(crate::Error::from)?;
     let mut push_options = self.options.as_ref().map(|x| x.to_git2_push_options());
     remote
+      .inner
       .push(&self.refspecs, push_options.as_mut())
       .map_err(crate::Error::from)?;
     Ok(())
@@ -401,10 +387,11 @@ impl Task for PushRemoteTask {
 }
 
 pub struct PruneRemoteTask {
-  repo: RwLock<Reference<Repository>>,
-  name: String,
+  remote: RwLock<Reference<Remote>>,
   options: Option<PruneOptions>,
 }
+
+unsafe impl Send for PruneRemoteTask {}
 
 #[napi]
 impl Task for PruneRemoteTask {
@@ -412,9 +399,9 @@ impl Task for PruneRemoteTask {
   type JsValue = ();
 
   fn compute(&mut self) -> Result<Self::Output> {
-    let repo = self
-      .repo
-      .read()
+    let mut remote = self
+      .remote
+      .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
     let callbacks = match &self.options {
       Some(PruneOptions {
@@ -426,8 +413,7 @@ impl Task for PruneRemoteTask {
       }
       _ => None,
     };
-    let mut remote = repo.inner.find_remote(&self.name).map_err(crate::Error::from)?;
-    remote.prune(callbacks).map_err(crate::Error::from)?;
+    remote.inner.prune(callbacks).map_err(crate::Error::from)?;
     Ok(())
   }
 
@@ -437,9 +423,10 @@ impl Task for PruneRemoteTask {
 }
 
 pub struct GetRemoteDefaultBranchTask {
-  repo: RwLock<Reference<Repository>>,
-  name: String,
+  remote: RwLock<Reference<Remote>>,
 }
+
+unsafe impl Send for GetRemoteDefaultBranchTask {}
 
 #[napi]
 impl Task for GetRemoteDefaultBranchTask {
@@ -447,15 +434,17 @@ impl Task for GetRemoteDefaultBranchTask {
   type JsValue = JsString;
 
   fn compute(&mut self) -> Result<Self::Output> {
-    let repo = self
-      .repo
-      .read()
+    let mut remote = self
+      .remote
+      .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
-    let mut remote = repo.inner.find_remote(&self.name).map_err(crate::Error::from)?;
-    remote.connect(git2::Direction::Fetch).map_err(crate::Error::from)?;
-    let buf = remote.default_branch().map_err(crate::Error::from)?;
-    let branch = String::from_utf8_lossy(buf.as_ref()).to_string();
-    remote.disconnect().map_err(crate::Error::from)?;
+    remote
+      .inner
+      .connect(git2::Direction::Fetch)
+      .map_err(crate::Error::from)?;
+    let buf = remote.inner.default_branch().map_err(crate::Error::from)?;
+    let branch = std::str::from_utf8(&buf).map_err(crate::Error::from)?.to_string();
+    remote.inner.disconnect().map_err(crate::Error::from)?;
     Ok(branch)
   }
 
@@ -465,65 +454,73 @@ impl Task for GetRemoteDefaultBranchTask {
 }
 
 #[napi]
-impl Repository {
+pub struct Remote {
+  pub(crate) inner: SharedReference<Repository, git2::Remote<'static>>,
+}
+
+#[napi]
+impl Remote {
   #[napi]
-  /// List all remotes for a given repository
-  pub fn remote_names(&self) -> crate::Result<Vec<String>> {
-    let remotes = self
+  /// Get the remote's name.
+  ///
+  /// Returns `null` if this remote has not yet been named, and
+  /// Throws error if the URL is not valid utf-8
+  pub fn name(&self) -> crate::Result<Option<String>> {
+    let name = match self.inner.name_bytes() {
+      Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
+      None => None,
+    };
+    Ok(name)
+  }
+
+  #[napi]
+  /// Get the remote's URL.
+  ///
+  /// Throws error if the URL is not valid utf-8
+  pub fn url(&self) -> crate::Result<String> {
+    let url = std::str::from_utf8(self.inner.url_bytes())?.to_string();
+    Ok(url)
+  }
+
+  #[napi]
+  /// Get the remote's URL.
+  ///
+  /// Returns `null` if push url not exists, and
+  /// Throws error if the URL is not valid utf-8
+  pub fn pushurl(&self) -> crate::Result<Option<String>> {
+    let pushurl = match self.inner.pushurl_bytes() {
+      Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
+      None => None,
+    };
+    Ok(pushurl)
+  }
+
+  #[napi]
+  /// List all refspecs.
+  ///
+  /// Filter refspec if has not valid src or dst with utf-8
+  pub fn refspecs(&self) -> Vec<RefspecObject> {
+    self
       .inner
-      .remotes()
-      .map(|remotes| remotes.into_iter().flatten().map(|x| x.to_owned()).collect::<Vec<_>>())?;
-    Ok(remotes)
-  }
-
-  #[napi]
-  /// Get remote or throws error does not exist.
-  pub fn get_remote(&self, name: String) -> crate::Result<RemoteObject> {
-    let remote = self.inner.find_remote(&name)?;
-    Ok(remote.into())
-  }
-
-  #[napi]
-  /// Find remote
-  pub fn find_remote(&self, name: String) -> Option<RemoteObject> {
-    self.get_remote(name).ok()
-  }
-
-  #[napi]
-  /// Add a remote with the default fetch refspec to the repository’s configuration.
-  pub fn create_remote(
-    &self,
-    name: String,
-    url: String,
-    options: Option<CreateRemoteOptions>,
-  ) -> crate::Result<RemoteObject> {
-    let remote = if let Some(CreateRemoteOptions {
-      fetch_refspec: Some(refspec),
-    }) = options
-    {
-      self.inner.remote_with_fetch(&name, &url, &refspec)
-    } else {
-      self.inner.remote(&name, &url)
-    }?;
-    Ok(remote.into())
+      .refspecs()
+      .filter_map(|x| RefspecObject::try_from(x).ok())
+      .collect::<Vec<_>>()
   }
 
   #[napi]
   /// Download new data and update tips
   ///
   /// Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
-  pub fn fetch_remote(
+  pub fn fetch(
     &self,
-    self_ref: Reference<Repository>,
-    name: String,
+    self_ref: Reference<Remote>,
     refspecs: Vec<String>,
     options: Option<FetchRemoteOptions>,
     signal: Option<AbortSignal>,
   ) -> AsyncTask<FetchRemoteTask> {
     AsyncTask::with_optional_signal(
       FetchRemoteTask {
-        repo: RwLock::new(self_ref),
-        name,
+        remote: RwLock::new(self_ref),
         refspecs,
         options,
       },
@@ -536,18 +533,16 @@ impl Repository {
   ///
   /// Perform all the steps for a push.
   /// If no refspecs are passed, then the configured refspecs will be used.
-  pub fn push_remote(
+  pub fn push(
     &self,
-    self_ref: Reference<Repository>,
-    name: String,
+    self_ref: Reference<Remote>,
     refspecs: Vec<String>,
     options: Option<PushOptions>,
     signal: Option<AbortSignal>,
   ) -> AsyncTask<PushRemoteTask> {
     AsyncTask::with_optional_signal(
       PushRemoteTask {
-        repo: RwLock::new(self_ref),
-        name,
+        remote: RwLock::new(self_ref),
         refspecs,
         options,
       },
@@ -557,17 +552,15 @@ impl Repository {
 
   #[napi]
   /// Prune tracking refs that are no longer present on remote
-  pub fn prune_remote(
+  pub fn prune(
     &self,
-    self_ref: Reference<Repository>,
-    name: String,
+    self_ref: Reference<Remote>,
     options: Option<PruneOptions>,
     signal: Option<AbortSignal>,
   ) -> AsyncTask<PruneRemoteTask> {
     AsyncTask::with_optional_signal(
       PruneRemoteTask {
-        repo: RwLock::new(self_ref),
-        name,
+        remote: RwLock::new(self_ref),
         options,
       },
       signal,
@@ -576,18 +569,79 @@ impl Repository {
 
   #[napi]
   /// Get the remote’s default branch.
-  pub fn get_remote_default_branch(
+  pub fn default_branch(
     &self,
-    self_ref: Reference<Repository>,
-    name: String,
+    self_ref: Reference<Remote>,
     signal: Option<AbortSignal>,
   ) -> AsyncTask<GetRemoteDefaultBranchTask> {
     AsyncTask::with_optional_signal(
       GetRemoteDefaultBranchTask {
-        repo: RwLock::new(self_ref),
-        name,
+        remote: RwLock::new(self_ref),
       },
       signal,
     )
+  }
+}
+
+#[napi]
+impl Repository {
+  #[napi]
+  /// List all remotes for a given repository
+  pub fn remote_names(&self) -> crate::Result<Vec<String>> {
+    let remotes = self
+      .inner
+      .remotes()
+      .map(|names| names.into_iter().flatten().map(|x| x.to_owned()).collect::<Vec<_>>())?;
+    Ok(remotes)
+  }
+
+  #[napi]
+  /// Get remote from repository
+  ///
+  /// Throws error if not exists
+  pub fn get_remote(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Remote> {
+    let remote = Remote {
+      inner: this.share_with(env, move |repo| {
+        repo
+          .inner
+          .find_remote(&name)
+          .map_err(crate::Error::from)
+          .map_err(|e| e.into())
+      })?,
+    };
+    Ok(remote)
+  }
+
+  #[napi]
+  /// Find remote from repository
+  pub fn find_remote(&self, this: Reference<Repository>, env: Env, name: String) -> Option<Remote> {
+    self.get_remote(this, env, name).ok()
+  }
+
+  #[napi]
+  /// Add a remote with the default fetch refspec to the repository’s configuration.
+  pub fn create_remote(
+    &self,
+    this: Reference<Repository>,
+    env: Env,
+    name: String,
+    url: String,
+    options: Option<CreateRemoteOptions>,
+  ) -> crate::Result<Remote> {
+    let remote = Remote {
+      inner: this.share_with(env, move |repo| {
+        if let Some(CreateRemoteOptions {
+          fetch_refspec: Some(refspec),
+        }) = options
+        {
+          repo.inner.remote_with_fetch(&name, &url, &refspec)
+        } else {
+          repo.inner.remote(&name, &url)
+        }
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+      })?,
+    };
+    Ok(remote)
   }
 }

@@ -68,7 +68,7 @@ pub struct RepositoryOpenOptions {
   pub ceiling_dirs: Option<Vec<String>>,
 }
 
-#[napi(string_enum)]
+#[napi]
 pub enum RepositoryOpenFlags {
   /// Only open the specified path; don't walk upward searching.
   NoSearch,
