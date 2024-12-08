@@ -272,7 +272,7 @@ pub struct PushOptions {
   /// of a pack file, this controls the number of worker threads used by the
   /// packbuilder when creating that pack file to be sent to the remote.
   ///
-  /// if set to 0 the packbuilder will auto-detect the number of threads to
+  /// If set to 0, the packbuilder will auto-detect the number of threads to
   /// create, and the default value is 1.
   pub pb_parallelism: Option<u32>,
   /// Set remote redirection settings; whether redirects to another host are
@@ -477,7 +477,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Get remote or throws error is not exists.
+  /// Get remote or throws error does not exist.
   pub fn get_remote(&self, name: String) -> crate::Result<RemoteObject> {
     let remote = self.inner.find_remote(&name)?;
     Ok(remote.into())
@@ -534,7 +534,8 @@ impl Repository {
   #[napi]
   /// Perform a push
   ///
-  /// Perform all the steps for a push. If no refspecs are passed then the configured refspecs will be used.
+  /// Perform all the steps for a push.
+  /// If no refspecs are passed, then the configured refspecs will be used.
   pub fn push_remote(
     &self,
     self_ref: Reference<Repository>,

@@ -74,7 +74,7 @@ pub enum RepositoryOpenFlags {
   NoSearch,
   /// Search across filesystem boundaries.
   CrossFS,
-  /// Force opening as bare repository, and defer loading its config.
+  /// Force opening as a bare repository, and defer loading its config.
   Bare,
   /// Don't try appending `/.git` to the specified repository path.
   NoDotGit,
