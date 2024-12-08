@@ -310,13 +310,14 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository } = nativeBinding
+const { Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository } = nativeBinding
 
 module.exports.Direction = Direction
 module.exports.CredentialType = CredentialType
 module.exports.FetchPrune = FetchPrune
 module.exports.AutotagOption = AutotagOption
 module.exports.RemoteRedirect = RemoteRedirect
+module.exports.Remote = Remote
 module.exports.RepositoryState = RepositoryState
 module.exports.RepositoryOpenFlags = RepositoryOpenFlags
 module.exports.Repository = Repository

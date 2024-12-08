@@ -9,16 +9,9 @@ import { RepositoryState } from './es-git';
  * This feature will be provided starting from v3, so create a custom TypeScript until the v3 stable releases.
  */
 
-export interface RemoteObject {
-  name: string;
-  url: string;
-  pushUrl?: string;
-  refspecs: Array<RefspecObject>;
-}
-export const enum Direction {
-  Fetch = 'Fetch',
-  Push = 'Push'
-}
+export type Direction =
+  | 'Fetch'
+  | 'Push';
 export interface RefspecObject {
   direction: Direction;
   src: string;
@@ -177,51 +170,84 @@ export interface RepositoryOpenOptions {
   flags: RepositoryOpenFlags;
   ceilingDirs?: Array<string>;
 }
-export type RepositoryOpenFlags =
-/** Only open the specified path; don't walk upward searching. */
-  | 'NoSearch'
+export const enum RepositoryOpenFlags {
+  /** Only open the specified path; don't walk upward searching. */
+  NoSearch = 0,
   /** Search across filesystem boundaries. */
-  | 'CrossFS'
-  /** Force opening as bare repository, and defer loading its config. */
-  | 'Bare'
+  CrossFS = 1,
+  /** Force opening as a bare repository, and defer loading its config. */
+  Bare = 2,
   /** Don't try appending `/.git` to the specified repository path. */
-  | 'NoDotGit'
+  NoDotGit = 3,
   /** Respect environment variables like `$GIT_DIR`. */
-  | 'FromEnv';
+  FromEnv = 4
+}
 export interface RepositoryCloneOptions {
   recursive?: boolean;
   fetch?: FetchOptions;
 }
-
 export declare function initRepository(path: string, options?: RepositoryInitOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
-export declare class Repository {
-  /** List all remotes for a given repository */
-  remoteNames(): Array<string>
-  /** Get remote or throws error is not exists. */
-  getRemote(name: string): RemoteObject
-  /** Find remote */
-  findRemote(name: string): RemoteObject | null
-  /** Add a remote with the default fetch refspec to the repository’s configuration. */
-  createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): RemoteObject
+export declare class Remote {
+  /**
+   * Get the remote's name.
+   *
+   * Returns `null` if this remote has not yet been named, and
+   * Throws error if the URL is not valid utf-8
+   */
+  name(): string | null
+  /**
+   * Get the remote's URL.
+   *
+   * Throws error if the URL is not valid utf-8
+   */
+  url(): string
+  /**
+   * Get the remote's URL.
+   *
+   * Returns `null` if push url not exists, and
+   * Throws error if the URL is not valid utf-8
+   */
+  pushurl(): string | null
+  /**
+   * List all refspecs.
+   *
+   * Filter refspec if has not valid src or dst with utf-8
+   */
+  refspecs(): Array<RefspecObject>
   /**
    * Download new data and update tips
    *
    * Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
    */
-  fetchRemote(name: string, refspecs: Array<string>, options?: FetchRemoteOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  fetch(refspecs: Array<string>, options?: FetchRemoteOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
    * Perform a push
    *
-   * Perform all the steps for a push. If no refspecs are passed then the configured refspecs will be used.
+   * Perform all the steps for a push.
+   * If no refspecs are passed, then the configured refspecs will be used.
    */
-  pushRemote(name: string, refspecs: Array<string>, options?: PushOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  push(refspecs: Array<string>, options?: PushOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /** Prune tracking refs that are no longer present on remote */
-  pruneRemote(name: string, options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
+  prune(options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /** Get the remote’s default branch. */
-  getRemoteDefaultBranch(name: string, signal?: AbortSignal | undefined | null): Promise<string>
+  defaultBranch(signal?: AbortSignal | undefined | null): Promise<string>
+}
+export declare class Repository {
+  /** List all remotes for a given repository */
+  remoteNames(): Array<string>
+  /**
+   * Get remote from repository
+   *
+   * Throws error if not exists
+   */
+  getRemote(name: string): Remote
+  /** Find remote from repository */
+  findRemote(name: string): Remote | null
+  /** Add a remote with the default fetch refspec to the repository’s configuration. */
+  createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): Remote
   isBare(): boolean
   isShallow(): boolean
   isWorktree(): boolean
