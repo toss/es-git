@@ -3,10 +3,21 @@
   "version": "0.0.9",
   "main": "index.js",
   "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "bugs": "https://github.com/toss/es-git/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toss/es-git.git"
+  },
+  "license": "MIT",
   "packageManager": "yarn@4.5.1",
   "napi": {
     "name": "es-git",
     "triples": {
+      "defaults": false,
       "additional": [
         "x86_64-apple-darwin",
         "aarch64-apple-darwin",
@@ -16,11 +27,11 @@
       ]
     }
   },
-  "license": "MIT",
   "engines": {
     "node": ">= 10"
   },
   "scripts": {
+    "prepublishOnly": "napi prepublish -t npm",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "check": "biome check",

@@ -119,7 +119,7 @@ jobs:
       - name: Move artifacts
         run: yarn napi artifacts -d release-artifacts
       - name: List packages
-        run: ls -R .npm
+        run: ls -R ./npm
         shell: bash
       - id: extract-changelog
         uses: dahlia/submark@5a5ff0a58382fb812616a5801402f5aef00f90ce
@@ -130,15 +130,6 @@ jobs:
           ignore-case: true
           omit-heading: true
       - run: 'cat ${{ steps.extract-changelog.outputs.output-file }}'
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          body_path: ${{ steps.extract-changelog.outputs.output-file }}
-          repository: toss/es-git
-          generate_release_notes: false
-          token: ${{ github.token }}
-          files: "release-artifacts/*.node"
       - if: |
           github.event_name == 'push' &&
           (github.ref_type == 'tag' || github.ref == 'refs/heads/main')
@@ -147,7 +138,7 @@ jobs:
           npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
           npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
-            npm publish --provenance --access public
+            npm publish
           fi
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
