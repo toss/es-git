@@ -11,12 +11,12 @@ describe('remote', () => {
     expect(repo.remoteNames()).toContain('origin');
   });
 
-  it('get remote object', { skip: LINUX }, async () => {
+  it('get remote', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/toss/es-toolkit', p);
     const remote = repo.getRemote('origin');
-    expect(remote.name).toEqual('origin');
-    expect(remote.url).toEqual('https://github.com/toss/es-toolkit');
+    expect(remote.name()).toEqual('origin');
+    expect(remote.url()).toEqual('https://github.com/toss/es-toolkit');
     expect(() => repo.getRemote('not_exists')).toThrowError(/libgit2 error: remote 'not_exists' does not exist/);
   });
 
@@ -24,7 +24,7 @@ describe('remote', () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
     const remote = repo.createRemote('origin', 'git@github.com:toss/empty.git');
-    expect(remote.name).toEqual('origin');
+    expect(remote.name()).toEqual('origin');
   });
 
   it('create remote with fetch refspec', async () => {
@@ -33,19 +33,21 @@ describe('remote', () => {
     const remote = repo.createRemote('origin', 'git@github.com:toss/empty.git', {
       fetchRefspec: '+refs/*:refs/*',
     });
-    expect(remote.name).toEqual('origin');
+    expect(remote.name()).toEqual('origin');
   });
 
   it('fetch remote', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/toss/es-toolkit', p);
-    await repo.fetchRemote('origin', ['main']);
+    const remote = repo.getRemote('origin');
+    await remote.fetch(['main']);
   });
 
   it('get remote default branch', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/toss/es-toolkit', p);
-    const branch = await repo.getRemoteDefaultBranch('origin');
+    const remote = repo.getRemote('origin');
+    const branch = await remote.defaultBranch();
     expect(branch).toEqual('refs/heads/main');
   });
 });
