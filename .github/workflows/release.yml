@@ -132,4 +132,5 @@ jobs:
             npm publish
           fi
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
