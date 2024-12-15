@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { RepositoryState } from './es-git';
+import { Commit, RepositoryState, Revspec } from './es-git';
 
 /**
  * TODO:
@@ -190,6 +190,76 @@ export declare function initRepository(path: string, options?: RepositoryInitOpt
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+/** Check revparse mode contains specific flags. */
+export declare function revparseModeContains(source: number, target: number): boolean
+/** A revspec represents a range of revisions within a repository. */
+export interface Revspec {
+  /** Access the `from` range of this revspec. */
+  from?: string
+  /** Access the `to` range of this revspec. */
+  to?: string
+  /** Returns the intent of the revspec. */
+  mode: number
+}
+export interface Signature {
+  /** Name on the signature. */
+  name: string
+  /** Email on the signature. */
+  email: string
+  /** Time in seconds, from epoch */
+  timestamp: number
+}
+export interface CreateSignatureOptions {
+  /** Time in seconds, from epoch */
+  timestamp: number
+  /** Timezone offset, in minutes */
+  offset?: number
+}
+export declare function createSignature(name: string, email: string, options?: CreateSignatureOptions | undefined | null): Signature
+export declare class Commit {
+  /** Get the id (SHA1) of a repository commit */
+  id(): string
+  /** Get the author of this commit. */
+  author(): Signature
+  /** Get the committer of this commit. */
+  committer(): Signature
+  /**
+   * Get the full message of a commit.
+   *
+   * The returned message will be slightly prettified by removing any
+   * potential leading newlines.
+   *
+   * Throws error if the message is not valid utf-8
+   */
+  message(): string
+  /**
+   * Get the short "summary" of the git commit message.
+   *
+   * The returned message is the summary of the commit, comprising the first
+   * paragraph of the message with whitespace trimmed and squashed.
+   *
+   * Throws error if the summary is not valid utf-8.
+   */
+  summary(): string | null
+  /**
+   * Get the long "body" of the git commit message.
+   *
+   * The returned message is the body of the commit, comprising everything
+   * but the first paragraph of the message. Leading and trailing whitespaces
+   * are trimmed.
+   *
+   * Throws error if the summary is not valid utf-8.
+   */
+  body(): string | null
+  /**
+   * Get the commit time (i.e. committer time) of a commit.
+   *
+   * The first element of the tuple is the time, in seconds, since the epoch.
+   * The second element is the offset, in minutes, of the time zone of the
+   * committer's preferred time zone.
+   */
+  time(): Date
+}
 export declare class Remote {
   /**
    * Get the remote's name.
@@ -255,4 +325,20 @@ export declare class Repository {
   path(): string
   state(): RepositoryState
   workdir(): string | null
+  /**
+   * Execute a rev-parse operation against the `spec` listed.
+   *
+   * The resulting revision specification is returned, or an error is
+   * returned if one occurs.
+   */
+  revparse(spec: string): Revspec
+  /** Find a single object, as specified by a revision string. */
+  revparseSingle(spec: string): string
+  /** Lookup a reference to one of the commits in a repository. */
+  findCommit(oid: string): Commit
+}
+export declare class RevparseMode {
+  static Single(): number
+  static Range(): number
+  static MergeBase(): number
 }

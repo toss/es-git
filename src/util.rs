@@ -1,6 +1,6 @@
-use std::path::Path;
-
+use bitflags::Flags;
 use napi::{Env, JsString};
+use std::path::Path;
 
 pub(crate) fn path_to_js_string(env: &Env, p: &Path) -> crate::Result<JsString> {
   #[cfg(unix)]
@@ -18,4 +18,8 @@ pub(crate) fn path_to_js_string(env: &Env, p: &Path) -> crate::Result<JsString> 
     let str = env.create_string_utf16(path_buf.as_slice())?;
     Ok(str)
   }
+}
+
+pub(crate) fn bitflags_contain<T: Flags>(source: T, target: T) -> bool {
+  source.contains(target)
 }
