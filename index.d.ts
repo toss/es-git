@@ -190,6 +190,15 @@ export declare function initRepository(path: string, options?: RepositoryInitOpt
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+/** Flags for the Revspec. */
+export const enum RevparseMode {
+  /** The spec targeted a single object (1 << 0) */
+  Single = 1,
+  /** The spec targeted a range of commits (1 << 1) */
+  Range = 2,
+  /** The spec used the `...` operator, which invokes special semantics. (1 << 2) */
+  MergeBase = 4
+}
 /** Check revparse mode contains specific flags. */
 export declare function revparseModeContains(source: number, target: number): boolean
 /** A revspec represents a range of revisions within a repository. */
@@ -337,8 +346,4 @@ export declare class Repository {
   /** Lookup a reference to one of the commits in a repository. */
   findCommit(oid: string): Commit
 }
-export declare class RevparseMode {
-  static Single(): number
-  static Range(): number
-  static MergeBase(): number
-}
+

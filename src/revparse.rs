@@ -3,24 +3,15 @@ use crate::util::bitflags_contain;
 use napi_derive::napi;
 
 #[napi]
-pub struct RevparseMode;
-
-#[napi]
-impl RevparseMode {
-  #[napi(js_name = "Single")]
-  pub fn single() -> u32 {
-    git2::RevparseMode::SINGLE.bits()
-  }
-
-  #[napi(js_name = "Range")]
-  pub fn range() -> u32 {
-    git2::RevparseMode::RANGE.bits()
-  }
-
-  #[napi(js_name = "MergeBase")]
-  pub fn merge_base() -> u32 {
-    git2::RevparseMode::MERGE_BASE.bits()
-  }
+#[repr(u32)]
+/// Flags for the Revspec.
+pub enum RevparseMode {
+  /// The spec targeted a single object (1 << 0)
+  Single = 1,
+  /// The spec targeted a range of commits (1 << 1)
+  Range = 2,
+  /// The spec used the `...` operator, which invokes special semantics. (1 << 2)
+  MergeBase = 4
 }
 
 #[napi]
