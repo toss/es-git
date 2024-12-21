@@ -1,8 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { RepositoryState } from './es-git';
-
 /**
  * TODO:
  * napi does not support union types when converting rust enum types to TypeScript.
@@ -183,13 +181,132 @@ export const enum RepositoryOpenFlags {
   FromEnv = 4
 }
 export interface RepositoryCloneOptions {
-  recursive?: boolean;
-  fetch?: FetchOptions;
+  recursive?: boolean
+  fetch?: FetchOptions
 }
 export declare function initRepository(path: string, options?: RepositoryInitOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+/** An enumeration of all possible kinds of references. */
+export type ReferenceType =
+  /** A reference which points at an object id. */
+  | 'Direct'
+  /** A reference which points at another reference. */
+  | 'Symbolic';
+/**
+ * Ensure the reference name is well-formed.
+ *
+ * Validation is performed as if [`ReferenceFormat::ALLOW_ONELEVEL`]
+ * was given to [`Reference::normalize_name`]. No normalization is
+ * performed, however.
+ *
+ * ```ts
+ * import { isReferenceNameValid } from 'es-git';
+ *
+ * console.assert(isReferenceNameValid("HEAD"));
+ * console.assert(isReferenceNameValid("refs/heads/main"));
+ *
+ * // But:
+ * console.assert(!isReferenceNameValid("main"));
+ * console.assert(!isReferenceNameValid("refs/heads/*"));
+ * console.assert(!isReferenceNameValid("foo//bar"));
+ * ```
+ */
+export declare function isReferenceNameValid(refname: string): boolean
+/** Options for normalize reference name. */
+export const enum ReferenceFormat {
+  /** No particular normalization. */
+  Normal = 0,
+  /**
+   * Control whether one-level refname are accepted (i.e., refnames that
+   * do not contain multiple `/`-separated components). Those are
+   * expected to be written only using uppercase letters and underscore
+   * (e.g. `HEAD`, `FETCH_HEAD`).
+   * (1 << 0)
+   */
+  AllowOnelevel = 1,
+  /**
+   * Interpret the provided name as a reference pattern for a refspec (as
+   * used with remote repositories). If this option is enabled, the name
+   * is allowed to contain a single `*` in place of a full pathname
+   * components (e.g., `foo/*\/bar` but not `foo/bar*`).
+   * (1 << 1)
+   */
+  RefspecPattern = 2,
+  /**
+   * Interpret the name as part of a refspec in shorthand form so the
+   * `AllowOnelevel` naming rules aren't enforced and `main` becomes a
+   * valid name.
+   * (1 << 2)
+   */
+  RefspecShorthand = 4
+}
+/**
+ * Normalize reference name and check validity.
+ *
+ * This will normalize the reference name by collapsing runs of adjacent
+ * slashes between name components into a single slash. It also validates
+ * the name according to the following rules:
+ *
+ * 1. If `ReferenceFormat.AllowOnelevel` is given, the name may
+ *    contain only capital letters and underscores, and must begin and end
+ *    with a letter. (e.g. "HEAD", "ORIG_HEAD").
+ * 2. The flag `ReferenceFormat.RefspecShorthand` has an effect
+ *    only when combined with `ReferenceFormat.AllowOnelevel`. If
+ *    it is given, "shorthand" branch names (i.e. those not prefixed by
+ *    `refs/`, but consisting of a single word without `/` separators)
+ *    become valid. For example, "main" would be accepted.
+ * 3. If `ReferenceFormat.RefspecPattern` is given, the name may
+ *    contain a single `*` in place of a full pathname component (e.g.
+ *    `foo/*\/bar`, `foo/bar*`).
+ * 4. Names prefixed with "refs/" can be almost anything. You must avoid
+ *    the characters '~', '^', ':', '\\', '?', '[', and '*', and the
+ *    sequences ".." and "@{" which have special meaning to revparse.
+ *
+ * If the reference passes validation, it is returned in normalized form,
+ * otherwise an `null` is returned.
+ *
+ * @example
+ * ```ts
+ * import { normalizeReferenceName, ReferenceFormat } from 'es-git';
+ *
+ * console.assert(
+ *   normalizeReferenceName('foo//bar"),
+ *   'foo/bar'
+ * );
+ * console.assert(
+ *   normalizeReferenceName(
+ *     'HEAD',
+ *     ReferenceFormat.AllowOnelevel
+ *   ),
+ *   'HEAD'
+ * );
+ * console.assert(
+ *   normalizeReferenceName(
+ *     'refs/heads/*',
+ *     ReferenceFormat.RefspecPattern
+ *   ),
+ *   'refs/heads/*'
+ * );
+ * console.assert(
+ *   normalizeReferenceName(
+ *     'main',
+ *     ReferenceFormat.AllowOnelevel | ReferenceFormat.RefspecShorthand
+ *   ),
+ *   'main'
+ * );
+ * ```
+ */
+export declare function normalizeReferenceName(refname: string, format?: number | undefined | null): string | null
+export interface RenameReferenceOptions {
+  /**
+   * If the force flag is not enabled, and there's already a reference with
+   * the given name, the renaming will fail.
+   */
+  force?: boolean
+  logMessage?: string
+}
 export declare class Remote {
   /**
    * Get the remote's name.
@@ -255,4 +372,93 @@ export declare class Repository {
   path(): string
   state(): RepositoryState
   workdir(): string | null
+  /** Lookup a reference to one of the objects in a repository. */
+  findReference(name: string): Reference | null
+  /** Lookup a reference to one of the objects in a repository. */
+  getReference(name: string): Reference
+}
+/**
+ * A structure to represent a git [reference][1].
+ *
+ * [1]: http://git-scm.com/book/en/Git-Internals-Git-References
+ */
+export declare class Reference {
+  /**
+   * Delete an existing reference.
+   *
+   * This method works for both direct and symbolic references. The reference
+   * will be immediately removed on disk.
+   *
+   * This function will return an error if the reference has changed from the
+   * time it was looked up.
+   */
+  delete(): void
+  /** Check if a reference is a local branch. */
+  isBranch(): boolean
+  /** Check if a reference is a note. */
+  isNote(): boolean
+  /** Check if a reference is a remote tracking branch */
+  isRemote(): boolean
+  /** Check if a reference is a tag */
+  isTag(): boolean
+  /**
+   * Get the reference type of a reference.
+   *
+   * If the type is unknown, then `null` is returned.
+   */
+  type(): ReferenceType | null
+  /**
+   * Get the full name of a reference.
+   *
+   * Throws error if the name is not valid utf-8.
+   */
+  name(): string
+  /**
+   * Get the full shorthand of a reference.
+   *
+   * This will transform the reference name into a name "human-readable"
+   * version. If no shortname is appropriate, it will return the full name.
+   *
+   * Throws error if the shorthand is not valid utf-8.
+   */
+  shorthand(): string
+  /**
+   * Get the OID pointed to by a direct reference.
+   *
+   * Only available if the reference is direct (i.e. an object id reference,
+   * not a symbolic one).
+   */
+  target(): string | null
+  /**
+   * Return the peeled OID target of this reference.
+   *
+   * This peeled OID only applies to direct references that point to a hard
+   * Tag object: it is the result of peeling such Tag.
+   */
+  targetPeel(): string | null
+  /**
+   * Get full name to the reference pointed to by a symbolic reference.
+   *
+   * Only available if the reference is symbolic.
+   */
+  symbolicTarget(): string | null
+  /**
+   * Resolve a symbolic reference to a direct reference.
+   *
+   * This method iteratively peels a symbolic reference until it resolves to
+   * a direct reference to an OID.
+   *
+   * If a direct reference is passed as an argument, a copy of that
+   * reference is returned.
+   */
+  resolve(): Reference
+  /**
+   * Rename an existing reference.
+   *
+   * This method works for both direct and symbolic references.
+   *
+   * If the force flag is not enabled, and there's already a reference with
+   * the given name, the renaming will fail.
+   */
+  rename(newName: string, options?: RenameReferenceOptions | undefined | null): Reference
 }
