@@ -7,6 +7,7 @@ use std::ops::Deref;
 
 pub(crate) enum CommitInner {
   Repo(SharedReference<Repository, git2::Commit<'static>>),
+  Commit(git2::Commit<'static>),
 }
 
 impl Deref for CommitInner {
@@ -15,17 +16,18 @@ impl Deref for CommitInner {
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Repo(repo) => repo.deref(),
+      Self::Commit(commit) => commit,
     }
   }
 }
 
 #[napi]
+/// A structure to represent a git commit
 pub struct Commit {
   pub(crate) inner: CommitInner,
 }
 
 #[napi]
-/// /// A structure to represent a git commit
 impl Commit {
   #[napi]
   /// Get the id (SHA1) of a repository commit
@@ -106,7 +108,15 @@ impl Commit {
 impl Repository {
   #[napi]
   /// Lookup a reference to one of the commits in a repository.
-  pub fn find_commit(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Commit> {
+  ///
+  /// Returns `null` if the commit does not exist.
+  pub fn find_commit(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Commit> {
+    self.get_commit(this, env, oid).ok()
+  }
+
+  #[napi]
+  /// Lookup a reference to one of the commits in a repository.
+  pub fn get_commit(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Commit> {
     let commit = this.share_with(env, |repo| {
       repo
         .inner

@@ -1,8 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Commit, RepositoryState, Revspec } from './es-git';
-
 /**
  * TODO:
  * napi does not support union types when converting rust enum types to TypeScript.
@@ -186,9 +184,23 @@ export interface RepositoryCloneOptions {
   recursive?: boolean;
   fetch?: FetchOptions;
 }
+/** Creates a new repository in the specified folder. */
 export declare function initRepository(path: string, options?: RepositoryInitOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+/** Attempt to open an already-existing repository at `path`. */
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+/**
+ * Attempt to open an already-existing repository at or above `path`
+ *
+ * This starts at `path` and looks up the filesystem hierarchy
+ * until it finds a repository.
+ */
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
+/**
+ * Clone a remote repository.
+ *
+ * This will use the options configured so far to clone the specified URL
+ * into the specified local path.
+ */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 /** Flags for the Revspec. */
 export const enum RevparseMode {
@@ -210,6 +222,12 @@ export interface Revspec {
   /** Returns the intent of the revspec. */
   mode: number
 }
+/**
+ * A Signature is used to indicate authorship of various actions throughout the
+ * library.
+ *
+ * Signatures contain a name, email, and timestamp.
+ */
 export interface Signature {
   /** Name on the signature. */
   name: string
@@ -224,7 +242,22 @@ export interface CreateSignatureOptions {
   /** Timezone offset, in minutes */
   offset?: number
 }
+/** Create a new action signature. */
 export declare function createSignature(name: string, email: string, options?: CreateSignatureOptions | undefined | null): Signature
+/** An enumeration all possible kinds objects may have. */
+export const enum ObjectType {
+  /** Any kind of git object */
+  Any = 0,
+  /** An object which corresponds to a git commit */
+  Commit = 1,
+  /** An object which corresponds to a git tree */
+  Tree = 2,
+  /** An object which corresponds to a git blob */
+  Blob = 3,
+  /** An object which corresponds to a git tag */
+  Tag = 4
+}
+/** A structure to represent a git commit */
 export declare class Commit {
   /** Get the id (SHA1) of a repository commit */
   id(): string
@@ -269,6 +302,11 @@ export declare class Commit {
    */
   time(): Date
 }
+/**
+ * A structure representing a [remote][1] of a git repository.
+ *
+ * [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+ */
 export declare class Remote {
   /**
    * Get the remote's name.
@@ -314,7 +352,32 @@ export declare class Remote {
   /** Get the remote’s default branch. */
   defaultBranch(signal?: AbortSignal | undefined | null): Promise<string>
 }
+/**
+ * An owned git repository, representing all state associated with the
+ * underlying filesystem.
+ *
+ * This structure corresponds to a `git_repository` in libgit2.
+ *
+ * When a repository goes out of scope, it is freed in memory but not deleted
+ * from the filesystem.
+ */
 export declare class Repository {
+  /**
+   * Lookup a reference to one of the commits in a repository.
+   *
+   * Returns `null` if the commit does not exist.
+   */
+  findCommit(oid: string): Commit | null
+  /** Lookup a reference to one of the commits in a repository. */
+  getCommit(oid: string): Commit
+  /**
+   * Lookup a reference to one of the objects in a repository.
+   *
+   * Returns `null` if the object does not exist.
+   */
+  findObject(oid: string): GitObject | null
+  /** Lookup a reference to one of the objects in a repository. */
+  getObject(oid: string): GitObject
   /** List all remotes for a given repository */
   remoteNames(): Array<string>
   /**
@@ -327,12 +390,26 @@ export declare class Repository {
   findRemote(name: string): Remote | null
   /** Add a remote with the default fetch refspec to the repository’s configuration. */
   createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): Remote
+  /** Tests whether this repository is a bare repository or not. */
   isBare(): boolean
+  /** Tests whether this repository is a shallow clone. */
   isShallow(): boolean
+  /** Tests whether this repository is a worktree. */
   isWorktree(): boolean
+  /** Tests whether this repository is empty. */
   isEmpty(): boolean
+  /**
+   * Returns the path to the `.git` folder for normal repositories or the
+   * repository itself for bare repositories.
+   */
   path(): string
+  /** Returns the current state of this repository */
   state(): RepositoryState
+  /**
+   * Get the path of the working directory for this repository.
+   *
+   * If this repository is bare, then `null` is returned.
+   */
   workdir(): string | null
   /**
    * Execute a rev-parse operation against the `spec` listed.
@@ -343,7 +420,35 @@ export declare class Repository {
   revparse(spec: string): Revspec
   /** Find a single object, as specified by a revision string. */
   revparseSingle(spec: string): string
-  /** Lookup a reference to one of the commits in a repository. */
-  findCommit(oid: string): Commit
 }
-
+/**
+ * A structure to represent a git [object][1]
+ *
+ * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+ */
+export declare class GitObject {
+  /** Get the id (SHA1) of a repository object */
+  id(): string
+  /**
+   * Get the object type of object.
+   *
+   * If the type is unknown, then `null` is returned.
+   */
+  type(): ObjectType | null
+  /**
+   * Recursively peel an object until an object of the specified type is met.
+   *
+   * If you pass `Any` as the target type, then the object will be
+   * peeled until the type changes (e.g. a tag will be chased until the
+   * referenced object is no longer a tag).
+   */
+  peel(objType: ObjectType): GitObject
+  /** Recursively peel an object until a commit is found */
+  peelToCommit(): Commit
+  /**
+   * Attempt to view this object as a commit.
+   *
+   * Returns `null` if the object is not actually a commit.
+   */
+  asCommit(): Commit | null
+}

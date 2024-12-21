@@ -1,6 +1,10 @@
 use napi_derive::napi;
 
 #[napi(object)]
+/// A Signature is used to indicate authorship of various actions throughout the
+/// library.
+///
+/// Signatures contain a name, email, and timestamp.
 pub struct Signature {
   /// Name on the signature.
   pub name: String,
@@ -30,6 +34,7 @@ pub struct CreateSignatureOptions {
 }
 
 #[napi]
+/// Create a new action signature.
 pub fn create_signature(
   name: String,
   email: String,

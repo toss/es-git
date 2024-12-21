@@ -11,7 +11,7 @@ pub enum RevparseMode {
   /// The spec targeted a range of commits (1 << 1)
   Range = 2,
   /// The spec used the `...` operator, which invokes special semantics. (1 << 2)
-  MergeBase = 4
+  MergeBase = 4,
 }
 
 #[napi]
