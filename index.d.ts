@@ -255,4 +255,130 @@ export declare class Repository {
   path(): string
   state(): RepositoryState
   workdir(): string | null
+  /** Create a revwalk that can be used to traverse the commit graph. */
+  revwalk(): Revwalk
+}
+/** Orderings that may be specified for Revwalk iteration. */
+export const enum RevwalkSort {
+  /**
+   * Sort the repository contents in no particular ordering.
+   *
+   * This sorting is arbitrary, implementation-specific, and subject to
+   * change at any time. This is the default sorting for new walkers.
+   */
+  None = 0,
+  /**
+   * Sort the repository contents in topological order (children before
+   * parents).
+   *
+   * This sorting mode can be combined with time sorting.
+   * (1 << 0)
+   */
+  Topological = 1,
+  /**
+   * Sort the repository contents by commit time.
+   *
+   * This sorting mode can be combined with topological sorting.
+   * (1 << 1)
+   */
+  Time = 2,
+  /**
+   * Iterate through the repository contents in reverse order.
+   *
+   * This sorting mode can be combined with any others.
+   * (1 << 2)
+   */
+  Reverse = 4
+}
+/**
+ * A revwalk allows traversal of the commit graph defined by including one or
+ * more leaves and excluding one or more roots.
+ */
+export declare class Revwalk {
+  [Symbol.iterator](): Iterator<string, void, void>
+  /**
+   * Reset a revwalk to allow re-configuring it.
+   *
+   * The revwalk is automatically reset when iteration of its commits
+   * completes.
+   */
+  reset(): this
+  /** Set the order in which commits are visited. */
+  setSorting(sort: number): this
+  /**
+   * Simplify the history by first-parent
+   *
+   * No parents other than the first for each commit will be enqueued.
+   */
+  simplifyFirstParent(): this
+  /**
+   * Mark a commit to start traversal from.
+   *
+   * The given OID must belong to a commitish on the walked repository.
+   *
+   * The given commit will be used as one of the roots when starting the
+   * revision walk. At least one commit must be pushed onto the walker before
+   * a walk can be started.
+   */
+  push(oid: string): this
+  /**
+   * Push the repository's HEAD
+   *
+   * For more information, see `push`.
+   */
+  pushHead(): this
+  /**
+   * Push matching references
+   *
+   * The OIDs pointed to by the references that match the given glob pattern
+   * will be pushed to the revision walker.
+   *
+   * A leading 'refs/' is implied if not present as well as a trailing `/ \
+   * *` if the glob lacks '?', ' \ *' or '['.
+   *
+   * Any references matching this glob which do not point to a commitish
+   * will be ignored.
+   */
+  pushGlob(glob: string): this
+  /**
+   * Push and hide the respective endpoints of the given range.
+   *
+   * The range should be of the form `<commit>..<commit>` where each
+   * `<commit>` is in the form accepted by `revparse_single`. The left-hand
+   * commit will be hidden and the right-hand commit pushed.
+   */
+  pushRange(range: string): this
+  /**
+   * Push the OID pointed to by a reference
+   *
+   * The reference must point to a commitish.
+   */
+  pushRef(reference: string): this
+  /** Mark a commit as not of interest to this revwalk. */
+  hide(oid: string): this
+  /**
+   * Hide the repository's HEAD
+   *
+   * For more information, see `hide`.
+   */
+  hideHead(): this
+  /**
+   * Hide matching references.
+   *
+   * The OIDs pointed to by the references that match the given glob pattern
+   * and their ancestors will be hidden from the output on the revision walk.
+   *
+   * A leading 'refs/' is implied if not present as well as a trailing `/ \
+   * *` if the glob lacks '?', ' \ *' or '['.
+   *
+   * Any references matching this glob which do not point to a commitish
+   * will be ignored.
+   */
+  hideGlob(glob: string): this
+  /**
+   * Hide the OID pointed to by a reference.
+   *
+   * The reference must point to a commitish.
+   */
+  hideRef(reference: string): this
 }
