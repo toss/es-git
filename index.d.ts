@@ -1,8 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { RepositoryState } from './es-git';
-
 /**
  * TODO:
  * napi does not support union types when converting rust enum types to TypeScript.
