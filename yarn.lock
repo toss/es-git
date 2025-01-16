@@ -789,19 +789,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-git@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "es-git@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:^1.9.4"
-    "@napi-rs/cli": "npm:^2.18.4"
-    "@types/node": "npm:^22.8.4"
-    tiny-glob: "npm:^0.2.9"
-    typescript: "npm:^5.6.3"
-    vitest: "npm:^2.1.4"
-  languageName: unknown
-  linkType: soft
-
 "esbuild@npm:^0.21.3":
   version: 0.21.5
   resolution: "esbuild@npm:0.21.5"
@@ -881,6 +868,19 @@ __metadata:
   checksum: 10c0/fa08508adf683c3f399e8a014a6382a6b65542213431e26206c0720e536b31c09b50798747c2a105a4bbba1d9767b8d3615a74c2f7bf1ddf6d836cd11eb672de
   languageName: node
   linkType: hard
+
+"esgit@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "esgit@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:^1.9.4"
+    "@napi-rs/cli": "npm:^2.18.4"
+    "@types/node": "npm:^22.8.4"
+    tiny-glob: "npm:^0.2.9"
+    typescript: "npm:^5.6.3"
+    vitest: "npm:^2.1.4"
+  languageName: unknown
+  linkType: soft
 
 "estree-walker@npm:^3.0.3":
   version: 3.0.3

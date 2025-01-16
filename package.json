@@ -1,21 +1,21 @@
 {
-  "name": "es-git",
-  "version": "0.0.0",
+  "name": "esgit",
+  "version": "0.0.11",
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
     "index.js",
     "index.d.ts"
   ],
-  "bugs": "https://github.com/toss/es-git/issues",
+  "bugs": "https://github.com/toss/esgit/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/toss/es-git.git"
+    "url": "https://github.com/toss/esgit.git"
   },
   "license": "MIT",
   "packageManager": "yarn@4.5.1",
   "napi": {
-    "name": "es-git",
+    "name": "esgit",
     "triples": {
       "defaults": false,
       "additional": [
@@ -32,8 +32,8 @@
   },
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",
-    "build": "napi build --platform --release --dts=es-git.d.ts",
-    "build:debug": "napi build --platform --dts=es-git.d.ts",
+    "build": "napi build --platform --release --dts=esgit.d.ts",
+    "build:debug": "napi build --platform --dts=esgit.d.ts",
     "check": "biome check",
     "check:fix": "biome check --write --unsafe"
   },

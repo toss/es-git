@@ -454,6 +454,9 @@ impl Task for GetRemoteDefaultBranchTask {
 }
 
 #[napi]
+/// A structure representing a [remote][1] of a git repository.
+///
+/// [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 pub struct Remote {
   pub(crate) inner: SharedReference<Repository, git2::Remote<'static>>,
 }

@@ -1,15 +1,16 @@
 [package]
 edition = "2021"
-name    = "es-git"
+name    = "esgit"
 version = "0.0.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-git2 = { version = "0.19.0", features = ["vendored-libgit2", "vendored-openssl"] }
-# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-napi        = { version = "2.16.13", default-features = false, features = ["napi4"] }
+bitflags    = "2.1.0"
+chrono      = "0.4"
+git2        = { version = "0.19.0", features = ["vendored-libgit2", "vendored-openssl"] }
+napi        = { version = "2.16.13", default-features = false, features = ["napi4", "chrono_date"] }
 napi-derive = "2.16.12"
 serde       = { version = "1", features = ["derive"] }
 thiserror   = "2.0.3"
