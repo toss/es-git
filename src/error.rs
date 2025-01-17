@@ -6,6 +6,8 @@ pub enum Error {
   Napi(#[from] napi::Error),
   #[error(transparent)]
   Utf8Error(#[from] std::str::Utf8Error),
+  #[error("invalid time")]
+  InvalidTime,
 }
 
 impl From<Error> for napi::Error {
@@ -14,6 +16,7 @@ impl From<Error> for napi::Error {
       Error::Git2(e) => napi::Error::new(napi::Status::GenericFailure, format!("libgit2 error: {e}")),
       Error::Napi(e) => e,
       Error::Utf8Error(e) => napi::Error::new(napi::Status::GenericFailure, format!("utf8 error: {e}")),
+      Error::InvalidTime => napi::Error::new(napi::Status::GenericFailure, format!("{value}")),
     }
   }
 }

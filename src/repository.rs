@@ -101,6 +101,13 @@ pub struct RepositoryCloneOptions {
 }
 
 #[napi]
+/// An owned git repository, representing all state associated with the
+/// underlying filesystem.
+///
+/// This structure corresponds to a `git_repository` in libgit2.
+///
+/// When a repository goes out of scope, it is freed in memory but not deleted
+/// from the filesystem.
 pub struct Repository {
   pub(crate) inner: git2::Repository,
 }
@@ -108,37 +115,47 @@ pub struct Repository {
 #[napi]
 impl Repository {
   #[napi]
+  /// Tests whether this repository is a bare repository or not.
   pub fn is_bare(&self) -> bool {
     self.inner.is_bare()
   }
 
   #[napi]
+  /// Tests whether this repository is a shallow clone.
   pub fn is_shallow(&self) -> bool {
     self.inner.is_shallow()
   }
 
   #[napi]
+  /// Tests whether this repository is a worktree.
   pub fn is_worktree(&self) -> bool {
     self.inner.is_worktree()
   }
 
   #[napi]
+  /// Tests whether this repository is empty.
   pub fn is_empty(&self) -> crate::Result<bool> {
     Ok(self.inner.is_empty()?)
   }
 
   #[napi]
+  /// Returns the path to the `.git` folder for normal repositories or the
+  /// repository itself for bare repositories.
   pub fn path(&self, env: Env) -> crate::Result<JsString> {
     let path = util::path_to_js_string(&env, self.inner.path())?;
     Ok(path)
   }
 
   #[napi]
+  /// Returns the current state of this repository
   pub fn state(&self) -> RepositoryState {
     self.inner.state().into()
   }
 
   #[napi]
+  /// Get the path of the working directory for this repository.
+  ///
+  /// If this repository is bare, then `null` is returned.
   pub fn workdir(&self, env: Env) -> Option<JsString> {
     self
       .inner
@@ -189,6 +206,7 @@ impl Task for InitRepositoryTask {
 }
 
 #[napi]
+/// Creates a new repository in the specified folder.
 pub fn init_repository(
   path: String,
   options: Option<RepositoryInitOptions>,
@@ -225,6 +243,7 @@ impl Task for OpenRepositoryTask {
 }
 
 #[napi]
+/// Attempt to open an already-existing repository at `path`.
 pub fn open_repository(
   path: String,
   options: Option<RepositoryOpenOptions>,
@@ -253,6 +272,10 @@ impl Task for DiscoverRepositoryTask {
 }
 
 #[napi]
+/// Attempt to open an already-existing repository at or above `path`
+///
+/// This starts at `path` and looks up the filesystem hierarchy
+/// until it finds a repository.
 pub fn discover_repository(path: String, signal: Option<AbortSignal>) -> AsyncTask<DiscoverRepositoryTask> {
   AsyncTask::with_optional_signal(DiscoverRepositoryTask { path }, signal)
 }
@@ -295,6 +318,10 @@ impl Task for CloneRepositoryTask {
 }
 
 #[napi]
+/// Clone a remote repository.
+///
+/// This will use the options configured so far to clone the specified URL
+/// into the specified local path.
 pub fn clone_repository(
   url: String,
   path: String,
