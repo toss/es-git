@@ -6,7 +6,101 @@
  * napi does not support union types when converting rust enum types to TypeScript.
  * This feature will be provided starting from v3, so create a custom TypeScript until the v3 stable releases.
  */
-
+export interface IndexEntry {
+  ctime: Date
+  mtime: Date
+  dev: number
+  ino: number
+  mode: number
+  uid: number
+  gid: number
+  fileSize: number
+  id: string
+  flags: number
+  flagsExtended: number
+  /**
+   * The path of this index entry as a byte vector. Regardless of the
+   * current platform, the directory separator is an ASCII forward slash
+   * (`0x2F`). There are no terminating or internal NUL characters, and no
+   * trailing slashes. Most of the time, paths will be valid utf-8 — but
+   * not always. For more information on the path storage format, see
+   * [these git docs][git-index-docs]. Note that libgit2 will take care of
+   * handling the prefix compression mentioned there.
+   *
+   * [git-index-docs]: https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124
+   */
+  path: Buffer
+}
+export interface IndexOnMatchCallbackArgs {
+  /** The path of entry. */
+  path: string
+  /** The patchspec that matched it. */
+  pathspec: string
+}
+export interface IndexAddAllOptions {
+  /**
+   * Files that are ignored will be skipped (unlike `addPath`). If a file is
+   * already tracked in the index, then it will be updated even if it is
+   * ignored. Pass the `force` flag to skip the checking of ignore rules.
+   */
+  force?: boolean
+  /**
+   * The `pathspecs` are a list of file names or shell glob patterns that
+   * will matched against files in the repository's working directory. Each
+   * file that matches will be added to the index (either updating an
+   * existing entry or adding a new entry). You can disable glob expansion
+   * and force exact matching with the `disablePathspecMatch` flag.
+   */
+  disablePathspecMatch?: boolean
+  /**
+   * To emulate `git add -A` and generate an error if the pathspec contains
+   * the exact path of an ignored file (when not using `force`), add the
+   * `checkPathspec` flag. This checks that each entry in `pathspecs`
+   * that is an exact match to a filename on disk is either not ignored or
+   * already in the index. If this check fails, the function will return
+   * an error.
+   */
+  checkPathspec?: boolean
+  /**
+   * If you provide a callback function, it will be invoked on each matching
+   * item in the working directory immediately before it is added to /
+   * updated in the index. Returning zero will add the item to the index,
+   * greater than zero will skip the item, and less than zero will abort the
+   * scan an return an error to the caller.
+   */
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+}
+export type IndexStage =
+  /** Match any index stage. */
+  | 'Any'
+  /** A normal staged file in the index. (default) */
+  | 'Normal'
+  /** The ancestor side of a conflict. */
+  | 'Ancestor'
+  /** The "ours" side of a conflict. */
+  | 'Ours'
+  /** The "theirs" side of a conflict. */
+  | 'Theirs';
+export interface IndexRemoveOptions {
+  stage?: IndexStage
+}
+export interface IndexRemoveAllOptions {
+  /**
+   * If you provide a callback function, it will be invoked on each matching
+   * item in the index immediately before it is removed. Return 0 to remove
+   * the item, > 0 to skip the item, and < 0 to abort the scan.
+   */
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+}
+export interface IndexUpdateAllOptions {
+  /**
+   * If you provide a callback function, it will be invoked on each matching
+   * item in the index immediately before it is updated (either refreshed or
+   * removed depending on working directory state). Return 0 to proceed with
+   * updating the item, > 0 to skip the item, and < 0 to abort the scan.
+   */
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+}
 /**
  * Ensure the reference name is well-formed.
  *
@@ -29,7 +123,7 @@
 export declare function isReferenceNameValid(refname: string): boolean
 /** An enumeration of all possible kinds of references. */
 export type ReferenceType =
-  /** A reference which points at an object id. */
+/** A reference which points at an object id. */
   | 'Direct'
   /** A reference which points at another reference. */
   | 'Symbolic';
@@ -123,8 +217,8 @@ export interface RenameReferenceOptions {
    * If the force flag is not enabled, and there's already a reference with
    * the given name, the renaming will fail.
    */
-  force?: boolean
-  logMessage?: string
+  force?: boolean;
+  logMessage?: string;
 }
 export type Direction =
   | 'Fetch'
@@ -136,7 +230,7 @@ export interface RefspecObject {
   force: boolean;
 }
 export type Credential =
-  /** Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication. */
+/** Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication. */
   | { type: 'Default' }
   /**
    * Create a new ssh key credential object used for querying an ssh-agent.
@@ -156,16 +250,16 @@ export interface ProxyOptions {
    *
    * Note that this will override `url` specified before.
    */
-  auto?: boolean
+  auto?: boolean;
   /**
    * Specify the exact URL of the proxy to use.
    *
    * Note that this will override `auto` specified before.
    */
-  url?: string
+  url?: string;
 }
 export type FetchPrune =
-  /** Use the setting from the configuration */
+/** Use the setting from the configuration */
   | 'Unspecified'
   /** Force pruning on */
   | 'On'
@@ -173,7 +267,7 @@ export type FetchPrune =
   | 'Off';
 /** Automatic tag following options. */
 export type AutotagOption =
-  /** Use the setting from the remote's configuration */
+/** Use the setting from the remote's configuration */
   | 'Unspecified'
   /** Ask the server for tags pointing to objects we're already downloading */
   | 'Auto'
@@ -189,7 +283,7 @@ export type AutotagOption =
  * (`/info/refs`), but not subsequent requests.
  */
 export type RemoteRedirect =
-  /** Do not follow any off-site redirects at any stage of the fetch or push. */
+/** Do not follow any off-site redirects at any stage of the fetch or push. */
   | 'None'
   /**
    * Allow off-site redirects only upon the initial request. This is the
@@ -335,11 +429,11 @@ export declare function revparseModeContains(source: number, target: number): bo
 /** A revspec represents a range of revisions within a repository. */
 export interface Revspec {
   /** Access the `from` range of this revspec. */
-  from?: string
+  from?: string;
   /** Access the `to` range of this revspec. */
-  to?: string
+  to?: string;
   /** Returns the intent of the revspec. */
-  mode: number
+  mode: number;
 }
 /**
  * A Signature is used to indicate authorship of various actions throughout the
@@ -349,17 +443,17 @@ export interface Revspec {
  */
 export interface Signature {
   /** Name on the signature. */
-  name: string
+  name: string;
   /** Email on the signature. */
-  email: string
+  email: string;
   /** Time in seconds, from epoch */
-  timestamp: number
+  timestamp: number;
 }
 export interface CreateSignatureOptions {
   /** Time in seconds, from epoch */
-  timestamp: number
+  timestamp: number;
   /** Timezone offset, in minutes */
-  offset?: number
+  offset?: number;
 }
 /** Create a new action signature. */
 export declare function createSignature(name: string, email: string, options?: CreateSignatureOptions | undefined | null): Signature
@@ -420,6 +514,145 @@ export declare class Commit {
    * committer's preferred time zone.
    */
   time(): Date
+}
+/**
+ * A structure to represent a git [index][1]
+ *
+ * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+ */
+export declare class Index {
+  /**
+   * Get index on-disk version.
+   *
+   * Valid return values are 2, 3, or 4.  If 3 is returned, an index
+   * with version 2 may be written instead, if the extension data in
+   * version 3 is not necessary.
+   */
+  version(): number
+  /**
+   * Set index on-disk version.
+   *
+   * Valid values are 2, 3, or 4.  If 2 is given, git_index_write may
+   * write an index with version 3 instead, if necessary to accurately
+   * represent the index.
+   */
+  setVersion(version: number): void
+  /** Get one of the entries in the index by its path. */
+  getByPath(path: string, stage?: IndexStage | undefined | null): IndexEntry | null
+  /**
+   * Add or update an index entry from a file on disk
+   *
+   * The file path must be relative to the repository's working folder and
+   * must be readable.
+   *
+   * This method will fail in bare index instances.
+   *
+   * This forces the file to be added to the index, not looking at gitignore
+   * rules.
+   *
+   * If this file currently is the result of a merge conflict, this file will
+   * no longer be marked as conflicting. The data about the conflict will be
+   * moved to the "resolve undo" (REUC) section.
+   */
+  addPath(path: string): void
+  /**
+   * Add or update index entries matching files in the working directory.
+   *
+   * This method will fail in bare index instances.
+   *
+   * The `pathspecs` are a list of file names or shell glob patterns that
+   * will matched against files in the repository's working directory. Each
+   * file that matches will be added to the index (either updating an
+   * existing entry or adding a new entry).
+   *
+   * @example
+   *
+   * Emulate `git add *`:
+   *
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const index = repo.index();
+   * index.addAll(['*']);
+   * index.write();
+   * ```
+   */
+  addAll(pathspecs: Array<string>, options?: IndexAddAllOptions | undefined | null): void
+  /**
+   * Update the contents of an existing index object in memory by reading
+   * from the hard disk.
+   *
+   * If force is true, this performs a "hard" read that discards in-memory
+   * changes and always reloads the on-disk index data. If there is no
+   * on-disk version, the index will be cleared.
+   *
+   * If force is false, this does a "soft" read that reloads the index data
+   * from disk only if it has changed since the last time it was loaded.
+   * Purely in-memory index data will be untouched. Be aware: if there are
+   * changes on disk, unwritten in-memory changes are discarded.
+   */
+  read(force?: boolean | undefined | null): void
+  /**
+   * Write the index as a tree.
+   *
+   * This method will scan the index and write a representation of its
+   * current state back to disk; it recursively creates tree objects for each
+   * of the subtrees stored in the index, but only returns the OID of the
+   * root tree. This is the OID that can be used e.g. to create a commit.
+   *
+   * The index instance cannot be bare, and needs to be associated to an
+   * existing repository.
+   *
+   * The index must not contain any file in conflict.
+   */
+  writeTree(): string
+  /**
+   * Remove an index entry corresponding to a file on disk.
+   *
+   * The file path must be relative to the repository's working folder. It
+   * may exist.
+   *
+   * If this file currently is the result of a merge conflict, this file will
+   * no longer be marked as conflicting. The data about the conflict will be
+   * moved to the "resolve undo" (REUC) section.
+   */
+  removePath(path: string, options?: IndexRemoveOptions | undefined | null): void
+  /** Remove all matching index entries. */
+  removeAll(pathspecs: Array<string>, options?: IndexRemoveAllOptions | undefined | null): void
+  /**
+   * Update all index entries to match the working directory
+   *
+   * This method will fail in bare index instances.
+   *
+   * This scans the existing index entries and synchronizes them with the
+   * working directory, deleting them if the corresponding working directory
+   * file no longer exists otherwise updating the information (including
+   * adding the latest version of file to the ODB if needed).
+   */
+  updateAll(pathspecs: Array<string>, options?: IndexUpdateAllOptions | undefined | null): void
+  /** Get the count of entries currently in the index */
+  count(): number
+  /** Return `true` is there is no entry in the index */
+  isEmpty(): boolean
+  /**
+   * Get the full path to the index file on disk.
+   *
+   * Returns `None` if this is an in-memory index.
+   */
+  path(): string | null
+  /**
+   * Does this index have conflicts?
+   *
+   * Returns `true` if the index contains conflicts, `false` if it does not.
+   */
+  hasConflicts(): boolean
+  /** Get an iterator over the entries in this index. */
+  entries(): IndexEntries
+}
+/** An iterator over the entries in an index */
+export declare class IndexEntries {
+  [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
 /**
  * A structure representing a [remote][1] of a git repository.
@@ -489,6 +722,18 @@ export declare class Repository {
   findCommit(oid: string): Commit | null
   /** Lookup a reference to one of the commits in a repository. */
   getCommit(oid: string): Commit
+  /**
+   * Get the Index file for this repository.
+   *
+   * If a custom index has not been set, the default index for the repository
+   * will be returned (the one located in .git/index).
+   *
+   * **Caution**: If the [`git2::Repository`] of this index is dropped, then this
+   * [`git2::Index`] will become detached, and most methods on it will fail. See
+   * [`git2::Index::open`]. Be sure the repository has a binding such as a local
+   * variable to keep it alive at least as long as the index.
+   */
+  index(): Index
   /**
    * Lookup a reference to one of the objects in a repository.
    *

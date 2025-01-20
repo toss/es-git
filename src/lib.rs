@@ -2,6 +2,7 @@
 
 pub mod commit;
 mod error;
+pub mod index;
 pub mod object;
 pub mod reference;
 pub mod remote;
