@@ -15,7 +15,9 @@ describe('index', () => {
     const index = repo.index();
     expect(index.count()).toBe(2);
     expect(index.isEmpty()).toBe(false);
-    expect(index.path()).toMatch(path.join(p, '.git', 'index'));
+    // Regardless of the current platform, the directory separator is an ASCII forward slash(`/`),
+    // so we have to match ends of index path.
+    expect(index.path()).toMatch('.git/index');
   });
 
   it('get entries of index', async () => {
