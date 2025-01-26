@@ -1,6 +1,7 @@
 #![deny(clippy::all)]
 
 pub mod commit;
+pub mod diff;
 mod error;
 pub mod index;
 pub mod object;

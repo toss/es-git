@@ -6,18 +6,235 @@
  * napi does not support union types when converting rust enum types to TypeScript.
  * This feature will be provided starting from v3, so create a custom TypeScript until the v3 stable releases.
  */
+export const enum DiffFlags {
+  /** File(s) treated as binary data. (1 << 0) */
+  Binary = 1,
+  /** File(s) treated as text data. (1 << 1) */
+  NotBinary = 2,
+  /** `id` value is known correct. (1 << 2) */
+  ValidId = 4,
+  /** File exists at this side of the delta. (1 << 3) */
+  Exists = 8
+}
+/** Check diff flags contains given flags. */
+export declare function diffFlagsContains(source: number, target: number): boolean
+/** What type of change is described by a `DiffDelta`? */
+export const enum DeltaType {
+  /** No changes */
+  Unmodified = 'Unmodified',
+  /** Entry does not exist in old version */
+  Added = 'Added',
+  /** Entry does not exist in new version */
+  Deleted = 'Deleted',
+  /** Entry content changed between old and new */
+  Modified = 'Modified',
+  /** Entry was renamed between old and new */
+  Renamed = 'Renamed',
+  /** Entry was copied from another old entry */
+  Copied = 'Copied',
+  /** Entry is ignored item in workdir */
+  Ignored = 'Ignored',
+  /** Entry is untracked item in workdir */
+  Untracked = 'Untracked',
+  /** Type of entry changed between old and new */
+  Typechange = 'Typechange',
+  /** Entry is unreadable */
+  Unreadable = 'Unreadable',
+  /** Entry in the index is conflicted */
+  Conflicted = 'Conflicted'
+}
+/** Formatting options for diff stats */
+export const enum DiffStatsFormat {
+  /** Don't generate any stats */
+  None = 0,
+  /** Equivalent of `--stat` in git (1 << 0) */
+  Full = 1,
+  /** Equivalent of `--shortstat` in git (1 << 1) */
+  Short = 2,
+  /** Equivalent of `--numstat` in git (1 << 2) */
+  Number = 4,
+  /**
+   * Extended header information such as creations, renames and mode
+   * changes, equivalent of `--summary` in git
+   * (1 << 3)
+   */
+  IncludeSummary = 8
+}
+export interface PrintDiffStatsOptions {
+  format?: number;
+  width?: number;
+}
+/** Valid modes for index and tree entries. */
+export const enum FileMode {
+  Unreadable = 'Unreadable',
+  Tree = 'Tree',
+  Blob = 'Blob',
+  /** Group writable blob. Obsolete mode kept for compatibility reasons */
+  BlobGroupWritable = 'BlobGroupWritable',
+  BlobExecutable = 'BlobExecutable',
+  Link = 'Link',
+  Commit = 'Commit'
+}
+/** Structure describing options about how the diff should be executed. */
+export interface DiffOptions {
+  /** Flag indicating whether the sides of the diff will be reversed. */
+  reverse?: boolean;
+  /** Flag indicating whether ignored files are included. */
+  includeIgnored?: boolean;
+  /** Flag indicating whether ignored directories are traversed deeply or not. */
+  recurseIgnoredDirs?: boolean;
+  /** Flag indicating whether untracked files are in the diff */
+  includeUntracked?: boolean;
+  /**
+   * Flag indicating whether untracked directories are traversed deeply or
+   * not.
+   */
+  recurseUntrackedDirs?: boolean;
+  /** Flag indicating whether unmodified files are in the diff. */
+  includeUnmodified?: boolean;
+  /** If enabled, then Typechange delta records are generated. */
+  includeTypechange?: boolean;
+  /**
+   * Event with `includeTypechange`, the tree returned generally shows a
+   * deleted blob. This flag correctly labels the tree transitions as a
+   * typechange record with the `new_file`'s mode set to tree.
+   *
+   * Note that the tree SHA will not be available.
+   */
+  includeTypechangeTrees?: boolean;
+  /** Flag indicating whether file mode changes are ignored. */
+  ignoreFilemode?: boolean;
+  /** Flag indicating whether all submodules should be treated as unmodified. */
+  ignoreSubmodules?: boolean;
+  /** Flag indicating whether case insensitive filenames should be used. */
+  ignoreCase?: boolean;
+  /**
+   * If pathspecs are specified, this flag means that they should be applied
+   * as an exact match instead of a fnmatch pattern.
+   */
+  disablePathspecMatch?: boolean;
+  /**
+   * Disable updating the `binary` flag in delta records. This is useful when
+   * iterating over a diff if you don't need hunk and data callbacks and want
+   * to avoid having to load a file completely.
+   */
+  skipBinaryCheck?: boolean;
+  /**
+   * When diff finds an untracked directory, to match the behavior of core
+   * Git, it scans the contents for ignored and untracked files. If all
+   * contents are ignored, then the directory is ignored; if any contents are
+   * not ignored, then the directory is untracked. This is extra work that
+   * may not matter in many cases.
+   *
+   * This flag turns off that scan and immediately labels an untracked
+   * directory as untracked (changing the behavior to not match core git).
+   */
+  enableFastUntrackedDirs?: boolean;
+  /**
+   * When diff finds a file in the working directory with stat information
+   * different from the index, but the OID ends up being the same, write the
+   * correct stat information into the index. Note: without this flag, diff
+   * will always leave the index untouched.
+   */
+  updateIndex?: boolean;
+  /** Include unreadable files in the diff */
+  includeUnreadable?: boolean;
+  /** Include unreadable files in the diff as untracked files */
+  includeUnreadableAsUntracked?: boolean;
+  /** Treat all files as text, disabling binary attributes and detection. */
+  forceText?: boolean;
+  /** Treat all files as binary, disabling text diffs */
+  forceBinary?: boolean;
+  /** Ignore all whitespace */
+  ignoreWhitespace?: boolean;
+  /** Ignore changes in the amount of whitespace */
+  ignoreWhitespaceChange?: boolean;
+  /** Ignore whitespace at the end of line */
+  ignoreWhitespaceEol?: boolean;
+  /** Ignore blank lines */
+  ignoreBlankLines?: boolean;
+  /**
+   * When generating patch text, include the content of untracked files.
+   *
+   * This automatically turns on `includeUntracked` but it does not turn on
+   * `recurseUntrackedDirs`. Add that flag if you want the content of every
+   * single untracked file.
+   */
+  showUntrackedContent?: boolean;
+  /**
+   * When generating output, include the names of unmodified files if they
+   * are included in the `Diff`. Normally these are skipped in the formats
+   * that list files (e.g. name-only, name-status, raw). Even with this these
+   * will not be included in the patch format.
+   */
+  showUnmodified?: boolean;
+  /** Use the "patience diff" algorithm */
+  patience?: boolean;
+  /** Take extra time to find the minimal diff */
+  minimal?: boolean;
+  /**
+   * Include the necessary deflate/delta information so that `git-apply` can
+   * apply given diff information to binary files.
+   */
+  showBinary?: boolean;
+  /**
+   * Use a heuristic that takes indentation and whitespace into account
+   * which generally can produce better diffs when dealing with ambiguous
+   * diff hunks.
+   */
+  indentHeuristic?: boolean;
+  /**
+   * Set the number of unchanged lines that define the boundary of a hunk
+   * (and to display before and after).
+   *
+   * The default value for this is 3.
+   */
+  contextLines?: number;
+  /**
+   * Set the maximum number of unchanged lines between hunk boundaries before
+   * the hunks will be merged into one.
+   *
+   * The default value for this is 0.
+   */
+  interhunkLines?: number;
+  /** The default value for this is `core.abbrev` or 7 if unset. */
+  idAbbrev?: number;
+  /**
+   * Maximum size (in bytes) above which a blob will be marked as binary
+   * automatically.
+   *
+   * A negative value will disable this entirely.
+   *
+   * The default value for this is 512MB.
+   */
+  maxSize?: number;
+  /**
+   * The virtual "directory" to prefix old file names with in hunk headers.
+   *
+   * The default value for this is "a".
+   */
+  oldPrefix?: string;
+  /**
+   * The virtual "directory" to prefix new file names with in hunk headers.
+   *
+   * The default value for this is "b".
+   */
+  newPrefix?: string;
+  /** Add to the array of paths/fnmatch patterns to constrain the diff. */
+  pathspecs?: Array<string>;
+}
 export interface IndexEntry {
-  ctime: Date
-  mtime: Date
-  dev: number
-  ino: number
-  mode: number
-  uid: number
-  gid: number
-  fileSize: number
-  id: string
-  flags: number
-  flagsExtended: number
+  ctime: Date;
+  mtime: Date;
+  dev: number;
+  ino: number;
+  mode: number;
+  uid: number;
+  gid: number;
+  fileSize: number;
+  id: string;
+  flags: number;
+  flagsExtended: number;
   /**
    * The path of this index entry as a byte vector. Regardless of the
    * current platform, the directory separator is an ASCII forward slash
@@ -29,13 +246,13 @@ export interface IndexEntry {
    *
    * [git-index-docs]: https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124
    */
-  path: Buffer
+  path: Buffer;
 }
 export interface IndexOnMatchCallbackArgs {
   /** The path of entry. */
-  path: string
+  path: string;
   /** The patchspec that matched it. */
-  pathspec: string
+  pathspec: string;
 }
 export interface IndexAddAllOptions {
   /**
@@ -43,7 +260,7 @@ export interface IndexAddAllOptions {
    * already tracked in the index, then it will be updated even if it is
    * ignored. Pass the `force` flag to skip the checking of ignore rules.
    */
-  force?: boolean
+  force?: boolean;
   /**
    * The `pathspecs` are a list of file names or shell glob patterns that
    * will matched against files in the repository's working directory. Each
@@ -51,7 +268,7 @@ export interface IndexAddAllOptions {
    * existing entry or adding a new entry). You can disable glob expansion
    * and force exact matching with the `disablePathspecMatch` flag.
    */
-  disablePathspecMatch?: boolean
+  disablePathspecMatch?: boolean;
   /**
    * To emulate `git add -A` and generate an error if the pathspec contains
    * the exact path of an ignored file (when not using `force`), add the
@@ -60,7 +277,7 @@ export interface IndexAddAllOptions {
    * already in the index. If this check fails, the function will return
    * an error.
    */
-  checkPathspec?: boolean
+  checkPathspec?: boolean;
   /**
    * If you provide a callback function, it will be invoked on each matching
    * item in the working directory immediately before it is added to /
@@ -68,10 +285,10 @@ export interface IndexAddAllOptions {
    * greater than zero will skip the item, and less than zero will abort the
    * scan an return an error to the caller.
    */
-  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number;
 }
 export type IndexStage =
-  /** Match any index stage. */
+/** Match any index stage. */
   | 'Any'
   /** A normal staged file in the index. (default) */
   | 'Normal'
@@ -82,7 +299,7 @@ export type IndexStage =
   /** The "theirs" side of a conflict. */
   | 'Theirs';
 export interface IndexRemoveOptions {
-  stage?: IndexStage
+  stage?: IndexStage;
 }
 export interface IndexRemoveAllOptions {
   /**
@@ -90,7 +307,7 @@ export interface IndexRemoveAllOptions {
    * item in the index immediately before it is removed. Return 0 to remove
    * the item, > 0 to skip the item, and < 0 to abort the scan.
    */
-  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number;
 }
 export interface IndexUpdateAllOptions {
   /**
@@ -99,7 +316,7 @@ export interface IndexUpdateAllOptions {
    * removed depending on working directory state). Return 0 to proceed with
    * updating the item, > 0 to skip the item, and < 0 to abort the scan.
    */
-  onMatch?: (args: IndexOnMatchCallbackArgs) => number
+  onMatch?: (args: IndexOnMatchCallbackArgs) => number;
 }
 /**
  * Ensure the reference name is well-formed.
@@ -722,6 +939,13 @@ export declare class Repository {
   findCommit(oid: string): Commit | null
   /** Lookup a reference to one of the commits in a repository. */
   getCommit(oid: string): Commit
+  /**
+   * Create a diff between two index objects.
+   *
+   * The first index will be used for the "old_file" side of the delta, and
+   * the second index will be used for the "new_file" side of the delta.
+   */
+  diffIndexToIndex(oldIndex: Index, newIndex: Index, options?: DiffOptions | undefined | null): Diff
   /**
    * Get the Index file for this repository.
    *

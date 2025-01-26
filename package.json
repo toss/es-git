@@ -28,7 +28,7 @@
     }
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 16"
   },
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",
