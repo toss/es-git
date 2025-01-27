@@ -91,7 +91,10 @@ describe('diff', () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
     await fs.writeFile(path.join(p, 'third'), 'third created');
-    const diff = repo.diffIndexToWorkdir(undefined, { includeUntracked: true });
+    const diff = repo.diffIndexToWorkdir(undefined, {
+      includeUntracked: true,
+      ignoreWhitespaceEol: true, // for win32
+    });
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -118,9 +121,6 @@ describe('diff', () => {
         },
       },
     ];
-    if (process.platform === 'win32') {
-      console.log(deltas.map(flattenDiffDelta));
-    }
     expect(deltas.length).toBe(1);
     expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
   });
