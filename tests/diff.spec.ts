@@ -93,6 +93,8 @@ describe('diff', () => {
     await fs.writeFile(path.join(p, 'third'), 'third created');
     const diff = repo.diffIndexToWorkdir(undefined, {
       includeUntracked: true,
+      ignoreWhitespace: true, // for win32
+      ignoreWhitespaceChange: true, // for win32
       ignoreWhitespaceEol: true, // for win32
     });
     const deltas = [...diff.deltas()];
