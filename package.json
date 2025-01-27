@@ -32,15 +32,18 @@
   },
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",
-    "build": "napi build --platform --release --dts=esgit.d.ts",
-    "build:debug": "napi build --platform --dts=esgit.d.ts",
+    "build": "napi build --platform --release && yarn transform:dts",
+    "build:debug": "napi build --platform && yarn transform:dts",
+    "transform:dts": "jscodeshift -t transforms/dts.mjs index.d.ts",
     "check": "biome check",
     "check:fix": "biome check --write --unsafe"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@napi-rs/cli": "^2.18.4",
+    "@types/jscodeshift": "^0.12.0",
     "@types/node": "^22.8.4",
+    "jscodeshift": "^17.1.2",
     "tiny-glob": "^0.2.9",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
