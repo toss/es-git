@@ -5,6 +5,7 @@ pub mod diff;
 mod error;
 pub mod index;
 pub mod object;
+pub mod oid;
 pub mod reference;
 pub mod remote;
 pub mod repository;

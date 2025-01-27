@@ -201,6 +201,3 @@ Cargo.lock
 
 # npm folders
 npm
-
-# Generated
-esgit.d.ts
