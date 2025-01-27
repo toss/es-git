@@ -11,6 +11,9 @@ const options = {
  * @returns {string}
  */
 export default function transform(file, { j }) {
+  if (!file.path.endsWith('.d.ts')) {
+    return file.source;
+  }
   let source = file.source;
   source = transformStringEnums(source, j, ['CredentialType']);
   source = transformCredentialUnion(source, j);

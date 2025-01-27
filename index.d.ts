@@ -268,6 +268,10 @@ export interface ProxyOptions {
    */
   url?: string
 }
+export type FetchPrune = /** Use the setting from the configuration */
+'Unspecified' | /** Force pruning on */
+'On' | /** Force pruning off */
+'Off';
 export type Credential = /** Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication.*/
 {
  type: 'Default';
@@ -296,10 +300,6 @@ The username specified is the username to authenticate.*/
  username?: string;
  password: string;
 };
-export type FetchPrune = /** Use the setting from the configuration */
-'Unspecified' | /** Force pruning on */
-'On' | /** Force pruning off */
-'Off';
 /** Automatic tag following options. */
 export type AutotagOption = /** Use the setting from the remote's configuration */
 'Unspecified' | /** Ask the server for tags pointing to objects we're already downloading */
