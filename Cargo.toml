@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name    = "esgit"
+name    = "es-git"
 version = "0.0.0"
 
 [lib]
