@@ -1,7 +1,5 @@
 // TODO: Migrate to https://docs.grit.io/
 
-import { Credential } from '../index';
-
 const options = {
   quote: 'single',
   trailingComma: false,
