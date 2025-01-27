@@ -310,14 +310,14 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Commit, DiffFlags, diffFlagsContains, DeltaType, Diff, DiffStatsFormat, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature } = nativeBinding
+const { Commit, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature } = nativeBinding
 
 module.exports.Commit = Commit
 module.exports.DiffFlags = DiffFlags
 module.exports.diffFlagsContains = diffFlagsContains
 module.exports.DeltaType = DeltaType
+module.exports.DiffFormat = DiffFormat
 module.exports.Diff = Diff
-module.exports.DiffStatsFormat = DiffStatsFormat
 module.exports.DiffStats = DiffStats
 module.exports.Deltas = Deltas
 module.exports.DiffDelta = DiffDelta

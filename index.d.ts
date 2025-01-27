@@ -19,62 +19,56 @@ export const enum DiffFlags {
 /** Check diff flags contains given flags. */
 export declare function diffFlagsContains(source: number, target: number): boolean
 /** What type of change is described by a `DiffDelta`? */
-export const enum DeltaType {
+export type DeltaType =
   /** No changes */
-  Unmodified = 'Unmodified',
+  | 'Unmodified'
   /** Entry does not exist in old version */
-  Added = 'Added',
+  | 'Added'
   /** Entry does not exist in new version */
-  Deleted = 'Deleted',
+  | 'Deleted'
   /** Entry content changed between old and new */
-  Modified = 'Modified',
+  | 'Modified'
   /** Entry was renamed between old and new */
-  Renamed = 'Renamed',
+  | 'Renamed'
   /** Entry was copied from another old entry */
-  Copied = 'Copied',
+  | 'Copied'
   /** Entry is ignored item in workdir */
-  Ignored = 'Ignored',
+  | 'Ignored'
   /** Entry is untracked item in workdir */
-  Untracked = 'Untracked',
+  | 'Untracked'
   /** Type of entry changed between old and new */
-  Typechange = 'Typechange',
+  | 'Typechange'
   /** Entry is unreadable */
-  Unreadable = 'Unreadable',
+  | 'Unreadable'
   /** Entry in the index is conflicted */
-  Conflicted = 'Conflicted'
-}
-/** Formatting options for diff stats */
-export const enum DiffStatsFormat {
-  /** Don't generate any stats */
-  None = 0,
-  /** Equivalent of `--stat` in git (1 << 0) */
-  Full = 1,
-  /** Equivalent of `--shortstat` in git (1 << 1) */
-  Short = 2,
-  /** Equivalent of `--numstat` in git (1 << 2) */
-  Number = 4,
-  /**
-   * Extended header information such as creations, renames and mode
-   * changes, equivalent of `--summary` in git
-   * (1 << 3)
-   */
-  IncludeSummary = 8
-}
-export interface PrintDiffStatsOptions {
-  format?: number;
-  width?: number;
+  | 'Conflicted';
+/** Possible output formats for diff data */
+export type DiffFormat =
+  /** full git diff (default) */
+  | 'Patch'
+  /** just the headers of the patch */
+  | 'PatchHeader'
+  /** like git diff --raw */
+  | 'Raw'
+  /** like git diff --name-only */
+  | 'NameOnly'
+  /** like git diff --name-status */
+  | 'NameStatus'
+  /** git diff as used by git patch-id */
+  | 'PatchId';
+export interface DiffPrintOptions {
+  format?: DiffFormat
 }
 /** Valid modes for index and tree entries. */
-export const enum FileMode {
-  Unreadable = 'Unreadable',
-  Tree = 'Tree',
-  Blob = 'Blob',
+export type FileMode =
+  | 'Unreadable'
+  | 'Tree'
+  | 'Blob'
   /** Group writable blob. Obsolete mode kept for compatibility reasons */
-  BlobGroupWritable = 'BlobGroupWritable',
-  BlobExecutable = 'BlobExecutable',
-  Link = 'Link',
-  Commit = 'Commit'
-}
+  | 'BlobGroupWritable'
+  | 'BlobExecutable'
+  | 'Link'
+  | 'Commit';
 /** Structure describing options about how the diff should be executed. */
 export interface DiffOptions {
   /** Flag indicating whether the sides of the diff will be reversed. */
@@ -733,6 +727,110 @@ export declare class Commit {
   time(): Date
 }
 /**
+ * The diff object that contains all individual file deltas.
+ *
+ * This is an opaque structure which will be allocated by one of the diff
+ * generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
+ * or other `diff_*` functions).
+ */
+export declare class Diff {
+  /**
+   * Merge one diff into another.
+   *
+   * This merges items from the "from" list into the "self" list.  The
+   * resulting diff will have all items that appear in either list.
+   * If an item appears in both lists, then it will be "merged" to appear
+   * as if the old version was from the "onto" list and the new version
+   * is from the "from" list (with the exception that if the item has a
+   * pending DELETE in the middle, then it will show as deleted).
+   */
+  merge(diff: Diff): void
+  /** Returns an iterator over the deltas in this diff. */
+  deltas(): Deltas
+  /** Check if deltas are sorted case sensitively or insensitively. */
+  isSortedIcase(): boolean
+  /** Accumulate diff statistics for all patches. */
+  stats(): DiffStats
+  /**
+   * Iterate over a diff generating formatted text output.
+   *
+   * Returning `false` from the callback will terminate the iteration and
+   * return an error from this function.
+   */
+  print(options?: DiffPrintOptions | undefined | null): string
+}
+/** Structure describing a hunk of a diff. */
+export declare class DiffStats {
+  /** Get the total number of files changed in a diff. */
+  get filesChanged(): bigint
+  /** Get the total number of insertions in a diff */
+  get insertions(): bigint
+  /** Get the total number of deletions in a diff */
+  get deletions(): bigint
+}
+/** An iterator over the diffs in a delta */
+export declare class Deltas {
+  [Symbol.iterator](): Iterator<DiffDelta, void, void>
+}
+/** Description of changes to one entry. */
+export declare class DiffDelta {
+  /**
+   * Returns the flags on the delta.
+   *
+   * For more information, see `DiffFlags`'s documentation.
+   */
+  flags(): number
+  /** Returns the number of files in this delta. */
+  numFiles(): number
+  /** Returns the status of this entry */
+  status(): DeltaType
+  /**
+   * Return the file which represents the "from" side of the diff.
+   *
+   * What side this means depends on the function that was used to generate
+   * the diff and will be documented on the function itself.
+   */
+  oldFile(): DiffFile
+  /**
+   * Return the file which represents the "to" side of the diff.
+   *
+   * What side this means depends on the function that was used to generate
+   * the diff and will be documented on the function itself.
+   */
+  newFile(): DiffFile
+}
+/**
+ * Description of one side of a delta.
+ *
+ * Although this is called a "file" it could represent a file, a symbolic
+ * link, a submodule commit id, or even a tree (although that only happens if
+ * you are tracking type changes or ignored/untracked directories).
+ */
+export declare class DiffFile {
+  /**
+   * Returns the Oid of this item.
+   *
+   * If this entry represents an absent side of a diff (e.g. the `old_file`
+   * of a `Added` delta), then the oid returned will be zeroes.
+   */
+  id(): string
+  /**
+   * Returns the path of the entry relative to the working directory of the
+   * repository.
+   */
+  path(): string | null
+  /** Returns the size of this entry, in bytes */
+  size(): bigint
+  /** Returns `true` if file(s) are treated as binary data. */
+  isBinary(): boolean
+  /** Returns `true` if `id` value is known correct. */
+  isValidId(): boolean
+  /** Returns `true` if file exists at this side of the delta. */
+  exists(): boolean
+  /** Returns file mode. */
+  mode(): FileMode
+}
+/**
  * A structure to represent a git [index][1]
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
@@ -946,6 +1044,22 @@ export declare class Repository {
    * the second index will be used for the "new_file" side of the delta.
    */
   diffIndexToIndex(oldIndex: Index, newIndex: Index, options?: DiffOptions | undefined | null): Diff
+  /**
+   * Create a diff between the repository index and the workdir directory.
+   *
+   * This matches the `git diff` command.  See the note below on
+   * `tree_to_workdir` for a discussion of the difference between
+   * `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
+   * using libgit2.
+   *
+   * The index will be used for the "old_file" side of the delta, and the
+   * working directory will be used for the "new_file" side of the delta.
+   *
+   * If you pass `None` for the index, then the existing index of the `repo`
+   * will be used.  In this case, the index will be refreshed from disk
+   * (if it has changed) before the diff is generated.
+   */
+  diffIndexToWorkdir(index?: Index | undefined | null, options?: DiffOptions | undefined | null): Diff
   /**
    * Get the Index file for this repository.
    *

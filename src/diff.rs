@@ -91,6 +91,47 @@ impl From<DeltaType> for git2::Delta {
   }
 }
 
+#[napi(string_enum)]
+/// Possible output formats for diff data
+pub enum DiffFormat {
+  /// full git diff (default)
+  Patch,
+  /// just the headers of the patch
+  PatchHeader,
+  /// like git diff --raw
+  Raw,
+  /// like git diff --name-only
+  NameOnly,
+  /// like git diff --name-status
+  NameStatus,
+  /// git diff as used by git patch-id
+  PatchId,
+}
+
+impl Default for DiffFormat {
+  fn default() -> Self {
+    Self::Patch
+  }
+}
+
+impl From<DiffFormat> for git2::DiffFormat {
+  fn from(value: DiffFormat) -> Self {
+    match value {
+      DiffFormat::Patch => git2::DiffFormat::Patch,
+      DiffFormat::PatchHeader => git2::DiffFormat::PatchHeader,
+      DiffFormat::Raw => git2::DiffFormat::Raw,
+      DiffFormat::NameOnly => git2::DiffFormat::NameOnly,
+      DiffFormat::NameStatus => git2::DiffFormat::NameStatus,
+      DiffFormat::PatchId => git2::DiffFormat::PatchId,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct DiffPrintOptions {
+  pub format: Option<DiffFormat>,
+}
+
 #[napi]
 /// The diff object that contains all individual file deltas.
 ///
@@ -138,30 +179,20 @@ impl Diff {
       inner: self.inner.stats()?,
     })
   }
-}
 
-#[napi]
-#[repr(u32)]
-/// Formatting options for diff stats
-pub enum DiffStatsFormat {
-  /// Don't generate any stats
-  None = 0,
-  /// Equivalent of `--stat` in git (1 << 0)
-  Full = 1,
-  /// Equivalent of `--shortstat` in git (1 << 1)
-  Short = 2,
-  /// Equivalent of `--numstat` in git (1 << 2)
-  Number = 4,
-  /// Extended header information such as creations, renames and mode
-  /// changes, equivalent of `--summary` in git
-  /// (1 << 3)
-  IncludeSummary = 8,
-}
-
-#[napi(object)]
-pub struct PrintDiffStatsOptions {
-  pub format: Option<u32>,
-  pub width: Option<u32>,
+  #[napi]
+  /// Iterate over a diff generating formatted text output.
+  pub fn print(&self, options: Option<DiffPrintOptions>) -> String {
+    let format = options.and_then(|x| x.format).unwrap_or_default();
+    let mut lines: Vec<String> = vec![];
+    let _ = self.inner.print(format.into(), |_delta, _hunk, line| {
+      if let Ok(content) = std::str::from_utf8(line.content()) {
+        lines.push(content.to_string());
+      }
+      true
+    });
+    lines.join("")
+  }
 }
 
 #[napi]
@@ -188,18 +219,6 @@ impl DiffStats {
   /// Get the total number of deletions in a diff
   pub fn deletions(&self) -> usize {
     self.inner.deletions()
-  }
-
-  #[napi]
-  /// Print diff statistics to a String
-  /// Throws error if is not valid utf8.
-  pub fn print(&self, options: Option<PrintDiffStatsOptions>) -> crate::Result<String> {
-    let (format, width) = options.map(|x| (x.format, x.width)).unwrap_or((None, None));
-    let buf = self.inner.to_buf(
-      git2::DiffStatsFormat::from_bits_retain(format.unwrap_or(git2::DiffStatsFormat::NONE.bits())),
-      width.unwrap_or(100) as usize,
-    )?;
-    Ok(std::str::from_utf8(&buf)?.to_string())
   }
 }
 
@@ -628,6 +647,38 @@ impl Repository {
       repo
         .inner
         .diff_index_to_index(&old_index.inner, &new_index.inner, Some(&mut opts))
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+    })?;
+    Ok(Diff { inner })
+  }
+
+  #[napi]
+  /// Create a diff between the repository index and the workdir directory.
+  ///
+  /// This matches the `git diff` command.  See the note below on
+  /// `tree_to_workdir` for a discussion of the difference between
+  /// `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
+  /// using libgit2.
+  ///
+  /// The index will be used for the "old_file" side of the delta, and the
+  /// working directory will be used for the "new_file" side of the delta.
+  ///
+  /// If you pass `None` for the index, then the existing index of the `repo`
+  /// will be used.  In this case, the index will be refreshed from disk
+  /// (if it has changed) before the diff is generated.
+  pub fn diff_index_to_workdir(
+    &self,
+    env: Env,
+    this: Reference<Repository>,
+    index: Option<&Index>,
+    options: Option<DiffOptions>,
+  ) -> crate::Result<Diff> {
+    let mut opts: git2::DiffOptions = options.map(|x| x.into()).unwrap_or_default();
+    let inner = this.share_with(env, |repo| {
+      repo
+        .inner
+        .diff_index_to_workdir(index.map(|x| &x.inner), Some(&mut opts))
         .map_err(crate::Error::from)
         .map_err(|e| e.into())
     })?;
