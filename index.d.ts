@@ -106,6 +106,29 @@ export const enum ObjectType {
   /** An object which corresponds to a git tag */
   Tag = 4
 }
+/**
+ * Check if given string is valid Oid.
+ *
+ * Returns `false` if the string is empty, is longer than 40 hex
+ * characters, or contains any non-hex characters.
+ */
+export declare function isValidOid(value: string): boolean
+/** Test if this Oid is all zeros. */
+export declare function isZeroOid(value: string): boolean
+/** Creates an all zero Oid structure. */
+export declare function zeroOid(): string
+/**
+ * Hashes the provided data as an object of the provided type, and returns
+ * an Oid corresponding to the result. This does not store the object
+ * inside any object database or repository.
+ */
+export declare function hashObjectOid(objType: ObjectType, bytes: Buffer): string
+/**
+ * Hashes the content of the provided file as an object of the provided type,
+ * and returns an Oid corresponding to the result. This does not store the object
+ * inside any object database or repository.
+ */
+export declare function hashFileOid(objType: ObjectType, path: string): string
 /** An enumeration of all possible kinds of references. */
 export type ReferenceType = /** A reference which points at an object id. */
 'Direct' | /** A reference which points at another reference. */
@@ -1011,26 +1034,3 @@ export declare class Revwalk {
    */
   hideRef(reference: string): this
 }
-/**
- * Check if given string is valid Oid.
- *
- * Returns `false` if the string is empty, is longer than 40 hex
- * characters, or contains any non-hex characters.
- */
-export declare function isValidOid(value: string): boolean
-/** Test if this Oid is all zeros. */
-export declare function isZeroOid(value: string): boolean
-/** Creates an all zero Oid structure. */
-export declare function zeroOid(): string
-/**
- * Hashes the provided data as an object of the provided type, and returns
- * an Oid corresponding to the result. This does not store the object
- * inside any object database or repository.
- */
-export declare function hashObjectOid(objType: ObjectType, bytes: Buffer): string
-/**
- * Hashes the content of the provided file as an object of the provided type,
- * and returns an Oid corresponding to the result. This does not store the object
- * inside any object database or repository.
- */
-export declare function hashFileOid(objType: ObjectType, path: string): string
