@@ -570,6 +570,7 @@ export interface FetchRemoteOptions {
 export interface PruneOptions {
   credential?: Credential;
 }
+/** A listing of the possible states that a repository can be in. */
 export type RepositoryState =
   | 'Clean'
   | 'Merge'
