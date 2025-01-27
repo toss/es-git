@@ -118,6 +118,9 @@ describe('diff', () => {
         },
       },
     ];
+    if (process.platform === 'win32') {
+      console.log(deltas.map(flattenDiffDelta));
+    }
     expect(deltas.length).toBe(1);
     expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
   });
