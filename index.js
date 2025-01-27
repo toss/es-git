@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Commit, IndexStage, Index, IndexEntries, ObjectType, GitObject, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature } = nativeBinding
+const { Commit, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature } = nativeBinding
 
 module.exports.Commit = Commit
 module.exports.IndexStage = IndexStage
@@ -318,6 +318,11 @@ module.exports.Index = Index
 module.exports.IndexEntries = IndexEntries
 module.exports.ObjectType = ObjectType
 module.exports.GitObject = GitObject
+module.exports.isValidOid = isValidOid
+module.exports.isZeroOid = isZeroOid
+module.exports.zeroOid = zeroOid
+module.exports.hashObjectOid = hashObjectOid
+module.exports.hashFileOid = hashFileOid
 module.exports.ReferenceType = ReferenceType
 module.exports.Reference = Reference
 module.exports.isReferenceNameValid = isReferenceNameValid
