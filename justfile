@@ -57,3 +57,7 @@ lint-js:
 # Check type is correct for TypeScript files
 typecheck:
   yarn tsc --noEmit
+
+# Start docs development
+docs:
+  yarn workspace docs run dev

@@ -30,6 +30,9 @@
   "engines": {
     "node": ">= 16"
   },
+  "workspaces": [
+    "docs"
+  ],
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",
     "build": "napi build --platform --release --pipe=\"yarn transform:dts\"",
