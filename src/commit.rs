@@ -1,10 +1,18 @@
 use crate::repository::Repository;
-use crate::signature::Signature;
+use crate::signature::{Signature, SignaturePayload};
 use crate::tree::{Tree, TreeInner};
 use chrono::{DateTime, Utc};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::ops::Deref;
+
+#[napi(object)]
+pub struct CommitOptions {
+  pub update_ref: Option<String>,
+  pub author: Option<SignaturePayload>,
+  pub committer: Option<SignaturePayload>,
+  pub parents: Option<Vec<String>>,
+}
 
 pub(crate) enum CommitInner {
   Repo(SharedReference<Repository, git2::Commit<'static>>),
@@ -139,5 +147,53 @@ impl Repository {
     Ok(Commit {
       inner: CommitInner::Repo(commit),
     })
+  }
+
+  #[napi]
+  /// Create new commit in the repository
+  ///
+  /// If the `update_ref` is not `null`, name of the reference that will be
+  /// updated to point to this commit. If the reference is not direct, it will
+  /// be resolved to a direct reference. Use "HEAD" to update the HEAD of the
+  /// current branch and make it point to this commit. If the reference
+  /// doesn't exist yet, it will be created. If it does exist, the first
+  /// parent must be the tip of this branch.
+  pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
+    let (update_ref, author, committer, parents) = match options {
+      Some(opts) => {
+        let update_ref = opts.update_ref;
+        let author = opts.author.and_then(|x| Signature::try_from(x).ok());
+        let committer = opts.committer.and_then(|x| Signature::try_from(x).ok());
+        let parents = match opts.parents {
+          Some(parents) => {
+            let commits: crate::Result<Vec<git2::Commit>> = parents
+              .iter()
+              .map(|x| self.inner.find_commit_by_prefix(x).map_err(crate::Error::from))
+              .collect();
+            Some(commits?)
+          }
+          None => None,
+        };
+        (update_ref, author, committer, parents)
+      }
+      None => (None, None, None, None),
+    };
+    let author = author
+      .and_then(|x| git2::Signature::try_from(x).ok())
+      .or_else(|| self.inner.signature().ok())
+      .ok_or(crate::Error::SignatureNotFound)?;
+    let committer = committer
+      .and_then(|x| git2::Signature::try_from(x).ok())
+      .or_else(|| self.inner.signature().ok())
+      .ok_or(crate::Error::SignatureNotFound)?;
+    let oid = self.inner.commit(
+      update_ref.as_deref(),
+      &author,
+      &committer,
+      &message,
+      &tree.inner,
+      &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+    )?;
+    Ok(oid.to_string())
   }
 }

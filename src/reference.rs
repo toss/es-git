@@ -1,4 +1,5 @@
 use crate::repository::Repository;
+use crate::tree::{Tree, TreeInner};
 use napi::Env;
 use napi_derive::napi;
 
@@ -242,6 +243,23 @@ impl Reference {
   /// Tag object: it is the result of peeling such Tag.
   pub fn target_peel(&self) -> Option<String> {
     self.inner.target_peel().map(|x| x.to_string())
+  }
+
+  #[napi]
+  /// Peel a reference to a tree
+  ///
+  /// This method recursively peels the reference until it reaches
+  /// a tree.
+  pub fn peel_to_tree(&self, this: napi::bindgen_prelude::Reference<Reference>, env: Env) -> crate::Result<Tree> {
+    Ok(Tree {
+      inner: TreeInner::Reference(this.share_with(env, |reference| {
+        reference
+          .inner
+          .peel_to_tree()
+          .map_err(crate::Error::from)
+          .map_err(|e| e.into())
+      })?),
+    })
   }
 
   #[napi]

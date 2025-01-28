@@ -1,5 +1,6 @@
 use crate::index::Index;
 use crate::repository::Repository;
+use crate::tree::Tree;
 use crate::util::{bitflags_contain, path_to_js_string};
 use napi::bindgen_prelude::*;
 use napi::JsString;
@@ -630,6 +631,38 @@ impl From<DiffOptions> for git2::DiffOptions {
 #[napi]
 impl Repository {
   #[napi]
+  /// Create a diff with the difference between two tree objects.
+  ///
+  /// This is equivalent to `git diff <old-tree> <new-tree>`
+  ///
+  /// The first tree will be used for the "old_file" side of the delta and the
+  /// second tree will be used for the "new_file" side of the delta.  You can
+  /// pass `null` to indicate an empty tree, although it is an error to pass
+  /// `null` for both the `oldTree` and `newTree`.
+  pub fn diff_tree_to_tree(
+    &self,
+    this: Reference<Repository>,
+    env: Env,
+    old_tree: Option<&Tree>,
+    new_tree: Option<&Tree>,
+    options: Option<DiffOptions>,
+  ) -> crate::Result<Diff> {
+    let mut opts: git2::DiffOptions = options.map(|x| x.into()).unwrap_or_default();
+    let inner = this.share_with(env, |repo| {
+      repo
+        .inner
+        .diff_tree_to_tree(
+          old_tree.map(|x| x.inner.deref()),
+          new_tree.map(|x| x.inner.deref()),
+          Some(&mut opts),
+        )
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+    })?;
+    Ok(Diff { inner })
+  }
+
+  #[napi]
   /// Create a diff between two index objects.
   ///
   /// The first index will be used for the "old_file" side of the delta, and
@@ -664,8 +697,8 @@ impl Repository {
   /// The index will be used for the "old_file" side of the delta, and the
   /// working directory will be used for the "new_file" side of the delta.
   ///
-  /// If you pass `None` for the index, then the existing index of the `repo`
-  /// will be used.  In this case, the index will be refreshed from disk
+  /// If you pass `null` for the index, then the existing index of the `repo`
+  /// will be used. In this case, the index will be refreshed from disk
   /// (if it has changed) before the diff is generated.
   pub fn diff_index_to_workdir(
     &self,
@@ -679,6 +712,68 @@ impl Repository {
       repo
         .inner
         .diff_index_to_workdir(index.map(|x| &x.inner), Some(&mut opts))
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+    })?;
+    Ok(Diff { inner })
+  }
+
+  #[napi]
+  /// Create a diff between a tree and the working directory.
+  ///
+  /// The tree you provide will be used for the "old_file" side of the delta,
+  /// and the working directory will be used for the "new_file" side.
+  ///
+  /// This is not the same as `git diff <treeish>` or `git diff-index
+  /// <treeish>`.  Those commands use information from the index, whereas this
+  /// function strictly returns the differences between the tree and the files
+  /// in the working directory, regardless of the state of the index.  Use
+  /// `tree_to_workdir_with_index` to emulate those commands.
+  ///
+  /// To see difference between this and `tree_to_workdir_with_index`,
+  /// consider the example of a staged file deletion where the file has then
+  /// been put back into the working dir and further modified.  The
+  /// tree-to-workdir diff for that file is 'modified', but `git diff` would
+  /// show status 'deleted' since there is a staged delete.
+  ///
+  /// If `null` is passed for `tree`, then an empty tree is used.
+  pub fn diff_tree_to_workdir(
+    &self,
+    this: Reference<Repository>,
+    env: Env,
+    old_tree: Option<&Tree>,
+    options: Option<DiffOptions>,
+  ) -> crate::Result<Diff> {
+    let mut opts: git2::DiffOptions = options.map(|x| x.into()).unwrap_or_default();
+    let inner = this.share_with(env, |repo| {
+      repo
+        .inner
+        .diff_tree_to_workdir(old_tree.map(|x| x.inner.deref()), Some(&mut opts))
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+    })?;
+    Ok(Diff { inner })
+  }
+
+  #[napi]
+  /// Create a diff between a tree and the working directory using index data
+  /// to account for staged deletes, tracked files, etc.
+  ///
+  /// This emulates `git diff <tree>` by diffing the tree to the index and
+  /// the index to the working directory and blending the results into a
+  /// single diff that includes staged deleted, etc.
+  pub fn diff_tree_to_workdir_with_index(
+    &self,
+    this: Reference<Repository>,
+    env: Env,
+    old_tree: Option<&Tree>,
+    options: Option<DiffOptions>,
+  ) -> crate::Result<Diff> {
+    let mut opts: git2::DiffOptions = options.map(|x| x.into()).unwrap_or_default();
+    let inner = this.share_with(env, |repo| {
+      repo
+        .inner
+        .diff_tree_to_workdir_with_index(old_tree.map(|x| x.inner.deref()), Some(&mut opts))
         .map_err(crate::Error::from)
         .map_err(|e| e.into())
     })?;

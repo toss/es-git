@@ -1,6 +1,7 @@
 use napi_derive::napi;
 
 #[napi(object)]
+#[derive(Clone)]
 /// A Signature is used to indicate authorship of various actions throughout the
 /// library.
 ///
@@ -25,8 +26,17 @@ impl<'a> TryFrom<git2::Signature<'a>> for Signature {
   }
 }
 
+impl TryFrom<Signature> for git2::Signature<'static> {
+  type Error = crate::Error;
+
+  fn try_from(value: Signature) -> Result<Self, Self::Error> {
+    let signature = git2::Signature::new(&value.name, &value.email, &git2::Time::new(value.timestamp, 0))?;
+    Ok(signature)
+  }
+}
+
 #[napi(object)]
-pub struct CreateSignatureOptions {
+pub struct SignatureTimeOptions {
   /// Time in seconds, from epoch
   pub timestamp: i64,
   /// Timezone offset, in minutes
@@ -38,9 +48,9 @@ pub struct CreateSignatureOptions {
 pub fn create_signature(
   name: String,
   email: String,
-  options: Option<CreateSignatureOptions>,
+  time_options: Option<SignatureTimeOptions>,
 ) -> crate::Result<Signature> {
-  let git_signature = match options {
+  let git_signature = match time_options {
     Some(opts) => git2::Signature::new(
       &name,
       &email,
@@ -50,4 +60,22 @@ pub fn create_signature(
   }?;
   let signature = Signature::try_from(git_signature)?;
   Ok(signature)
+}
+
+#[napi(object)]
+pub struct SignaturePayload {
+  /// Name on the signature.
+  pub name: String,
+  /// Email on the signature.
+  pub email: String,
+  pub time_options: Option<SignatureTimeOptions>,
+}
+
+impl TryFrom<SignaturePayload> for Signature {
+  type Error = crate::Error;
+
+  fn try_from(value: SignaturePayload) -> Result<Self, Self::Error> {
+    let signature = create_signature(value.name, value.email, value.time_options)?;
+    Ok(signature)
+  }
 }

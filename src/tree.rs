@@ -4,6 +4,7 @@ use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::ops::Deref;
+use std::path::Path;
 
 #[napi(string_enum)]
 pub enum TreeWalkMode {
@@ -99,6 +100,85 @@ impl Tree {
     };
     self.inner.walk(mode.into(), &mut git2_cb)?;
     Ok(())
+  }
+
+  #[napi]
+  /// Lookup a tree entry by SHA value.
+  pub fn get_id(&self, this: Reference<Tree>, env: Env, id: String) -> crate::Result<Option<TreeEntry>> {
+    let oid = git2::Oid::from_str(&id)?;
+    let entry = this
+      .share_with(env, |tree| {
+        tree
+          .inner
+          .get_id(oid)
+          .ok_or(Error::new(Status::InvalidArg, "tree entry not found"))
+      })
+      .ok()
+      .map(|entry| TreeEntry {
+        inner: TreeEntryInner::Tree(entry),
+      });
+    Ok(entry)
+  }
+
+  #[napi]
+  /// Lookup a tree entry by its position in the tree
+  pub fn get(&self, this: Reference<Tree>, env: Env, index: u32) -> crate::Result<Option<TreeEntry>> {
+    let entry = this
+      .share_with(env, |tree| {
+        tree
+          .inner
+          .get(index as usize)
+          .ok_or(Error::new(Status::InvalidArg, "tree entry not found"))
+      })
+      .ok()
+      .map(|entry| TreeEntry {
+        inner: TreeEntryInner::Tree(entry),
+      });
+    Ok(entry)
+  }
+
+  #[napi]
+  /// Lookup a tree entry by its filename
+  pub fn get_name(&self, this: Reference<Tree>, env: Env, filename: String) -> crate::Result<Option<TreeEntry>> {
+    let entry = this
+      .share_with(env, |tree| {
+        tree
+          .inner
+          .get_name(&filename)
+          .ok_or(Error::new(Status::InvalidArg, "tree entry not found"))
+      })
+      .ok()
+      .map(|entry| TreeEntry {
+        inner: TreeEntryInner::Tree(entry),
+      });
+    Ok(entry)
+  }
+
+  #[napi]
+  /// Retrieve a tree entry contained in a tree or in any of its subtrees,
+  /// given its relative path.
+  pub fn get_path(&self, this: Reference<Tree>, env: Env, path: String) -> crate::Result<Option<TreeEntry>> {
+    let entry = this
+      .share_with(env, |tree| {
+        tree
+          .inner
+          .get_path(Path::new(&path))
+          .map_err(crate::Error::from)
+          .map_err(|e| e.into())
+      })
+      .ok()
+      .map(|entry| TreeEntry {
+        inner: TreeEntryInner::Tree(entry),
+      });
+    Ok(entry)
+  }
+
+  #[napi]
+  /// Casts this Tree to be usable as an `GitObject`
+  pub fn as_object(&self) -> GitObject {
+    GitObject {
+      inner: ObjectInner::Owned(self.inner.as_object().clone()),
+    }
   }
 }
 

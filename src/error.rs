@@ -8,6 +8,8 @@ pub enum Error {
   Utf8Error(#[from] std::str::Utf8Error),
   #[error("invalid time")]
   InvalidTime,
+  #[error("signature not found")]
+  SignatureNotFound,
 }
 
 impl From<Error> for napi::Error {
@@ -17,6 +19,7 @@ impl From<Error> for napi::Error {
       Error::Napi(e) => e,
       Error::Utf8Error(e) => napi::Error::new(napi::Status::GenericFailure, format!("utf8 error: {e}")),
       Error::InvalidTime => napi::Error::new(napi::Status::GenericFailure, format!("{value}")),
+      Error::SignatureNotFound => napi::Error::new(napi::Status::GenericFailure, format!("{value}")),
     }
   }
 }
