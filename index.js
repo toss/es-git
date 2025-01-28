@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Commit, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature } = nativeBinding
+const { Commit, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isReferenceNameValid, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryOpenFlags, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
 
 module.exports.Commit = Commit
 module.exports.DiffFlags = DiffFlags
@@ -356,3 +356,7 @@ module.exports.revparseModeContains = revparseModeContains
 module.exports.RevwalkSort = RevwalkSort
 module.exports.Revwalk = Revwalk
 module.exports.createSignature = createSignature
+module.exports.TreeWalkMode = TreeWalkMode
+module.exports.Tree = Tree
+module.exports.TreeIter = TreeIter
+module.exports.TreeEntry = TreeEntry
