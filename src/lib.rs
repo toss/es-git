@@ -12,6 +12,7 @@ pub mod repository;
 pub mod revparse;
 pub mod revwalk;
 pub mod signature;
+pub mod tree;
 pub(crate) mod util;
 
 pub use error::Error;

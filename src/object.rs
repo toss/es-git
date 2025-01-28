@@ -45,7 +45,7 @@ impl From<ObjectType> for git2::ObjectType {
 
 pub(crate) enum ObjectInner {
   Repo(SharedReference<Repository, git2::Object<'static>>),
-  Object(git2::Object<'static>),
+  Owned(git2::Object<'static>),
 }
 
 impl Deref for ObjectInner {
@@ -54,7 +54,7 @@ impl Deref for ObjectInner {
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Repo(inner) => inner.deref(),
-      Self::Object(inner) => inner,
+      Self::Owned(inner) => inner,
     }
   }
 }
@@ -92,7 +92,7 @@ impl GitObject {
   pub fn peel(&self, obj_type: ObjectType) -> crate::Result<Self> {
     let git_object = self.inner.peel(obj_type.into())?;
     let object = Self {
-      inner: ObjectInner::Object(git_object),
+      inner: ObjectInner::Owned(git_object),
     };
     Ok(object)
   }
@@ -102,7 +102,7 @@ impl GitObject {
   pub fn peel_to_commit(&self) -> crate::Result<Commit> {
     let git_commit = self.inner.peel_to_commit()?;
     let commit = Commit {
-      inner: CommitInner::Commit(git_commit),
+      inner: CommitInner::Owned(git_commit),
     };
     Ok(commit)
   }
@@ -113,7 +113,7 @@ impl GitObject {
   /// Returns `null` if the object is not actually a commit.
   pub fn as_commit(&self) -> Option<Commit> {
     self.inner.as_commit().map(|x| Commit {
-      inner: CommitInner::Commit(x.clone()),
+      inner: CommitInner::Owned(x.clone()),
     })
   }
 }

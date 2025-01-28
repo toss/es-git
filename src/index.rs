@@ -318,6 +318,14 @@ impl Index {
   }
 
   #[napi]
+  /// Write an existing index object from memory back to disk using an atomic
+  /// file lock.
+  pub fn write(&mut self) -> crate::Result<()> {
+    self.inner.write()?;
+    Ok(())
+  }
+
+  #[napi]
   /// Write the index as a tree.
   ///
   /// This method will scan the index and write a representation of its

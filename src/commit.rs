@@ -1,5 +1,6 @@
 use crate::repository::Repository;
 use crate::signature::Signature;
+use crate::tree::{Tree, TreeInner};
 use chrono::{DateTime, Utc};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -7,7 +8,7 @@ use std::ops::Deref;
 
 pub(crate) enum CommitInner {
   Repo(SharedReference<Repository, git2::Commit<'static>>),
-  Commit(git2::Commit<'static>),
+  Owned(git2::Commit<'static>),
 }
 
 impl Deref for CommitInner {
@@ -16,7 +17,7 @@ impl Deref for CommitInner {
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Repo(repo) => repo.deref(),
-      Self::Commit(commit) => commit,
+      Self::Owned(commit) => commit,
     }
   }
 }
@@ -101,6 +102,17 @@ impl Commit {
   pub fn time(&self) -> crate::Result<DateTime<Utc>> {
     let time = DateTime::from_timestamp(self.inner.time().seconds(), 0).ok_or(crate::Error::InvalidTime)?;
     Ok(time)
+  }
+
+  #[napi]
+  /// Get the tree pointed to by a commit.
+  pub fn tree(&self, this: Reference<Commit>, env: Env) -> crate::Result<Tree> {
+    let tree = this.share_with(env, |commit| {
+      commit.inner.tree().map_err(crate::Error::from).map_err(|e| e.into())
+    })?;
+    Ok(Tree {
+      inner: TreeInner::Commit(tree),
+    })
   }
 }
 
