@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import glob from 'tiny-glob';
+import glob from 'fast-glob';
 import { makeTmpDir } from './tmp';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,7 +16,7 @@ export async function useFixture(name: string) {
 async function copy(src: string, dest: string) {
   const files = await glob('**/*', {
     cwd: src,
-    filesOnly: true,
+    onlyFiles: true,
     dot: true,
   });
   await Promise.all(
