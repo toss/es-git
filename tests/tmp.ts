@@ -12,7 +12,7 @@ afterAll(async () => {
 });
 
 export async function makeTmpDir(prefix?: string) {
-  const tmpdir = path.join(os.tmpdir(), 'esgit', prefix ?? '', randomHex(8));
+  const tmpdir = path.join(os.tmpdir(), 'es-git', prefix ?? '', randomHex(8));
   await fs.mkdir(tmpdir, { recursive: true });
   tmpDirs.push(tmpdir);
   return tmpdir;
