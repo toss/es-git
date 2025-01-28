@@ -163,6 +163,34 @@ impl Repository {
       .workdir()
       .and_then(|path| util::path_to_js_string(&env, path).ok())
   }
+
+  #[napi]
+  /// Retrieve and resolve the reference pointed at by HEAD.
+  pub fn head(&self, this: Reference<Repository>, env: Env) -> crate::Result<crate::reference::Reference> {
+    Ok(crate::reference::Reference {
+      inner: this.share_with(env, |repo| {
+        repo.inner.head().map_err(crate::Error::from).map_err(|e| e.into())
+      })?,
+    })
+  }
+
+  #[napi]
+  /// Make the repository HEAD point to the specified reference.
+  ///
+  /// If the provided reference points to a tree or a blob, the HEAD is
+  /// unaltered and an error is returned.
+  ///
+  /// If the provided reference points to a branch, the HEAD will point to
+  /// that branch, staying attached, or become attached if it isn't yet. If
+  /// the branch doesn't exist yet, no error will be returned. The HEAD will
+  /// then be attached to an unborn branch.
+  ///
+  /// Otherwise, the HEAD will be detached and will directly point to the
+  /// commit.
+  pub fn set_head(&self, refname: String) -> crate::Result<()> {
+    self.inner.set_head(&refname)?;
+    Ok(())
+  }
 }
 
 fn update_submodules(repo: &git2::Repository) -> crate::Result<()> {
