@@ -5,6 +5,7 @@ use napi_derive::napi;
 use std::path::Path;
 
 #[napi(string_enum)]
+/// A listing of the possible states that a repository can be in.
 pub enum RepositoryState {
   Clean,
   Merge,
