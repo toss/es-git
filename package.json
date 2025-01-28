@@ -1,5 +1,5 @@
 {
-  "name": "esgit",
+  "name": "es-git",
   "version": "0.0.11",
   "main": "index.js",
   "types": "index.d.ts",
@@ -7,15 +7,15 @@
     "index.js",
     "index.d.ts"
   ],
-  "bugs": "https://github.com/toss/esgit/issues",
+  "bugs": "https://github.com/toss/es-git/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/toss/esgit.git"
+    "url": "https://github.com/toss/es-git.git"
   },
   "license": "MIT",
-  "packageManager": "yarn@4.5.1",
+  "packageManager": "yarn@4.6.0",
   "napi": {
-    "name": "esgit",
+    "name": "es-git",
     "triples": {
       "defaults": false,
       "additional": [
@@ -28,7 +28,7 @@
     }
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 16"
   },
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",

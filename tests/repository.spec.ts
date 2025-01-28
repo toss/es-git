@@ -53,4 +53,29 @@ describe('Repository', () => {
     });
     expect(repo.state()).toBe('Clean');
   });
+
+  it('get head', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const ref = repo.head();
+    expect(ref.name()).toEqual('refs/heads/main');
+    expect(ref.shorthand()).toEqual('main');
+    expect(ref.type()).toEqual('Direct');
+    expect(ref.target()).toEqual('a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+    expect(ref.isBranch()).toBe(true);
+    expect(ref.symbolicTarget()).toBeNull();
+  });
+
+  it('set head', async () => {
+    const p = await useFixture('revparse');
+    const repo = await openRepository(p);
+    repo.setHead('refs/heads/other');
+    const ref = repo.head();
+    expect(ref.name()).toEqual('refs/heads/other');
+    expect(ref.shorthand()).toEqual('other');
+    expect(ref.type()).toEqual('Direct');
+    expect(ref.target()).toEqual('b580e5f5030f508a3658a4155f44cdd9754950c5');
+    expect(ref.isBranch()).toBe(true);
+    expect(ref.symbolicTarget()).toBeNull();
+  });
 });

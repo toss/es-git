@@ -7,7 +7,7 @@ on:
       - 'v*.*.*'
 env:
   DEBUG: napi:*
-  APP_NAME: esgit
+  APP_NAME: es-git
   MACOSX_DEPLOYMENT_TARGET: '10.13'
 jobs:
   build:

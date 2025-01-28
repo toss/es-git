@@ -1375,6 +1375,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"es-git@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "es-git@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:^1.9.4"
+    "@napi-rs/cli": "npm:^2.18.4"
+    "@types/jscodeshift": "npm:^0.12.0"
+    "@types/node": "npm:^22.8.4"
+    fast-glob: "npm:^3.3.3"
+    jscodeshift: "npm:^17.1.2"
+    tiny-glob: "npm:^0.2.9"
+    typescript: "npm:^5.6.3"
+    vitest: "npm:^2.1.4"
+  languageName: unknown
+  linkType: soft
+
 "esbuild@npm:^0.21.3":
   version: 0.21.5
   resolution: "esbuild@npm:0.21.5"
@@ -1461,22 +1477,6 @@ __metadata:
   checksum: 10c0/ced4dd3a78e15897ed3be74e635110bbf3b08877b0a41be50dcb325ee0e0b5f65fc2d50e9845194d7c4633f327e2e1c6cce00a71b617c5673df0374201d67f65
   languageName: node
   linkType: hard
-
-"esgit@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "esgit@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:^1.9.4"
-    "@napi-rs/cli": "npm:^2.18.4"
-    "@types/jscodeshift": "npm:^0.12.0"
-    "@types/node": "npm:^22.8.4"
-    fast-glob: "npm:^3.3.3"
-    jscodeshift: "npm:^17.1.2"
-    tiny-glob: "npm:^0.2.9"
-    typescript: "npm:^5.6.3"
-    vitest: "npm:^2.1.4"
-  languageName: unknown
-  linkType: soft
 
 "esprima@npm:~4.0.0":
   version: 4.0.1
