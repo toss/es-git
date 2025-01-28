@@ -5,7 +5,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const ko = defineConfig({
   lang: 'ko',
-  description: '빠른 성능, 작은 번들 사이즈를 가지는 현대적인 JavaScript 유틸리티 라이브러리',
+  description: 'TODO',
   themeConfig: {
     nav: nav(),
     sidebar: sidebar(),

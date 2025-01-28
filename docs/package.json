@@ -1,5 +1,6 @@
 {
   "name": "docs",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vitepress dev",
@@ -7,6 +8,7 @@
     "preview": "vitepress preview"
   },
   "devDependencies": {
+    "@types/markdown-it-container": "^2.0.10",
     "fast-glob": "^3.3.3",
     "markdown-it-container": "^4.0.0",
     "typescript": "^5.7.3",

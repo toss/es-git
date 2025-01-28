@@ -8,9 +8,9 @@ hero:
   # tagline:
   actions:
     - theme: brand
-      text: About es-git
+      text: es-git 알아보기
       link: /intro
     - theme: alt
-      text: Usage
+      text: 설치 및 사용
       link: /usage
 ---

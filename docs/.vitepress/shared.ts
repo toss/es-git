@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { defineConfig } from 'vitepress';
+import { search as koSearch } from './ko.js';
 
 const require = createRequire(import.meta.url);
 
@@ -32,11 +33,7 @@ export const shared = defineConfig({
         href: 'https://static.toss.im/tps/others.css',
       },
     ],
-    [
-      'script',
-      {},
-      `window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };`,
-    ],
+    ['script', {}, 'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };'],
     [
       'script',
       {
@@ -65,7 +62,6 @@ export const shared = defineConfig({
       options: {
         locales: {
           ...koSearch,
-          ...zh_hansSearch,
         },
       },
     },
@@ -86,12 +82,12 @@ export const shared = defineConfig({
         vue: path.dirname(
           require.resolve('vue/package.json', {
             paths: [require.resolve('vitepress')],
-          }),
+          })
         ),
         'vue/server-renderer': path.dirname(
           require.resolve('vue/server-renderer', {
             paths: [require.resolve('vitepress')],
-          }),
+          })
         ),
       },
     },

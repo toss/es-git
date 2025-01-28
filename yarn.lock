@@ -1491,7 +1491,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/markdown-it@npm:^14.1.2":
+"@types/markdown-it-container@npm:^2.0.10":
+  version: 2.0.10
+  resolution: "@types/markdown-it-container@npm:2.0.10"
+  dependencies:
+    "@types/markdown-it": "npm:*"
+  checksum: 10c0/a2e0548974586c463993167dd43a5435c945e86bbd541695d3a7c19a8f18a559c69958d87b9d00e59735bb9a85b82f006932bf24f01e4c27b4c89554797d3d2e
+  languageName: node
+  linkType: hard
+
+"@types/markdown-it@npm:*, @types/markdown-it@npm:^14.1.2":
   version: 14.1.2
   resolution: "@types/markdown-it@npm:14.1.2"
   dependencies:
@@ -2314,6 +2323,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:docs"
   dependencies:
+    "@types/markdown-it-container": "npm:^2.0.10"
     fast-glob: "npm:^3.3.3"
     markdown-it-container: "npm:^4.0.0"
     typescript: "npm:^5.7.3"
