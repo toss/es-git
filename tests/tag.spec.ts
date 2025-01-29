@@ -100,8 +100,21 @@ describe('tag', () => {
       },
     });
     const secondCommit = repo.getCommit('26cf7eb');
-    expect(() => repo.createTag('a0', secondCommit.asObject(), 'new a0')).toThrowError(/tag already exists/);
-    const tagId = repo.createTag('a0', secondCommit.asObject(), 'new a0', { force: true });
+    expect(() =>
+      repo.createTag('a0', secondCommit.asObject(), 'new a0', {
+        tagger: {
+          name: 'Seokju Na',
+          email: 'seokju.me@toss.im',
+        },
+      })
+    ).toThrowError(/tag already exists/);
+    const tagId = repo.createTag('a0', secondCommit.asObject(), 'new a0', {
+      tagger: {
+        name: 'Seokju Na',
+        email: 'seokju.me@toss.im',
+      },
+      force: true,
+    });
     const tag = repo.getTag(tagId);
     expect(tag.name()).toEqual('a0');
   });
