@@ -149,7 +149,11 @@ index e019be0..0000000
 @@ -1 +0,0 @@
 second
 `);
-    expect(diff.print({ format: 'PatchHeader' })).toEqual(`diff --git a/second b/second
+    expect(diff.print({ format: 'PatchHeader' })).toEqual(`diff --git a/first b/first
+index 9c59e24..46d3a3e 100644
+--- a/first
++++ b/first
+diff --git a/second b/second
 deleted file mode 100644
 index e019be0..0000000
 --- a/second
