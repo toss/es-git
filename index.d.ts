@@ -5,7 +5,19 @@
 
 export interface CommitOptions {
   updateRef?: string
+  /**
+   * Signature for author.
+   *
+   * If not provided, default signature of repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
   author?: SignaturePayload
+  /**
+   * Signature for commiter.
+   *
+   * If not provided, default signature of repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
   committer?: SignaturePayload
   parents?: Array<string>
 }
@@ -706,6 +718,34 @@ export interface SignaturePayload {
   email: string
   timeOptions?: SignatureTimeOptions
 }
+/**
+ * Determine whether a tag name is valid, meaning that (when prefixed with refs/tags/) that
+ * it is a valid reference name, and that any additional tag name restrictions are imposed
+ * (eg, it cannot start with a -).
+ */
+export declare function isValidTagName(tagName: string): boolean
+export interface CreateTagOptions {
+  /**
+   * Signature for tagger.
+   *
+   * If not provided, default signature of repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  tagger?: SignaturePayload
+  force?: boolean
+}
+export interface CreateAnnotationTagOptions {
+  /**
+   * Signature for tagger.
+   *
+   * If not provided, default signature of repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  tagger?: SignaturePayload
+}
+export interface CreateLightweightTagOptions {
+  force?: boolean
+}
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /** A structure to represent a git commit */
 export declare class Commit {
@@ -753,6 +793,8 @@ export declare class Commit {
   time(): Date
   /** Get the tree pointed to by a commit. */
   tree(): Tree
+  /** Casts this Commit to be usable as an `GitObject` */
+  asObject(): GitObject
 }
 /**
  * The diff object that contains all individual file deltas.
@@ -1348,6 +1390,64 @@ export declare class Repository {
   revparseSingle(spec: string): string
   /** Create a revwalk that can be used to traverse the commit graph. */
   revwalk(): Revwalk
+  /**
+   * Lookup a tag object by prefix hash from the repository.
+   *
+   * Returns `null` if tag does not exist.
+   */
+  findTag(oid: string): Tag | null
+  /** Lookup a tag object by prefix hash from the repository. */
+  getTag(oid: string): Tag
+  /**
+   * Get a list with all the tags in the repository.
+   *
+   * An optional fnmatch pattern can also be specified.
+   */
+  tagNames(pattern?: string | undefined | null): Array<string>
+  /**
+   * iterate over all tags calling `callback` on each.
+   * the callback is provided the tag id and name
+   */
+  tagForeach(callback: (oid: string, name: string) => boolean): void
+  /**
+   * Delete an existing tag reference.
+   *
+   * The tag name will be checked for validity, see `tag` for some rules
+   * about valid names.
+   */
+  deleteTag(name: string): void
+  /**
+   * Create a new tag in the repository from an object
+   *
+   * A new reference will also be created pointing to this tag object. If
+   * `force` is true and a reference already exists with the given name,
+   * it'll be replaced.
+   *
+   * The message will not be cleaned up.
+   *
+   * The tag name will be checked for validity. You must avoid the characters
+   * '~', '^', ':', ' \ ', '?', '[', and '*', and the sequences ".." and " @
+   * {" which have special meaning to revparse.
+   */
+  createTag(name: string, target: GitObject, message: string, options?: CreateTagOptions | undefined | null): string
+  /**
+   * Create a new tag in the repository from an object without creating a reference.
+   *
+   * The message will not be cleaned up.
+   *
+   * The tag name will be checked for validity. You must avoid the characters
+   * '~', '^', ':', ' \ ', '?', '[', and '*', and the sequences ".." and " @
+   * {" which have special meaning to revparse.
+   */
+  createAnnotationTag(name: string, target: GitObject, message: string, options?: CreateAnnotationTagOptions | undefined | null): string
+  /**
+   * Create a new lightweight tag pointing at a target object
+   *
+   * A new direct reference will be created pointing to this target object.
+   * If force is true and a reference already exists with the given name,
+   * it'll be replaced.
+   */
+  createLightweightTag(name: string, target: GitObject, options?: CreateLightweightTagOptions | undefined | null): string
   /** Lookup a reference to one of the objects in a repository. */
   getTree(oid: string): Tree
   /**
@@ -1448,6 +1548,46 @@ export declare class Revwalk {
    * The reference must point to a commitish.
    */
   hideRef(reference: string): this
+}
+/**
+ * A structure to represent a git [tag][1]
+ *
+ * [1]: http://git-scm.com/book/en/Git-Basics-Tagging
+ */
+export declare class Tag {
+  /** Get the id (SHA1) of a repository tag */
+  id(): string
+  /**
+   * Get the message of a tag
+   *
+   * Returns `null`` if there is no message or if it is not valid utf8
+   */
+  message(): string | null
+  /**
+   * Get the name of a tag
+   *
+   * Throws error if it is not valid utf8
+   */
+  name(): string
+  /** Recursively peel a tag until a non tag git_object is found */
+  peel(): GitObject
+  /**
+   * Get the tagger (author) of a tag
+   *
+   * If the author is unspecified, then `null` is returned.
+   */
+  tagger(): Signature | null
+  /**
+   * Get the tagged object of a tag
+   *
+   * This method performs a repository lookup for the given object and
+   * returns it
+   */
+  target(): GitObject
+  /** Get the OID of the tagged object of a tag */
+  targetId(): string
+  /** Get the ObjectType of the tagged object of a tag */
+  targetType(): ObjectType | null
 }
 /**
  * A structure to represent a git [tree][1]
