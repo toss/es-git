@@ -1,3 +1,4 @@
+use crate::object::{GitObject, ObjectInner};
 use crate::repository::Repository;
 use crate::signature::{Signature, SignaturePayload};
 use crate::tree::{Tree, TreeInner};
@@ -9,7 +10,15 @@ use std::ops::Deref;
 #[napi(object)]
 pub struct CommitOptions {
   pub update_ref: Option<String>,
+  /// Signature for author.
+  ///
+  /// If not provided, default signature of repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
   pub author: Option<SignaturePayload>,
+  /// Signature for commiter.
+  ///
+  /// If not provided, default signature of repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
   pub committer: Option<SignaturePayload>,
   pub parents: Option<Vec<String>>,
 }
@@ -121,6 +130,15 @@ impl Commit {
     Ok(Tree {
       inner: TreeInner::Commit(tree),
     })
+  }
+
+  #[napi]
+  /// Casts this Commit to be usable as an `GitObject`
+  pub fn as_object(&self) -> GitObject {
+    let obj = self.inner.as_object().clone();
+    GitObject {
+      inner: ObjectInner::Owned(obj),
+    }
   }
 }
 
