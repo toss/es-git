@@ -1,7 +1,4 @@
-import path from 'node:path';
 import { type DefaultTheme, defineConfig } from 'vitepress';
-
-const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const ko = defineConfig({
   lang: 'ko',
@@ -13,7 +10,6 @@ export const ko = defineConfig({
       pattern: 'https://github.com/toss/es-git/edit/main/docs/:path',
       text: 'GitHub에서 수정하기',
     },
-
     footer: {
       message: 'MIT 라이선스에 따라 배포됩니다.',
       copyright: `Copyright © ${new Date().getFullYear()} Viva Republica, Inc.`,
@@ -25,7 +21,6 @@ function nav(): DefaultTheme.NavItem[] {
   return [
     { text: '홈', link: '/ko' },
     { text: '소개', link: '/ko/intro' },
-    { text: '레퍼런스', link: '/ko/reference/array/chunk' },
   ];
 }
 
@@ -37,8 +32,6 @@ function sidebar(): DefaultTheme.Sidebar {
         { text: '소개', link: '/ko/intro' },
         { text: '설치 및 사용 방법', link: '/ko/usage' },
         { text: '번들 사이즈', link: '/ko/bundle-size' },
-        { text: '성능', link: '/ko/performance' },
-        { text: 'Lodash와 호환성', link: '/ko/compatibility' },
       ],
     },
     {
