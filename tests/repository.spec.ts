@@ -37,13 +37,13 @@ describe('Repository', () => {
 
   it('clone from remote', { skip: LINUX }, async () => {
     const p = await makeTmpDir('clone');
-    const repo = await cloneRepository('https://github.com/toss/es-toolkit', p);
+    const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.state()).toBe('Clean');
   });
 
   it('clone from remote with credential', { skip: CI || LINUX }, async () => {
     const p = await makeTmpDir('clone');
-    const repo = await cloneRepository('git@github.com:toss/es-toolkit', p, {
+    const repo = await cloneRepository('git@github.com:seokju-na/dummy-repo', p, {
       fetch: {
         followRedirects: 'All',
         credential: {
