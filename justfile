@@ -58,6 +58,6 @@ lint-js:
 typecheck:
     yarn tsc --noEmit
 
-# Start docs development
+# Start docs development server
 docs:
     yarn workspace docs run dev
