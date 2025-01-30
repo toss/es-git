@@ -600,20 +600,20 @@ export interface RepositoryInitOptions {
   originUrl?: string
 }
 export interface RepositoryOpenOptions {
-  flags: RepositoryOpenFlags
+  flags: number
   ceilingDirs?: Array<string>
 }
 export const enum RepositoryOpenFlags {
-  /** Only open the specified path; don't walk upward searching. */
-  NoSearch = 0,
-  /** Search across filesystem boundaries. */
-  CrossFS = 1,
-  /** Force opening as a bare repository, and defer loading its config. */
-  Bare = 2,
-  /** Don't try appending `/.git` to the specified repository path. */
-  NoDotGit = 3,
-  /** Respect environment variables like `$GIT_DIR`. */
-  FromEnv = 4
+  /** Only open the specified path; don't walk upward searching. (1 << 0) */
+  NoSearch = 1,
+  /** Search across filesystem boundaries. (1 << 1) */
+  CrossFS = 2,
+  /** Force opening as a bare repository, and defer loading its config. (1 << 2) */
+  Bare = 4,
+  /** Don't try appending `/.git` to the specified repository path. (1 << 3) */
+  NoDotGit = 8,
+  /** Respect environment variables like `$GIT_DIR`. (1 << 4) */
+  FromEnv = 16
 }
 export interface RepositoryCloneOptions {
   recursive?: boolean
