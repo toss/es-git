@@ -65,34 +65,23 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 
 #[napi(object)]
 pub struct RepositoryOpenOptions {
-  pub flags: RepositoryOpenFlags,
+  pub flags: u32,
   pub ceiling_dirs: Option<Vec<String>>,
 }
 
 #[napi]
+#[repr(u32)]
 pub enum RepositoryOpenFlags {
-  /// Only open the specified path; don't walk upward searching.
-  NoSearch,
-  /// Search across filesystem boundaries.
-  CrossFS,
-  /// Force opening as a bare repository, and defer loading its config.
-  Bare,
-  /// Don't try appending `/.git` to the specified repository path.
-  NoDotGit,
-  /// Respect environment variables like `$GIT_DIR`.
-  FromEnv,
-}
-
-impl From<RepositoryOpenFlags> for git2::RepositoryOpenFlags {
-  fn from(val: RepositoryOpenFlags) -> Self {
-    match val {
-      RepositoryOpenFlags::NoSearch => git2::RepositoryOpenFlags::NO_SEARCH,
-      RepositoryOpenFlags::CrossFS => git2::RepositoryOpenFlags::CROSS_FS,
-      RepositoryOpenFlags::Bare => git2::RepositoryOpenFlags::BARE,
-      RepositoryOpenFlags::NoDotGit => git2::RepositoryOpenFlags::NO_DOTGIT,
-      RepositoryOpenFlags::FromEnv => git2::RepositoryOpenFlags::FROM_ENV,
-    }
-  }
+  /// Only open the specified path; don't walk upward searching. (1 << 0)
+  NoSearch = 1,
+  /// Search across filesystem boundaries. (1 << 1)
+  CrossFS = 2,
+  /// Force opening as a bare repository, and defer loading its config. (1 << 2)
+  Bare = 4,
+  /// Don't try appending `/.git` to the specified repository path. (1 << 3)
+  NoDotGit = 8,
+  /// Respect environment variables like `$GIT_DIR`. (1 << 4)
+  FromEnv = 16,
 }
 
 #[napi(object)]
@@ -256,7 +245,7 @@ impl Task for OpenRepositoryTask {
 
   fn compute(&mut self) -> Result<Self::Output> {
     let inner = if let Some(opts) = &self.options {
-      let flags = opts.flags.to_owned().into();
+      let flags = git2::RepositoryOpenFlags::from_bits_truncate(opts.flags);
       let ceiling_dirs = opts.ceiling_dirs.to_owned().unwrap_or_default();
       git2::Repository::open_ext(&self.path, flags, ceiling_dirs)
     } else {
