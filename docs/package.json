@@ -10,8 +10,7 @@
   "devDependencies": {
     "@types/markdown-it-container": "^2.0.10",
     "fast-glob": "^3.3.3",
-    "typescript": "^5.7.3",
-    "vitepress": "^1.6.3",
-    "vue": "^3.5.13"
+    "typescript": "5.7.3",
+    "vitepress": "^1.6.3"
   }
 }
