@@ -147,7 +147,7 @@ impl Default for ReferenceFormat {
 /// );
 /// ```
 pub fn normalize_reference_name(refname: String, format: Option<u32>) -> Option<String> {
-  let ref_format = git2::ReferenceFormat::from_bits_retain(format.unwrap_or(ReferenceFormat::default() as u32));
+  let ref_format = git2::ReferenceFormat::from_bits_truncate(format.unwrap_or(ReferenceFormat::default() as u32));
   git2::Reference::normalize_name(&refname, ref_format).ok()
 }
 

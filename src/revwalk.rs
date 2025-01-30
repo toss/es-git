@@ -64,7 +64,7 @@ impl Revwalk {
   pub fn set_sorting(&mut self, sort: u32) -> Result<&Self> {
     self
       .inner
-      .set_sorting(git2::Sort::from_bits_retain(sort))
+      .set_sorting(git2::Sort::from_bits_truncate(sort))
       .map_err(crate::Error::from)
       .map_err(Error::from)?;
     Ok(self)
