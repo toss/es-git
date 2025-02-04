@@ -49,6 +49,6 @@
     "fast-glob": "^3.3.3",
     "jscodeshift": "^17.1.2",
     "typescript": "5.7.3",
-    "vitest": "^2.1.4"
+    "vitest": "^3.0.5"
   }
 }
