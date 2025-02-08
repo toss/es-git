@@ -12,7 +12,7 @@ export function getSidebarItems(docsRoot: string, ...parts: string[]): DefaultTh
 
     return {
       text: filename,
-      link: p.replace(/\.md$/g, '')
+      link: p.replace(/\.md$/g, ''),
     };
   });
 }
