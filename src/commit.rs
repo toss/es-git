@@ -41,6 +41,7 @@ impl Deref for CommitInner {
 
 #[napi]
 /// A structure to represent a git commit
+/// @hideconstructor
 pub struct Commit {
   pub(crate) inner: CommitInner,
 }

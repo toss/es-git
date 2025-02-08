@@ -345,6 +345,7 @@ export type ReferenceType = /** A reference which points at an object id. */
  * was given to [`Reference::normalize_name`]. No normalization is
  * performed, however.
  *
+ * @example
  * ```ts
  * import { isReferenceNameValid } from 'es-git';
  *
@@ -747,7 +748,10 @@ export interface CreateLightweightTagOptions {
   force?: boolean
 }
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
-/** A structure to represent a git commit */
+/**
+ * A structure to represent a git commit
+ * @hideconstructor
+ */
 export declare class Commit {
   /** Get the id (SHA1) of a repository commit */
   id(): string
@@ -802,6 +806,8 @@ export declare class Commit {
  * This is an opaque structure which will be allocated by one of the diff
  * generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
  * or other `diff_*` functions).
+ *
+ * @hideconstructor
  */
 export declare class Diff {
   /**
@@ -824,7 +830,11 @@ export declare class Diff {
   /** Iterate over a diff generating formatted text output. */
   print(options?: DiffPrintOptions | undefined | null): string
 }
-/** Structure describing a hunk of a diff. */
+/**
+ * Structure describing a hunk of a diff.
+ *
+ * @hideconstructor
+ */
 export declare class DiffStats {
   /** Get the total number of files changed in a diff. */
   get filesChanged(): bigint
@@ -833,11 +843,19 @@ export declare class DiffStats {
   /** Get the total number of deletions in a diff */
   get deletions(): bigint
 }
-/** An iterator over the diffs in a delta */
+/**
+ * An iterator over the diffs in a delta
+ *
+ * @hideconstructor
+ */
 export declare class Deltas {
   [Symbol.iterator](): Iterator<DiffDelta, void, void>
 }
-/** Description of changes to one entry. */
+/**
+ * Description of changes to one entry.
+ *
+ * @hideconstructor
+ */
 export declare class DiffDelta {
   /**
    * Returns the flags on the delta.
@@ -870,6 +888,8 @@ export declare class DiffDelta {
  * Although this is called a "file" it could represent a file, a symbolic
  * link, a submodule commit id, or even a tree (although that only happens if
  * you are tracking type changes or ignored/untracked directories).
+ *
+ * @hideconstructor
  */
 export declare class DiffFile {
   /**
@@ -897,6 +917,7 @@ export declare class DiffFile {
 }
 /**
  * A structure to represent a git [index][1]
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -1035,12 +1056,17 @@ export declare class Index {
   /** Get an iterator over the entries in this index. */
   entries(): IndexEntries
 }
-/** An iterator over the entries in an index */
+/**
+ * An iterator over the entries in an index
+ *
+ * @hideconstructor
+ */
 export declare class IndexEntries {
   [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
 /**
  * A structure to represent a git [object][1]
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -1072,6 +1098,7 @@ export declare class GitObject {
 }
 /**
  * A structure to represent a git [reference][1].
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-References
  */
@@ -1164,6 +1191,7 @@ export declare class Reference {
 }
 /**
  * A structure representing a [remote][1] of a git repository.
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
  */
@@ -1220,6 +1248,8 @@ export declare class Remote {
  *
  * When a repository goes out of scope, it is freed in memory but not deleted
  * from the filesystem.
+ *
+ * @hideconstructor
  */
 export declare class Repository {
   /**
@@ -1281,8 +1311,8 @@ export declare class Repository {
    * The tree you provide will be used for the "old_file" side of the delta,
    * and the working directory will be used for the "new_file" side.
    *
-   * This is not the same as `git diff <treeish>` or `git diff-index
-   * <treeish>`.  Those commands use information from the index, whereas this
+   * This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
+   * Those commands use information from the index, whereas this
    * function strictly returns the differences between the tree and the files
    * in the working directory, regardless of the state of the index.  Use
    * `tree_to_workdir_with_index` to emulate those commands.
@@ -1460,6 +1490,8 @@ export declare class Repository {
 /**
  * A revwalk allows traversal of the commit graph defined by including one or
  * more leaves and excluding one or more roots.
+ *
+ * @hideconstructor
  */
 export declare class Revwalk {
   [Symbol.iterator](): Iterator<string, void, void>
@@ -1551,6 +1583,7 @@ export declare class Revwalk {
 }
 /**
  * A structure to represent a git [tag][1]
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Basics-Tagging
  */
@@ -1591,6 +1624,7 @@ export declare class Tag {
 }
 /**
  * A structure to represent a git [tree][1]
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -1630,13 +1664,19 @@ export declare class Tree {
   /** Casts this Tree to be usable as an `GitObject` */
   asObject(): GitObject
 }
-/** An iterator over the entries in a tree. */
+/**
+ * An iterator over the entries in a tree.
+ *
+ * @hideconstructor
+ */
 export declare class TreeIter {
   [Symbol.iterator](): Iterator<TreeEntry, void, void>
 }
 /**
  * A structure representing an entry inside of a tree. An entry is borrowed
  * from a tree.
+ *
+ * @hideconstructor
  */
 export declare class TreeEntry {
   /** Get the id of the object pointed by the entry */

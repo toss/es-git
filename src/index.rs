@@ -187,6 +187,7 @@ pub struct IndexUpdateAllOptions {
 
 #[napi]
 /// A structure to represent a git [index][1]
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Index {
@@ -469,6 +470,8 @@ impl Index {
 
 #[napi(iterator)]
 /// An iterator over the entries in an index
+///
+/// @hideconstructor
 pub struct IndexEntries {
   pub(crate) inner: SharedReference<Index, git2::IndexEntries<'static>>,
 }

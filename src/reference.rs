@@ -32,6 +32,7 @@ impl From<git2::ReferenceType> for ReferenceType {
 
 #[napi]
 /// A structure to represent a git [reference][1].
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-References
 pub struct Reference {
@@ -45,6 +46,7 @@ pub struct Reference {
 /// was given to [`Reference::normalize_name`]. No normalization is
 /// performed, however.
 ///
+/// @example
 /// ```ts
 /// import { isReferenceNameValid } from 'es-git';
 ///

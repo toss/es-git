@@ -32,6 +32,8 @@ pub enum RevwalkSort {
 #[napi(iterator)]
 /// A revwalk allows traversal of the commit graph defined by including one or
 /// more leaves and excluding one or more roots.
+///
+/// @hideconstructor
 pub struct Revwalk {
   pub(crate) inner: SharedReference<Repository, git2::Revwalk<'static>>,
 }

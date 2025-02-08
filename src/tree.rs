@@ -41,6 +41,7 @@ impl Deref for TreeInner {
 
 #[napi]
 /// A structure to represent a git [tree][1]
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Tree {
@@ -184,6 +185,8 @@ impl Tree {
 
 #[napi(iterator)]
 /// An iterator over the entries in a tree.
+///
+/// @hideconstructor
 pub struct TreeIter {
   pub(crate) inner: SharedReference<Tree, git2::TreeIter<'static>>,
 }
@@ -220,6 +223,8 @@ impl Deref for TreeEntryInner {
 #[napi]
 /// A structure representing an entry inside of a tree. An entry is borrowed
 /// from a tree.
+///
+/// @hideconstructor
 pub struct TreeEntry {
   pub(crate) inner: TreeEntryInner,
 }

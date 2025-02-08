@@ -139,6 +139,8 @@ pub struct DiffPrintOptions {
 /// This is an opaque structure which will be allocated by one of the diff
 /// generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
 /// or other `diff_*` functions).
+///
+/// @hideconstructor
 pub struct Diff {
   pub(crate) inner: SharedReference<Repository, git2::Diff<'static>>,
 }
@@ -198,6 +200,8 @@ impl Diff {
 
 #[napi]
 /// Structure describing a hunk of a diff.
+///
+/// @hideconstructor
 pub struct DiffStats {
   pub(crate) inner: git2::DiffStats,
 }
@@ -225,6 +229,8 @@ impl DiffStats {
 
 #[napi(iterator)]
 /// An iterator over the diffs in a delta
+///
+/// @hideconstructor
 pub struct Deltas {
   pub(crate) inner: SharedReference<Diff, git2::Deltas<'static>>,
 }
@@ -242,6 +248,8 @@ impl Generator for Deltas {
 
 #[napi]
 /// Description of changes to one entry.
+///
+/// @hideconstructor
 pub struct DiffDelta {
   pub(crate) inner: git2::DiffDelta<'static>,
 }
@@ -338,6 +346,8 @@ impl From<FileMode> for git2::FileMode {
 /// Although this is called a "file" it could represent a file, a symbolic
 /// link, a submodule commit id, or even a tree (although that only happens if
 /// you are tracking type changes or ignored/untracked directories).
+///
+/// @hideconstructor
 pub struct DiffFile {
   pub(crate) inner: git2::DiffFile<'static>,
 }
@@ -724,8 +734,8 @@ impl Repository {
   /// The tree you provide will be used for the "old_file" side of the delta,
   /// and the working directory will be used for the "new_file" side.
   ///
-  /// This is not the same as `git diff <treeish>` or `git diff-index
-  /// <treeish>`.  Those commands use information from the index, whereas this
+  /// This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
+  /// Those commands use information from the index, whereas this
   /// function strictly returns the differences between the tree and the files
   /// in the working directory, regardless of the state of the index.  Use
   /// `tree_to_workdir_with_index` to emulate those commands.

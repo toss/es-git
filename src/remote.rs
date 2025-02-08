@@ -455,6 +455,7 @@ impl Task for GetRemoteDefaultBranchTask {
 
 #[napi]
 /// A structure representing a [remote][1] of a git repository.
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 pub struct Remote {

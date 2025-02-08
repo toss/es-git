@@ -14,6 +14,7 @@ pub fn is_valid_tag_name(tag_name: String) -> bool {
 
 #[napi]
 /// A structure to represent a git [tag][1]
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Basics-Tagging
 pub struct Tag {

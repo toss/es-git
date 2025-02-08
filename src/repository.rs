@@ -98,6 +98,8 @@ pub struct RepositoryCloneOptions {
 ///
 /// When a repository goes out of scope, it is freed in memory but not deleted
 /// from the filesystem.
+///
+/// @hideconstructor
 pub struct Repository {
   pub(crate) inner: git2::Repository,
 }
