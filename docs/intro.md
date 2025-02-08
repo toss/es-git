@@ -9,4 +9,4 @@ utilizing [napi.rs](https://napi.rs/).
 
 Please refer to the following links for more information about this project.
 
-- [GitHub](https://github.com/toss/es-toolkit)
+- [GitHub](https://github.com/toss/es-git)
