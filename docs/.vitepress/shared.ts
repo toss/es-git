@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { defineConfig } from 'vitepress';
-import { search as koSearch } from './ko.js';
+import { search as koSearch } from './ko';
 
 const require = createRequire(import.meta.url);
 
@@ -75,7 +75,6 @@ export const shared = defineConfig({
       },
     ],
   },
-
   vite: {
     resolve: {
       alias: {

@@ -1,4 +1,8 @@
+import path from 'node:path';
 import { type DefaultTheme, defineConfig } from 'vitepress';
+import { getAPISidebarItems } from './lib/sidebar';
+
+const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const en = defineConfig({
   lang: 'en',
@@ -34,8 +38,9 @@ function sidebar(): DefaultTheme.Sidebar {
       ],
     },
     {
-      text: 'Reference',
-      items: [],
+      text: 'API',
+      collapsed: true,
+      items: getAPISidebarItems(docsRoot),
     },
   ];
 }

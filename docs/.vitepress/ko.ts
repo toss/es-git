@@ -1,4 +1,8 @@
+import path from 'node:path';
 import { type DefaultTheme, defineConfig } from 'vitepress';
+import { getAPISidebarItems } from './lib/sidebar';
+
+const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const ko = defineConfig({
   lang: 'ko',
@@ -31,12 +35,12 @@ function sidebar(): DefaultTheme.Sidebar {
       items: [
         { text: '소개', link: '/ko/intro' },
         { text: '설치 및 사용 방법', link: '/ko/usage' },
-        { text: '번들 사이즈', link: '/ko/bundle-size' },
       ],
     },
     {
-      text: '레퍼런스',
-      items: [],
+      text: 'API',
+      collapsed: true,
+      items: getAPISidebarItems(docsRoot, 'ko'),
     },
   ];
 }

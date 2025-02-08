@@ -9,8 +9,8 @@ hero:
   actions:
     - theme: brand
       text: es-git 알아보기
-      link: /intro
+      link: /ko/intro
     - theme: alt
       text: 설치 및 사용
-      link: /usage
+      link: /ko/usage
 ---
