@@ -178,6 +178,8 @@ jobs:
         shell: bash
       - name: Test bindings
         run: yarn vitest run
+        env:
+          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   test-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -212,6 +214,8 @@ jobs:
         shell: bash
       - name: Test bindings
         run: yarn vitest run
+        env:
+          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -242,7 +246,11 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim yarn vitest run
+        run: docker run --rm \
+          -e TEST_GITHUB_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }}
+          -v $(pwd):/build \
+          -w /build node:${{ matrix.node }}-slim \
+          yarn vitest run
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -275,4 +283,8 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine yarn vitest run
+        run: docker run --rm \
+          -e TEST_GITHUB_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }}
+          -v $(pwd):/build \
+          -w /build node:${{ matrix.node }}-alpine \
+          yarn vitest run
