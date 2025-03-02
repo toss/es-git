@@ -749,6 +749,21 @@ export interface CreateLightweightTagOptions {
 }
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /**
+ * A structure to represent a git [blob][1]
+ *
+ * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+ */
+export declare class Blob {
+  /** Get the id (SHA1) of a repository blob */
+  id(): string
+  /** Determine if the blob content is most certainly binary or not. */
+  isBinary(): boolean
+  /** Get the content of this blob. */
+  content(): Uint8Array
+  /** Get the size in bytes of the contents of this blob. */
+  size(): bigint
+}
+/**
  * A structure to represent a git commit
  * @hideconstructor
  */
@@ -1089,6 +1104,8 @@ export declare class GitObject {
   peel(objType: ObjectType): GitObject
   /** Recursively peel an object until a commit is found */
   peelToCommit(): Commit
+  /** Recursively peel an object until a blob is found */
+  peelToBlob(): Blob
   /**
    * Attempt to view this object as a commit.
    *
