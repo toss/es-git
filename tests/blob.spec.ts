@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { useFixture } from './fixtures';
 import { openRepository } from '../index';
+import { useFixture } from './fixtures';
 
 describe('blob', () => {
   it('get blob from git object', async () => {
