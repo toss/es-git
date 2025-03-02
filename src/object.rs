@@ -1,3 +1,4 @@
+use crate::blob::{Blob, BlobInner};
 use crate::commit::{Commit, CommitInner};
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
@@ -106,6 +107,21 @@ impl GitObject {
       inner: CommitInner::Owned(git_commit),
     };
     Ok(commit)
+  }
+
+  #[napi]
+  /// Recursively peel an object until a blob is found
+  pub fn peel_to_blob(&self, env: Env, this: Reference<GitObject>) -> crate::Result<Blob> {
+    let blob = this.share_with(env, |obj| {
+      obj
+        .inner
+        .peel_to_blob()
+        .map_err(crate::Error::from)
+        .map_err(|e| e.into())
+    })?;
+    Ok(Blob {
+      inner: BlobInner::GitObject(blob),
+    })
   }
 
   #[napi]
