@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
-import { CI, LINUX } from './env';
+import { CI } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -35,19 +35,20 @@ describe('Repository', () => {
     await expect(fs.readFile(path.join(p, 'first'), 'utf8')).resolves.toEqual(expect.stringContaining('first'));
   });
 
-  it('clone from remote', { skip: LINUX }, async () => {
+  it('clone from remote', async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.state()).toBe('Clean');
   });
 
-  it('clone from remote with credential', { skip: CI || LINUX }, async () => {
+  it('clone from remote with credential', { skip: !CI }, async () => {
     const p = await makeTmpDir('clone');
-    const repo = await cloneRepository('git@github.com:seokju-na/dummy-repo', p, {
+    const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo-private', p, {
       fetch: {
         followRedirects: 'All',
         credential: {
-          type: 'SSHKeyFromAgent',
+          type: 'Plain',
+          password: process.env.TEST_GITHUB_TOKEN!,
         },
       },
     });
