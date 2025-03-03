@@ -78,21 +78,16 @@ jobs:
             target: aarch64-apple-darwin
             build: yarn build --target aarch64-apple-darwin
           - host: windows-latest
-            build: yarn build --target x86_64-pc-windows-msvc
             target: x86_64-pc-windows-msvc
+            build: yarn build --target x86_64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-zig
-            build: |-
-              set -e &&
-              apt update && 
-              apt install -y pkg-config build-essential libssl-dev librust-openssl-dev openssl libz-dev zlib1g-dev lib32z1-dev &&
-              RUSTFLAGS='-C link-args=-L/usr/lib/x86_64-linux-gnu/' yarn build --target x86_64-unknown-linux-gnu --zig --zig-abi-suffix 2.17 &&
-              strip *.node
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+            build: yarn build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: set -e && apk add --no-cache --update perl musl-dev pkgconfig openssl-dev && yarn build && strip *.node
+            build: yarn build --target x86_64-unknown-linux-musl
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
