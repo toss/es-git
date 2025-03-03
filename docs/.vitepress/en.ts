@@ -40,6 +40,7 @@ function sidebar(): DefaultTheme.Sidebar {
     {
       text: 'API',
       collapsed: true,
+      link: '/api/globals',
       items: getAPISidebarItems(docsRoot),
     },
   ];
