@@ -13,8 +13,6 @@ on node-gyp, the module can be installed effortlessly without the need to build 
 
 ## Examples
 
-Clone repository from remote:
-
 ```ts
 import { cloneRepository } from 'es-git';
 
