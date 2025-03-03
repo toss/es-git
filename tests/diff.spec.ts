@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { type DiffDelta, type DiffFile, openRepository } from '../index';
-import { WIN32 } from './env';
+import { TARGET } from './env';
 import { useFixture } from './fixtures';
 import type { FlattenMethods } from './types';
 
@@ -90,7 +90,7 @@ describe('diff', () => {
 
   // Windows track all files when 'includeUntracked' option is enabled.
   // Need to look further into why.
-  it('get diff include untracked', { skip: WIN32 }, async () => {
+  it('get diff include untracked', { skip: TARGET[0] === 'win32' }, async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
     await fs.writeFile(path.join(p, 'third'), 'third created');
