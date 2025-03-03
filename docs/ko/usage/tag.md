@@ -2,7 +2,7 @@
 
 ## 태그 조회하기
 
-리포지토리에 존재하는 모든 태그의 이름을 불러오기 위해서 [`tagNames`](../api/classes/Repository.md#tagnames)을 사용할 수 있어요.
+리포지토리에 존재하는 모든 태그의 이름을 불러오기 위해서 [`tagNames()`](../api/classes/Repository.md#tagnames)을 사용할 수 있어요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -12,7 +12,7 @@ const tagNames = repo.tagNames();
 console.log(tagNames); // ["v0", "v1", "v2"] 
 ```
 
-태그명과 함께 태그 해시를 획득하기 위해서 [`tagForeach`](../api/classes/Repository.md#tagforeach)로 모든 태그를 순회할 수 있어요.
+태그명과 함께 태그 해시를 획득하기 위해서 [`tagForeach()`](../api/classes/Repository.md#tagforeach)로 모든 태그를 순회할 수 있어요.
 
 ```ts
 const tags = [];
@@ -36,7 +36,7 @@ console.log(v0to1Tags);
 //  ['674e3327707fcf32a348ecfc0cb6b93e57398b8c', 'refs/tags/v1']]
 ```
 
-이제 해시값으로 [`getTag`](../api/classes/Repository.md#gettag)을 사용해 태그 정보를 불러올 수 있어요.
+이제 해시값으로 [`getTag()`](../api/classes/Repository.md#gettag)을 사용해 태그 정보를 불러올 수 있어요.
 
 ```ts
 const tag = repo.getTag('aa00405');
@@ -51,7 +51,7 @@ console.log(commit.id()); // "828954df9f08dc8e172447cdacf0ddea1adf9e63"
 
 ## 태그 만들기
 
-[`createTag`](../api/classes/Repository.md#createtag)를 사용해 특정 커밋에 태그를 생성할 수 있어요.
+[`createTag()`](../api/classes/Repository.md#createtag)를 사용해 특정 커밋에 태그를 생성할 수 있어요.
 
 ```ts
 import { openRepository } from 'es-git';

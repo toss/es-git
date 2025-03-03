@@ -1,6 +1,6 @@
 # Commit History
 
-To retrieve the commit history, you can use the [`revwalk`](../api/classes/Repository.md#revwalk) to create a [`Revwalk`](../api/classes/Revwalk.md).
+To retrieve the commit history, you can use the [`revwalk()`](../api/classes/Repository.md#revwalk) to create a [`Revwalk`](../api/classes/Revwalk.md).
 
 Since [`Revwalk`](../api/classes/Revwalk.md) implements the [Iteration Protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols), you can easily iterate over the
 commit history using the [`for...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) statement.
@@ -34,7 +34,7 @@ for (const sha of revwalk) {
 }
 ```
 
-If you'd like to set a range of commits to retrieve, you can use the [`pushRange`](../api/classes/Revwalk.md#pushrange).
+If you'd like to set a range of commits to retrieve, you can use the [`pushRange()`](../api/classes/Revwalk.md#pushrange).
 
 You can define the range in `<commit>..<commit>` format. The traversal begins from the right-hand commit, and commits after (and including) the left-hand commit are excluded from the traversal range.
 

@@ -1,6 +1,6 @@
 # 커밋 히스토리
 
-커밋 히스토리를 조회하기 위해 [`revwalk`](../api/classes/Repository.md#revwalk)로 [`Revwalk`](../api/classes/Revwalk.md)를 생성할 수 있어요.
+커밋 히스토리를 조회하기 위해 [`revwalk()`](../api/classes/Repository.md#revwalk)로 [`Revwalk`](../api/classes/Revwalk.md)를 생성할 수 있어요.
 
 [`Revwalk`](../api/classes/Revwalk.md)는 [순회 프로토콜](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Iteration_protocols)을 구현하고 있기 때문에 [
 `for...of`](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/for...of) 명령문을 사용해 쉽게 커밋 히스토리를 순회할 수 있어요.
@@ -34,7 +34,7 @@ for (const sha of revwalk) {
 }
 ```
 
-조회할 커밋의 범위를 설정하고 싶다면, [`pushRange`](../api/classes/Revwalk.md#pushrange) 메소드를 사용할 수 있어요.
+조회할 커밋의 범위를 설정하고 싶다면, [`pushRange()`](../api/classes/Revwalk.md#pushrange) 메소드를 사용할 수 있어요.
 
 `<commit>..<commit>` 포맷으로 범위를 설정할 수 있어요. 범위값에서 오른쪽 커밋부터 순회가 진행되고 왼쪽 커밋과 그 이후의 커밋들은 순회 범위에 포함되지 않아요.
 

@@ -2,7 +2,7 @@
 
 ## 리모트 조회하기
 
-현재 리포지토리에 등록된 리모트 이름을 조회하기 위해 [`remoteNames`](../api/classes/Repository.md#remotenames)를 사용해요.
+현재 리포지토리에 등록된 리모트 이름을 조회하기 위해 [`remoteNames()`](../api/classes/Repository.md#remotenames)를 사용해요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -11,8 +11,8 @@ const repo = await openRepository('/path/to/repo');
 console.log(repo.remoteNames()); // ["origin"]
 ```
 
-리모트에 접근하기 위해서 [`getRemote`](../api/classes/Repository.md#getremote)를 사용해요. 만약 입력한 이름에 해당하는 리모트가 없으면
-오류를 발생시켜요. 안전하게 리모트를 가져오고 싶다면 [`findRemote`](../api/classes/Repository.md#findremote)를 대신 사용할 수 있어요.
+리모트에 접근하기 위해서 [`getRemote()`](../api/classes/Repository.md#getremote)를 사용해요. 만약 입력한 이름에 해당하는 리모트가 없으면
+오류를 발생시켜요. 안전하게 리모트를 가져오고 싶다면 [`findRemote()`](../api/classes/Repository.md#findremote)를 대신 사용할 수 있어요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -36,7 +36,7 @@ console.log(refspecs[0]);
 
 ## 리모트를 Fetch 하기
 
-리모트 리포지토리에 있는 데이터를 가져오기 위해서 [`fetch`](../api/classes/Remote.md#fetch)를 사용해요.
+리모트 리포지토리에 있는 데이터를 가져오기 위해서 [`fetch()`](../api/classes/Remote.md#fetch)를 사용해요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -57,7 +57,7 @@ console.log(branch); // "refs/heads/main"
 
 ## 리모트에 Push 하기
 
-로컬 변경사항을 리모트 리포지토리로 올리기 위해서 [`push`](../api/classes/Remote.md#push)를 사용해요.
+로컬 변경사항을 리모트 리포지토리로 올리기 위해서 [`push()`](../api/classes/Remote.md#push)를 사용해요.
 
 ```ts
 import { openRepository } from 'es-git';
