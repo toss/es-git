@@ -9,5 +9,5 @@ export default defineConfig({
     root: { label: 'English', ...en },
     ko: { label: '한국어', ...ko },
   },
-  ignoreDeadLinks: ['./index', './classes/index'],
+  ignoreDeadLinks: [/\/index/],
 });
