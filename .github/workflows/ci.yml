@@ -88,7 +88,7 @@ jobs:
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
             build: |-
-              # perl nees for building openssl
+              # `perl` needs for building openssl
               set -e &&
               apk add perl &&
               yarn build
