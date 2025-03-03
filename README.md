@@ -21,11 +21,10 @@ const head = repo.head().name();
 console.log(head); // "refs/heads/main"
 ```
 
-See more examples in [Docs](https://es-git.vercel.app/examples).
+## Documentation
 
-## API Docs
-
-https://es-git.vercel.app/api/globals
+- [사용법](https://es-git.slash.page/usage/open)
+- [API](https://es-git.slash.page/api/globals)
 
 ## License
 

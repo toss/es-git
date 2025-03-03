@@ -1,7 +1,7 @@
-# 리포지토리 Clone 하기
+# Cloning a Repository
 
-기존 리포지토리를 복사하기 위해 `cloneRepository`를 사용할 수 있어요. 리모트에서 복사하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
-SSH 프로토콜을 사용할 수 있어요.
+Use [`cloneRepository`](../api/functions/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
+`user@server:path/to/repo.git`).
 
 ```ts
 import { cloneRepository } from 'es-git';
@@ -9,14 +9,14 @@ import { cloneRepository } from 'es-git';
 const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone');
 ```
 
-## 인증
+## Authentication
 
-리포지토리를 클론할 때 `credential` 옵션을 설정해 인증이 가능해요.
+When cloning a repository, you can configure the `credential` option to authenticate.
 
 ```ts
 import { cloneRepository } from 'es-git';
 
-// ssh-agent를 통해 인증
+// Authenticate using ssh-agent
 const cloneWithSshAgent = await cloneRepository('git@github.com:toss/es-git', '.', {
   fetch: {
     credential: {
@@ -25,7 +25,7 @@ const cloneWithSshAgent = await cloneRepository('git@github.com:toss/es-git', '.
   },
 });
 
-// 로컬에 저장된 ssh키 파일을 통해 인증
+// Authenticate using a local SSH key file
 const cloneWithSshKeyFromPath = await cloneRepository('git@github.com:toss/es-git', '.', {
   fetch: {
     credential: {
@@ -35,7 +35,7 @@ const cloneWithSshKeyFromPath = await cloneRepository('git@github.com:toss/es-gi
   },
 });
 
-// ssh키를 입력해 인증
+// Authenticate using an inline SSH key
 const cloneWithSshKey = await cloneRepository('git@github.com:toss/es-git', '.', {
   fetch: {
     credential: {
@@ -45,7 +45,7 @@ const cloneWithSshKey = await cloneRepository('git@github.com:toss/es-git', '.',
   },
 });
 
-// plain 비밀번호를 통해 인증
+// Authenticate using a plain password
 const cloneWithPlain = await cloneRepository('https://github.com/toss/es-git', '.', {
   fetch: {
     credential: {
@@ -56,8 +56,7 @@ const cloneWithPlain = await cloneRepository('https://github.com/toss/es-git', '
 });
 ```
 
-GitHub [개인용 액세스 토큰](https://docs.github.com/ko/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-을 사용중이라면, "Plain" 유형의 `credential` 옵션을 지정해 비공개 리포지토리를 클론받을 수 있어요.
+If you're using a GitHub [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens), you can clone private repositories by specifying the `Plain` credential type.
 
 ```ts
 import { cloneRepository } from 'es-git';

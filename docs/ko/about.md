@@ -1,6 +1,6 @@
 # es-git 소개
 
-es-git은 Node.js 환경을 위한 현대적인 git 라이브러리예요. 간편하고 직관적인 인터페이스 덕분에 복잡한 git 작업도 쉽게 통합할 수 있으며, TypeScript 타입을 내장해 빠르고 안정적인 개발을
+es-git은 Node.js를 위한 현대적인 git 라이브러리예요. 간편하고 직관적인 인터페이스 덕분에 복잡한 git 작업도 쉽게 통합할 수 있으며, TypeScript 타입을 내장해 빠르고 안정적인 개발을
 지원해요.
 
 es-git은 libgit2를 바인딩한 [git2-rs](https://github.com/rust-lang/git2-rs)를 [napi-rs](https://napi.rs/)를 사용해 네이티브 모듈로 빌드하여,

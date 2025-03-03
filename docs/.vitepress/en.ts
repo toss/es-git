@@ -6,7 +6,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const en = defineConfig({
   lang: 'en',
-  description: 'TODO',
+  description: 'Modern git library built for Node.js',
   themeConfig: {
     nav: nav(),
     sidebar: sidebar(),
@@ -24,7 +24,8 @@ export const en = defineConfig({
 function nav(): DefaultTheme.NavItem[] {
   return [
     { text: 'Home', link: '/' },
-    { text: 'Introduction', link: '/intro' },
+    { text: 'About', link: '/about' },
+    { text: 'Usage', link: '/usage/open' },
   ];
 }
 
@@ -33,8 +34,19 @@ function sidebar(): DefaultTheme.Sidebar {
     {
       text: 'Guide',
       items: [
-        { text: 'Introduction', link: '/intro' },
-        { text: 'Installation & Usage', link: '/usage' },
+        { text: 'About', link: '/about' },
+        { text: 'Installation', link: '/install' },
+      ],
+    },
+    {
+      text: 'Usage',
+      items: [
+        { text: 'Opening a Repository', link: '/usage/open' },
+        { text: 'Cloning a Repository', link: '/usage/clone' },
+        { text: 'Remotes', link: '/usage/remote' },
+        { text: 'Commit History', link: '/usage/history' },
+        { text: 'Commit Changes', link: '/usage/commit' },
+        { text: 'Tags', link: '/usage/tag' },
       ],
     },
     {

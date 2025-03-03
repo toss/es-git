@@ -2408,7 +2408,6 @@ __metadata:
     "@types/markdown-it-container": "npm:^2.0.10"
     es-toolkit: "npm:^1.32.0"
     execa: "npm:^9.5.2"
-    fast-glob: "npm:^3.3.3"
     typedoc: "npm:^0.27.6"
     typedoc-plugin-markdown: "npm:^4.4.1"
     typedoc-vitepress-theme: "npm:^1.1.2"

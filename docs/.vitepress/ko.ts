@@ -6,7 +6,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const ko = defineConfig({
   lang: 'ko',
-  description: 'TODO',
+  description: 'Node.js를 위한 현대적인 git 라이브러리',
   themeConfig: {
     nav: nav(),
     sidebar: sidebar(),
@@ -24,7 +24,8 @@ export const ko = defineConfig({
 function nav(): DefaultTheme.NavItem[] {
   return [
     { text: '홈', link: '/ko' },
-    { text: '소개', link: '/ko/intro' },
+    { text: '소개', link: '/ko/about' },
+    { text: '사용법', link: '/ko/usage/open' },
   ];
 }
 
@@ -33,8 +34,19 @@ function sidebar(): DefaultTheme.Sidebar {
     {
       text: '가이드',
       items: [
-        { text: '소개', link: '/ko/intro' },
-        { text: '설치 및 사용 방법', link: '/ko/usage' },
+        { text: '소개', link: '/ko/about' },
+        { text: '설치하기', link: '/ko/install' },
+      ],
+    },
+    {
+      text: '사용법',
+      items: [
+        { text: '리포지토리 열기', link: '/ko/usage/open' },
+        { text: '리포지토리 복제하기', link: '/ko/usage/clone' },
+        { text: '리모트', link: '/ko/usage/remote' },
+        { text: '커밋 히스토리', link: '/ko/usage/history' },
+        { text: '커밋하기', link: '/ko/usage/commit' },
+        { text: '태그', link: '/ko/usage/tag' },
       ],
     },
     {

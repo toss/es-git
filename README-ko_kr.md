@@ -2,7 +2,7 @@
 
 [English](https://github.com/toss/es-git/blob/main/README.md) | 한국어
 
-es-git은 Node.js 환경을 위한 현대적인 git 라이브러리예요. 간편하고 직관적인 인터페이스 덕분에 복잡한 git 작업도 쉽게 통합할 수 있으며, TypeScript 타입을 내장해 빠르고 안정적인 개발을
+es-git은 Node.js를 위한 현대적인 git 라이브러리예요. 간편하고 직관적인 인터페이스 덕분에 복잡한 git 작업도 쉽게 통합할 수 있으며, TypeScript 타입을 내장해 빠르고 안정적인 개발을
 지원해요.
 
 es-git은 libgit2를 바인딩한 [git2-rs](https://github.com/rust-lang/git2-rs)를 [napi-rs](https://napi.rs/)를 사용해 네이티브 모듈로 빌드하여,
@@ -21,9 +21,10 @@ const head = repo.head().name();
 console.log(head); // "refs/heads/main"
 ```
 
-더 많은 예제는 [문서](https://es-git.vercel.app/examples)에서 확인할 수 있어요.
+## 문서
 
-## API 문서
+- [사용법](https://es-git.slash.page/ko/usage/open)
+- [API](https://es-git.slash.page/ko/api/globals)
 
 ## 라이센스
 

@@ -4,13 +4,13 @@ layout: home
 
 hero:
   name: 'es-git'
-  text: 'TODO'
+  text: 'Modern git library built for Node.js'
   # tagline:
   actions:
     - theme: brand
       text: About es-git
-      link: /intro
+      link: /about
     - theme: alt
       text: Usage
-      link: /usage
+      link: /usage/open
 ---

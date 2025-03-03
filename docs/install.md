@@ -1,11 +1,11 @@
 ---
-description: How to use es-git
+description: Install es-git
 prev:
-  text: Introduction to es-git
-  link: ./intro.md
+  text: About es-git
+  link: ./about.md
 ---
 
-# Installation & Usage
+# Installation
 
 es-git is available via [npm](https://npmjs.com/package/es-git).
 

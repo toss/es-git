@@ -4,13 +4,13 @@ layout: home
 
 hero:
   name: 'es-git'
-  text: 'TODO'
+  text: 'Node.js를 위한 현대적인 git 라이브러리'
   # tagline:
   actions:
     - theme: brand
       text: es-git 알아보기
-      link: /ko/intro
+      link: /ko/about
     - theme: alt
-      text: 설치 및 사용
-      link: /ko/usage
+      text: 사용법
+      link: /ko/usage/open
 ---

@@ -1,11 +1,11 @@
 ---
-description: es-git을 사용하는 방법
+description: es-git 설치하기
 prev:
   text: es-git 소개
-  link: ./intro.md
+  link: ./about.md
 ---
 
-# 설치 및 사용하기
+# 설치하기
 
 es-git은 [npm](https://npmjs.com/package/es-git)에서 설치할 수 있어요.
 
