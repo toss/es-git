@@ -23,7 +23,7 @@ console.log(head); // "refs/heads/main"
 
 ## Documentation
 
-- [사용법](https://es-git.slash.page/usage/open)
+- [Usage](https://es-git.slash.page/usage/open)
 - [API](https://es-git.slash.page/api/globals)
 
 ## License
