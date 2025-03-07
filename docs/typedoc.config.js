@@ -2,7 +2,7 @@
 const config = {
   entryPoints: ['../index.d.ts'],
   tsconfig: '../tsconfig.json',
-  out: './api',
+  out: './typedoc-generated',
   plugin: ['typedoc-plugin-markdown', 'typedoc-vitepress-theme'],
   disableGit: true,
   disableSources: true,

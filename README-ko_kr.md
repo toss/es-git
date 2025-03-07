@@ -24,7 +24,7 @@ console.log(head); // "refs/heads/main"
 ## 문서
 
 - [사용법](https://es-git.slash.page/ko/usage/open)
-- [API](https://es-git.slash.page/ko/api/globals)
+- [레퍼런스](https://es-git.slash.page/ko/reference/globals)
 
 ## 라이센스
 

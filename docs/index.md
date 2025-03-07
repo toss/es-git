@@ -4,13 +4,27 @@ layout: home
 
 hero:
   name: 'es-git'
-  text: 'Modern git library built for Node.js'
-  # tagline:
+  text: 'Modern Git library built for Node.js'
   actions:
     - theme: brand
-      text: About es-git
-      link: /about
+      text: Get Started
+      link: /getting-started
     - theme: alt
       text: Usage
       link: /usage/open
+    - theme: alt
+      text: Reference
+      link: /reference/globals
+
+features:
+  - title: Easy Git Integration
+    details: es-git integrates Git functionality into Node.js environment.
+  - title: High-Performance Git Operations
+    details: es-git build on `libgit2`, and uses a native module for fast and seamless execution.
+  - title: Cross-Platform Compatibility
+    details: es-git powered by `napi-rs` to ensure compatibility with Windows, macOS, and Linux.
+  - title: Easy Installation & Maintenance
+    details: es-git provided prebuilt binaries, making installation straightforward.
+  - title: Robust Types
+    details: es-git offers simple yet robust types for all functions.
 ---

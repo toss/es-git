@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { type DefaultTheme, defineConfig } from 'vitepress';
-import { getAPISidebarItems } from './lib/sidebar';
+import { getReferenceSidebarItems } from './lib/sidebar';
 
 const docsRoot = path.resolve(import.meta.dirname, '..');
 
@@ -24,7 +24,7 @@ export const en = defineConfig({
 function nav(): DefaultTheme.NavItem[] {
   return [
     { text: 'Home', link: '/' },
-    { text: 'About', link: '/about' },
+    { text: 'Getting Started', link: '/getting-started' },
     { text: 'Usage', link: '/usage/open' },
   ];
 }
@@ -32,11 +32,8 @@ function nav(): DefaultTheme.NavItem[] {
 function sidebar(): DefaultTheme.Sidebar {
   return [
     {
-      text: 'Guide',
-      items: [
-        { text: 'About', link: '/about' },
-        { text: 'Installation', link: '/install' },
-      ],
+      text: 'Getting Started',
+      link: '/getting-started',
     },
     {
       text: 'Usage',
@@ -50,10 +47,9 @@ function sidebar(): DefaultTheme.Sidebar {
       ],
     },
     {
-      text: 'API',
-      collapsed: true,
-      link: '/api/globals',
-      items: getAPISidebarItems(docsRoot),
+      text: 'Reference',
+      link: '/reference/globals',
+      items: getReferenceSidebarItems(docsRoot),
     },
   ];
 }

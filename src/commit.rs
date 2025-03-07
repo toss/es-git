@@ -113,10 +113,6 @@ impl Commit {
 
   #[napi]
   /// Get the commit time (i.e. committer time) of a commit.
-  ///
-  /// The first element of the tuple is the time, in seconds, since the epoch.
-  /// The second element is the offset, in minutes, of the time zone of the
-  /// committer's preferred time zone.
   pub fn time(&self) -> crate::Result<DateTime<Utc>> {
     let time = DateTime::from_timestamp(self.inner.time().seconds(), 0).ok_or(crate::Error::InvalidTime)?;
     Ok(time)

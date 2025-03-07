@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "gen-typedoc": "node gen-typedoc.js",
-    "dev": "yarn gen-typedoc && vitepress dev",
-    "build": "yarn gen-typedoc && vitepress build",
-    "preview": "yarn gen-typedoc && vitepress preview"
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
   },
   "dependencies": {
     "typedoc": "^0.27.6",

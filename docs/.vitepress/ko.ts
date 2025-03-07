@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { type DefaultTheme, defineConfig } from 'vitepress';
-import { getAPISidebarItems } from './lib/sidebar';
+import { getReferenceSidebarItems } from './lib/sidebar';
 
 const docsRoot = path.resolve(import.meta.dirname, '..');
 
@@ -24,7 +24,7 @@ export const ko = defineConfig({
 function nav(): DefaultTheme.NavItem[] {
   return [
     { text: '홈', link: '/ko' },
-    { text: '소개', link: '/ko/about' },
+    { text: '시작하기', link: '/ko/getting-started' },
     { text: '사용법', link: '/ko/usage/open' },
   ];
 }
@@ -32,11 +32,8 @@ function nav(): DefaultTheme.NavItem[] {
 function sidebar(): DefaultTheme.Sidebar {
   return [
     {
-      text: '가이드',
-      items: [
-        { text: '소개', link: '/ko/about' },
-        { text: '설치하기', link: '/ko/install' },
-      ],
+      text: '시작하기',
+      link: '/ko/getting-started',
     },
     {
       text: '사용법',
@@ -50,10 +47,9 @@ function sidebar(): DefaultTheme.Sidebar {
       ],
     },
     {
-      text: 'API',
-      collapsed: true,
-      link: '/ko/api/globals',
-      items: getAPISidebarItems(docsRoot, 'ko'),
+      text: '레퍼런스',
+      link: '/ko/reference/globals',
+      items: getReferenceSidebarItems(docsRoot, 'ko'),
     },
   ];
 }

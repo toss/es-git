@@ -24,7 +24,7 @@ console.log(head); // "refs/heads/main"
 ## Documentation
 
 - [Usage](https://es-git.slash.page/usage/open)
-- [API](https://es-git.slash.page/api/globals)
+- [Reference](https://es-git.slash.page/reference/globals)
 
 ## License
 

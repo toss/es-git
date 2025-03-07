@@ -18,6 +18,7 @@ impl Deref for BlobInner {
 }
 
 /// A structure to represent a git [blob][1]
+/// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
 #[napi]
