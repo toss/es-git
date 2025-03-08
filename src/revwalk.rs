@@ -15,17 +15,14 @@ pub enum RevwalkSort {
   /// parents).
   ///
   /// This sorting mode can be combined with time sorting.
-  /// (1 << 0)
   Topological = 1,
   /// Sort the repository contents by commit time.
   ///
   /// This sorting mode can be combined with topological sorting.
-  /// (1 << 1)
   Time = 2,
   /// Iterate through the repository contents in reverse order.
   ///
   /// This sorting mode can be combined with any others.
-  /// (1 << 2)
   Reverse = 4,
 }
 
@@ -138,7 +135,7 @@ impl Revwalk {
   /// Push and hide the respective endpoints of the given range.
   ///
   /// The range should be of the form `<commit>..<commit>` where each
-  /// `<commit>` is in the form accepted by `revparse_single`. The left-hand
+  /// `<commit>` is in the form accepted by `revparseSingle`. The left-hand
   /// commit will be hidden and the right-hand commit pushed.
   pub fn push_range(&mut self, range: String) -> Result<&Self> {
     self

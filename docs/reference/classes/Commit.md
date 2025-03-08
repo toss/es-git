@@ -100,10 +100,6 @@ Throws error if the summary is not valid utf-8.
 
 Get the commit time (i.e. committer time) of a commit.
 
-The first element of the tuple is the time, in seconds, since the epoch.
-The second element is the offset, in minutes, of the time zone of the
-committer's preferred time zone.
-
 #### Returns
 
 `Date`

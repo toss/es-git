@@ -126,7 +126,7 @@ will be ignored.
 Push and hide the respective endpoints of the given range.
 
 The range should be of the form `<commit>..<commit>` where each
-`<commit>` is in the form accepted by `revparse_single`. The left-hand
+`<commit>` is in the form accepted by `revparseSingle`. The left-hand
 commit will be hidden and the right-hand commit pushed.
 
 #### 매개변수

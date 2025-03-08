@@ -7,6 +7,8 @@ use std::ops::Deref;
 use std::path::Path;
 
 #[napi(string_enum)]
+/// A binary indicator of whether a tree walk should be performed in pre-order
+/// or post-order.
 pub enum TreeWalkMode {
   PreOrder,
   PostOrder,
@@ -278,6 +280,8 @@ impl TreeEntry {
 impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Throws error if it does not exist
   pub fn get_tree(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Tree> {
     let oid = git2::Oid::from_str(&oid)?;
     let inner = this.share_with(env, |repo| {
@@ -295,7 +299,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// If it does not exists, returns `null`.
+  /// Returns `null` if it does not exist
   pub fn find_tree(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Tree> {
     self.get_tree(this, env, oid).ok()
   }

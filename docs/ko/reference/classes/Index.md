@@ -14,7 +14,7 @@ A structure to represent a git [index][1]
 
 Get index on-disk version.
 
-Valid return values are 2, 3, or 4.  If 3 is returned, an index
+Valid return values are 2, 3, or 4. If 3 is returned, an index
 with version 2 may be written instead, if the extension data in
 version 3 is not necessary.
 
@@ -30,7 +30,7 @@ version 3 is not necessary.
 
 Set index on-disk version.
 
-Valid values are 2, 3, or 4.  If 2 is given, git_index_write may
+Valid values are 2, 3, or 4. If 2 is given, git_index_write may
 write an index with version 3 instead, if necessary to accurately
 represent the index.
 
@@ -298,7 +298,7 @@ Return `true` is there is no entry in the index
 
 Get the full path to the index file on disk.
 
-Returns `None` if this is an in-memory index.
+Returns `null` if this is an in-memory index.
 
 #### 반환 형식:
 

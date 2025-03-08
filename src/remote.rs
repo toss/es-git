@@ -6,6 +6,7 @@ use std::path::Path;
 use std::sync::RwLock;
 
 #[napi(string_enum)]
+/// An enumeration of the possible directions for a remote.
 pub enum Direction {
   Fetch,
   Push,
@@ -21,14 +22,19 @@ impl From<git2::Direction> for Direction {
 }
 
 #[napi(object)]
-pub struct RefspecObject {
+/// A structure to represent a git [refspec][1].
+///
+/// Refspecs are currently mainly accessed/created through a `Remote`.
+///
+/// [1]: http://git-scm.com/book/en/Git-Internals-The-Refspec
+pub struct Refspec {
   pub direction: Direction,
   pub src: String,
   pub dst: String,
   pub force: bool,
 }
 
-impl<'a> TryFrom<git2::Refspec<'a>> for RefspecObject {
+impl<'a> TryFrom<git2::Refspec<'a>> for Refspec {
   type Error = crate::Error;
 
   fn try_from(value: git2::Refspec<'a>) -> std::result::Result<Self, Self::Error> {
@@ -54,6 +60,7 @@ pub enum CredentialType {
 
 #[napi(object)]
 #[derive(Clone)]
+/// A data object to represent git credentials in libgit2.
 pub struct Credential {
   pub r#type: CredentialType,
   pub username: Option<String>,
@@ -121,6 +128,7 @@ impl ProxyOptions {
 }
 
 #[napi(string_enum)]
+/// Configuration for how pruning is done on a fetch
 pub enum FetchPrune {
   /// Use the setting from the configuration
   Unspecified,
@@ -503,11 +511,11 @@ impl Remote {
   /// List all refspecs.
   ///
   /// Filter refspec if has not valid src or dst with utf-8
-  pub fn refspecs(&self) -> Vec<RefspecObject> {
+  pub fn refspecs(&self) -> Vec<Refspec> {
     self
       .inner
       .refspecs()
-      .filter_map(|x| RefspecObject::try_from(x).ok())
+      .filter_map(|x| Refspec::try_from(x).ok())
       .collect::<Vec<_>>()
   }
 
@@ -573,6 +581,8 @@ impl Remote {
 
   #[napi]
   /// Get the remote’s default branch.
+  ///
+  /// The `fetch` operation from the remote is also performed.
   pub fn default_branch(
     &self,
     self_ref: Reference<Remote>,
@@ -602,7 +612,7 @@ impl Repository {
   #[napi]
   /// Get remote from repository
   ///
-  /// Throws error if not exists
+  /// Throws error if it does not exist
   pub fn get_remote(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Remote> {
     let remote = Remote {
       inner: this.share_with(env, move |repo| {
@@ -618,6 +628,8 @@ impl Repository {
 
   #[napi]
   /// Find remote from repository
+  ///
+  /// Returns `null` if it does not exist
   pub fn find_remote(&self, this: Reference<Repository>, env: Env, name: String) -> Option<Remote> {
     self.get_remote(this, env, name).ok()
   }

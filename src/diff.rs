@@ -10,13 +10,13 @@ use std::ops::Deref;
 #[napi]
 #[repr(u32)]
 pub enum DiffFlags {
-  /// File(s) treated as binary data. (1 << 0)
+  /// File(s) treated as binary data.
   Binary = 1,
-  /// File(s) treated as text data. (1 << 1)
+  /// File(s) treated as text data.
   NotBinary = 2,
-  /// `id` value is known correct. (1 << 2)
+  /// `id` value is known correct.
   ValidId = 4,
-  /// File exists at this side of the delta. (1 << 3)
+  /// File exists at this side of the delta.
   Exists = 8,
 }
 
@@ -137,8 +137,8 @@ pub struct DiffPrintOptions {
 /// The diff object that contains all individual file deltas.
 ///
 /// This is an opaque structure which will be allocated by one of the diff
-/// generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
-/// or other `diff_*` functions).
+/// generator functions on the `Repository` structure (e.g. `diffTreeToTree`
+/// or other `diff*` functions).
 ///
 /// @hideconstructor
 pub struct Diff {
@@ -357,7 +357,7 @@ impl DiffFile {
   #[napi]
   /// Returns the Oid of this item.
   ///
-  /// If this entry represents an absent side of a diff (e.g. the `old_file`
+  /// If this entry represents an absent side of a diff (e.g. the `oldFile`
   /// of a `Added` delta), then the oid returned will be zeroes.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
@@ -421,7 +421,7 @@ pub struct DiffOptions {
   pub include_typechange: Option<bool>,
   /// Event with `includeTypechange`, the tree returned generally shows a
   /// deleted blob. This flag correctly labels the tree transitions as a
-  /// typechange record with the `new_file`'s mode set to tree.
+  /// typechange record with the `newFile`'s mode set to tree.
   ///
   /// Note that the tree SHA will not be available.
   pub include_typechange_trees: Option<bool>,
@@ -675,8 +675,8 @@ impl Repository {
   #[napi]
   /// Create a diff between two index objects.
   ///
-  /// The first index will be used for the "old_file" side of the delta, and
-  /// the second index will be used for the "new_file" side of the delta.
+  /// The first index will be used for the "oldFile" side of the delta, and
+  /// the second index will be used for the "newFile" side of the delta.
   pub fn diff_index_to_index(
     &self,
     env: Env,
@@ -700,12 +700,12 @@ impl Repository {
   /// Create a diff between the repository index and the workdir directory.
   ///
   /// This matches the `git diff` command.  See the note below on
-  /// `tree_to_workdir` for a discussion of the difference between
+  /// `treeToWorkdir` for a discussion of the difference between
   /// `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
   /// using libgit2.
   ///
-  /// The index will be used for the "old_file" side of the delta, and the
-  /// working directory will be used for the "new_file" side of the delta.
+  /// The index will be used for the "oldFile" side of the delta, and the
+  /// working directory will be used for the "newFile" side of the delta.
   ///
   /// If you pass `null` for the index, then the existing index of the `repo`
   /// will be used. In this case, the index will be refreshed from disk
@@ -721,7 +721,7 @@ impl Repository {
     let inner = this.share_with(env, |repo| {
       repo
         .inner
-        .diff_index_to_workdir(index.map(|x| &x.inner), Some(&mut opts))
+        .diff_index_to_workdir(index.map(|x| x.inner.deref()), Some(&mut opts))
         .map_err(crate::Error::from)
         .map_err(|e| e.into())
     })?;
@@ -731,16 +731,16 @@ impl Repository {
   #[napi]
   /// Create a diff between a tree and the working directory.
   ///
-  /// The tree you provide will be used for the "old_file" side of the delta,
-  /// and the working directory will be used for the "new_file" side.
+  /// The tree you provide will be used for the "oldFile" side of the delta,
+  /// and the working directory will be used for the "newFile" side.
   ///
   /// This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
   /// Those commands use information from the index, whereas this
   /// function strictly returns the differences between the tree and the files
   /// in the working directory, regardless of the state of the index.  Use
-  /// `tree_to_workdir_with_index` to emulate those commands.
+  /// `treeToWorkdirWithIndex` to emulate those commands.
   ///
-  /// To see difference between this and `tree_to_workdir_with_index`,
+  /// To see difference between this and `treeToWorkdirWithIndex`,
   /// consider the example of a staged file deletion where the file has then
   /// been put back into the working dir and further modified.  The
   /// tree-to-workdir diff for that file is 'modified', but `git diff` would

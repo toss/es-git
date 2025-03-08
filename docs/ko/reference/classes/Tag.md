@@ -26,7 +26,7 @@ Get the id (SHA1) of a repository tag
 
 Get the message of a tag
 
-Returns `null`` if there is no message or if it is not valid utf8
+Returns `null` if there is no message or if it is not valid utf8
 
 #### 반환 형식:
 
@@ -52,7 +52,7 @@ Throws error if it is not valid utf8
 
 > **peel**(): [`GitObject`](GitObject.md)
 
-Recursively peel a tag until a non tag git_object is found
+Recursively peel a tag until a non tag `GitObject` is found
 
 #### 반환 형식:
 

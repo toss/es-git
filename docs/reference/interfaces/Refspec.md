@@ -1,6 +1,12 @@
-[es-git](../globals.md) / RefspecObject
+[es-git](../globals.md) / Refspec
 
-# Interface: RefspecObject
+# Interface: Refspec
+
+A structure to represent a git [refspec][1].
+
+Refspecs are currently mainly accessed/created through a `Remote`.
+
+[1]: http://git-scm.com/book/en/Git-Internals-The-Refspec
 
 ## Properties
 

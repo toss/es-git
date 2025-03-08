@@ -5,7 +5,7 @@
 An owned git repository, representing all state associated with the
 underlying filesystem.
 
-This structure corresponds to a `git_repository` in libgit2.
+This structure corresponds to a Git Repository in libgit2.
 
 When a repository goes out of scope, it is freed in memory but not deleted
 from the filesystem.
@@ -56,7 +56,7 @@ Lookup a reference to one of the commits in a repository.
 
 Create new commit in the repository
 
-If the `update_ref` is not `null`, name of the reference that will be
+If the `updateRef` is not `null`, name of the reference that will be
 updated to point to this commit. If the reference is not direct, it will
 be resolved to a direct reference. Use "HEAD" to update the HEAD of the
 current branch and make it point to this commit. If the reference
@@ -110,8 +110,8 @@ pass `null` to indicate an empty tree, although it is an error to pass
 
 Create a diff between two index objects.
 
-The first index will be used for the "old_file" side of the delta, and
-the second index will be used for the "new_file" side of the delta.
+The first index will be used for the "oldFile" side of the delta, and
+the second index will be used for the "newFile" side of the delta.
 
 #### 매개변수
 
@@ -134,12 +134,12 @@ the second index will be used for the "new_file" side of the delta.
 Create a diff between the repository index and the workdir directory.
 
 This matches the `git diff` command.  See the note below on
-`tree_to_workdir` for a discussion of the difference between
+`treeToWorkdir` for a discussion of the difference between
 `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
 using libgit2.
 
-The index will be used for the "old_file" side of the delta, and the
-working directory will be used for the "new_file" side of the delta.
+The index will be used for the "oldFile" side of the delta, and the
+working directory will be used for the "newFile" side of the delta.
 
 If you pass `null` for the index, then the existing index of the `repo`
 will be used. In this case, the index will be refreshed from disk
@@ -164,16 +164,16 @@ will be used. In this case, the index will be refreshed from disk
 
 Create a diff between a tree and the working directory.
 
-The tree you provide will be used for the "old_file" side of the delta,
-and the working directory will be used for the "new_file" side.
+The tree you provide will be used for the "oldFile" side of the delta,
+and the working directory will be used for the "newFile" side.
 
 This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
 Those commands use information from the index, whereas this
 function strictly returns the differences between the tree and the files
 in the working directory, regardless of the state of the index.  Use
-`tree_to_workdir_with_index` to emulate those commands.
+`treeToWorkdirWithIndex` to emulate those commands.
 
-To see difference between this and `tree_to_workdir_with_index`,
+To see difference between this and `treeToWorkdirWithIndex`,
 consider the example of a staged file deletion where the file has then
 been put back into the working dir and further modified.  The
 tree-to-workdir diff for that file is 'modified', but `git diff` would
@@ -227,11 +227,6 @@ Get the Index file for this repository.
 If a custom index has not been set, the default index for the repository
 will be returned (the one located in .git/index).
 
-**Caution**: If the [`git2::Repository`] of this index is dropped, then this
-[`git2::Index`] will become detached, and most methods on it will fail. See
-[`git2::Index::open`]. Be sure the repository has a binding such as a local
-variable to keep it alive at least as long as the index.
-
 #### 반환 형식:
 
 [`Index`](Index.md)
@@ -282,6 +277,8 @@ Lookup a reference to one of the objects in a repository.
 
 Lookup a reference to one of the objects in a repository.
 
+Returns `null` if reference not exists.
+
 #### 매개변수
 
 | 매개변수 | 유형 |
@@ -299,6 +296,8 @@ Lookup a reference to one of the objects in a repository.
 > **getReference**(`name`): [`Reference`](Reference.md)
 
 Lookup a reference to one of the objects in a repository.
+
+Throws error if reference not exists.
 
 #### 매개변수
 
@@ -330,7 +329,7 @@ List all remotes for a given repository
 
 Get remote from repository
 
-Throws error if not exists
+Throws error if it does not exist
 
 #### 매개변수
 
@@ -349,6 +348,8 @@ Throws error if not exists
 > **findRemote**(`name`): `null` \| [`Remote`](Remote.md)
 
 Find remote from repository
+
+Returns `null` if it does not exist
 
 #### 매개변수
 
@@ -567,7 +568,7 @@ Create a revwalk that can be used to traverse the commit graph.
 
 Lookup a tag object by prefix hash from the repository.
 
-Returns `null` if tag does not exist.
+Returns `null` if it does not exist
 
 #### 매개변수
 
@@ -586,6 +587,8 @@ Returns `null` if tag does not exist.
 > **getTag**(`oid`): [`Tag`](Tag.md)
 
 Lookup a tag object by prefix hash from the repository.
+
+Throws error if it does not exist
 
 #### 매개변수
 
@@ -644,7 +647,7 @@ the callback is provided the tag id and name
 
 Delete an existing tag reference.
 
-The tag name will be checked for validity, see `tag` for some rules
+The tag name will be checked for validity, see `isValidTagName` for some rules
 about valid names.
 
 #### 매개변수
@@ -747,6 +750,8 @@ it'll be replaced.
 
 Lookup a reference to one of the objects in a repository.
 
+Throws error if it does not exist
+
 #### 매개변수
 
 | 매개변수 | 유형 |
@@ -765,7 +770,7 @@ Lookup a reference to one of the objects in a repository.
 
 Lookup a reference to one of the objects in a repository.
 
-If it does not exists, returns `null`.
+Returns `null` if it does not exist
 
 #### 매개변수
 

@@ -7,6 +7,10 @@ use napi_derive::napi;
 use std::path::Path;
 
 #[napi(object)]
+/// A structure to represent an entry or a file inside of an index.
+///
+/// All fields of an entry are public for modification and inspection. This is
+/// also how a new index entry is created.
 pub struct IndexEntry {
   pub ctime: DateTime<Utc>,
   pub mtime: DateTime<Utc>,
@@ -191,7 +195,7 @@ pub struct IndexUpdateAllOptions {
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Index {
-  pub(crate) inner: git2::Index,
+  pub(crate) inner: SharedReference<Repository, git2::Index>,
 }
 
 #[napi]
@@ -199,7 +203,7 @@ impl Index {
   #[napi]
   /// Get index on-disk version.
   ///
-  /// Valid return values are 2, 3, or 4.  If 3 is returned, an index
+  /// Valid return values are 2, 3, or 4. If 3 is returned, an index
   /// with version 2 may be written instead, if the extension data in
   /// version 3 is not necessary.
   pub fn version(&self) -> u32 {
@@ -209,7 +213,7 @@ impl Index {
   #[napi]
   /// Set index on-disk version.
   ///
-  /// Valid values are 2, 3, or 4.  If 2 is given, git_index_write may
+  /// Valid values are 2, 3, or 4. If 2 is given, git_index_write may
   /// write an index with version 3 instead, if necessary to accurately
   /// represent the index.
   pub fn set_version(&mut self, version: u32) -> crate::Result<()> {
@@ -447,7 +451,7 @@ impl Index {
   #[napi]
   /// Get the full path to the index file on disk.
   ///
-  /// Returns `None` if this is an in-memory index.
+  /// Returns `null` if this is an in-memory index.
   pub fn path(&self, env: Env) -> Option<JsString> {
     self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
   }
@@ -494,14 +498,10 @@ impl Repository {
   ///
   /// If a custom index has not been set, the default index for the repository
   /// will be returned (the one located in .git/index).
-  ///
-  /// **Caution**: If the [`git2::Repository`] of this index is dropped, then this
-  /// [`git2::Index`] will become detached, and most methods on it will fail. See
-  /// [`git2::Index::open`]. Be sure the repository has a binding such as a local
-  /// variable to keep it alive at least as long as the index.
-  pub fn index(&self) -> crate::Result<Index> {
-    Ok(Index {
-      inner: self.inner.index()?,
-    })
+  pub fn index(&self, env: Env, this: Reference<Repository>) -> crate::Result<Index> {
+    let inner = this.share_with(env, |repo| {
+      repo.inner.index().map_err(crate::Error::from).map_err(|e| e.into())
+    })?;
+    Ok(Index { inner })
   }
 }

@@ -167,7 +167,7 @@ impl Repository {
   #[napi]
   /// Create new commit in the repository
   ///
-  /// If the `update_ref` is not `null`, name of the reference that will be
+  /// If the `updateRef` is not `null`, name of the reference that will be
   /// updated to point to this commit. If the reference is not direct, it will
   /// be resolved to a direct reference. Use "HEAD" to update the HEAD of the
   /// current branch and make it point to this commit. If the reference

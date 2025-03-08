@@ -6,16 +6,6 @@ A structure to represent a git [blob][1]
 
 [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
 
-## Constructors
-
-### new Blob()
-
-> **new Blob**(): [`Blob`](Blob.md)
-
-#### Returns
-
-[`Blob`](Blob.md)
-
 ## Methods
 
 ### id()

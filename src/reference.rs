@@ -42,23 +42,23 @@ pub struct Reference {
 #[napi]
 /// Ensure the reference name is well-formed.
 ///
-/// Validation is performed as if [`ReferenceFormat::ALLOW_ONELEVEL`]
-/// was given to [`Reference::normalize_name`]. No normalization is
+/// Validation is performed as if `ReferenceFormat.AllowOneLevel`
+/// was given to [`normalizeReferenceName`]. No normalization is
 /// performed, however.
 ///
 /// @example
 /// ```ts
-/// import { isReferenceNameValid } from 'es-git';
+/// import { isValidReferenceName } from 'es-git';
 ///
-/// console.assert(isReferenceNameValid("HEAD"));
-/// console.assert(isReferenceNameValid("refs/heads/main"));
+/// console.assert(isValidReferenceName("HEAD"));
+/// console.assert(isValidReferenceName("refs/heads/main"));
 ///
 /// // But:
-/// console.assert(!isReferenceNameValid("main"));
-/// console.assert(!isReferenceNameValid("refs/heads/*"));
-/// console.assert(!isReferenceNameValid("foo//bar"));
+/// console.assert(!isValidReferenceName("main"));
+/// console.assert(!isValidReferenceName("refs/heads/*"));
+/// console.assert(!isValidReferenceName("foo//bar"));
 /// ```
-pub fn is_reference_name_valid(refname: String) -> bool {
+pub fn is_valid_reference_name(refname: String) -> bool {
   git2::Reference::is_valid_name(&refname)
 }
 
@@ -72,18 +72,15 @@ pub enum ReferenceFormat {
   /// do not contain multiple `/`-separated components). Those are
   /// expected to be written only using uppercase letters and underscore
   /// (e.g. `HEAD`, `FETCH_HEAD`).
-  /// (1 << 0)
   AllowOnelevel = 1,
   /// Interpret the provided name as a reference pattern for a refspec (as
   /// used with remote repositories). If this option is enabled, the name
   /// is allowed to contain a single `*` in place of a full pathname
   /// components (e.g., `foo/*\/bar` but not `foo/bar*`).
-  /// (1 << 1)
   RefspecPattern = 2,
   /// Interpret the name as part of a refspec in shorthand form so the
   /// `AllowOnelevel` naming rules aren't enforced and `main` becomes a
   /// valid name.
-  /// (1 << 2)
   RefspecShorthand = 4,
 }
 
@@ -322,6 +319,8 @@ impl Reference {
 impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Returns `null` if reference not exists.
   pub fn find_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,
@@ -333,6 +332,8 @@ impl Repository {
 
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Throws error if reference not exists.
   pub fn get_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,

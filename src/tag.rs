@@ -32,7 +32,7 @@ impl Tag {
   #[napi]
   /// Get the message of a tag
   ///
-  /// Returns `null`` if there is no message or if it is not valid utf8
+  /// Returns `null` if there is no message or if it is not valid utf8
   pub fn message(&self) -> Option<String> {
     self
       .inner
@@ -51,7 +51,7 @@ impl Tag {
   }
 
   #[napi]
-  /// Recursively peel a tag until a non tag git_object is found
+  /// Recursively peel a tag until a non tag `GitObject` is found
   pub fn peel(&self) -> crate::Result<GitObject> {
     let object = self.inner.peel()?;
     Ok(GitObject {
@@ -121,13 +121,15 @@ impl Repository {
   #[napi]
   /// Lookup a tag object by prefix hash from the repository.
   ///
-  /// Returns `null` if tag does not exist.
+  /// Returns `null` if it does not exist
   pub fn find_tag(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Tag> {
     self.get_tag(this, env, oid).ok()
   }
 
   #[napi]
   /// Lookup a tag object by prefix hash from the repository.
+  ///
+  /// Throws error if it does not exist
   pub fn get_tag(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Tag> {
     let inner = this.share_with(env, |repo| {
       repo
@@ -172,7 +174,7 @@ impl Repository {
   #[napi]
   /// Delete an existing tag reference.
   ///
-  /// The tag name will be checked for validity, see `tag` for some rules
+  /// The tag name will be checked for validity, see `isValidTagName` for some rules
   /// about valid names.
   pub fn delete_tag(&self, name: String) -> crate::Result<()> {
     self.inner.tag_delete(&name)?;

@@ -5,8 +5,8 @@
 The diff object that contains all individual file deltas.
 
 This is an opaque structure which will be allocated by one of the diff
-generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
-or other `diff_*` functions).
+generator functions on the `Repository` structure (e.g. `diffTreeToTree`
+or other `diff*` functions).
 
 ## Methods
 

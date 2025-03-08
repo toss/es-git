@@ -22,13 +22,13 @@ export interface CommitOptions {
   parents?: Array<string>
 }
 export const enum DiffFlags {
-  /** File(s) treated as binary data. (1 << 0) */
+  /** File(s) treated as binary data. */
   Binary = 1,
-  /** File(s) treated as text data. (1 << 1) */
+  /** File(s) treated as text data. */
   NotBinary = 2,
-  /** `id` value is known correct. (1 << 2) */
+  /** `id` value is known correct. */
   ValidId = 4,
-  /** File exists at this side of the delta. (1 << 3) */
+  /** File exists at this side of the delta. */
   Exists = 8
 }
 /** Check diff flags contains given flags. */
@@ -82,7 +82,7 @@ export interface DiffOptions {
   /**
    * Event with `includeTypechange`, the tree returned generally shows a
    * deleted blob. This flag correctly labels the tree transitions as a
-   * typechange record with the `new_file`'s mode set to tree.
+   * typechange record with the `newFile`'s mode set to tree.
    *
    * Note that the tree SHA will not be available.
    */
@@ -208,6 +208,12 @@ export interface DiffOptions {
   /** Add to the array of paths/fnmatch patterns to constrain the diff. */
   pathspecs?: Array<string>
 }
+/**
+ * A structure to represent an entry or a file inside of an index.
+ *
+ * All fields of an entry are public for modification and inspection. This is
+ * also how a new index entry is created.
+ */
 export interface IndexEntry {
   ctime: Date
   mtime: Date
@@ -341,24 +347,24 @@ export type ReferenceType = /** A reference which points at an object id. */
 /**
  * Ensure the reference name is well-formed.
  *
- * Validation is performed as if [`ReferenceFormat::ALLOW_ONELEVEL`]
- * was given to [`Reference::normalize_name`]. No normalization is
+ * Validation is performed as if `ReferenceFormat.AllowOneLevel`
+ * was given to [`normalizeReferenceName`]. No normalization is
  * performed, however.
  *
  * @example
  * ```ts
- * import { isReferenceNameValid } from 'es-git';
+ * import { isValidReferenceName } from 'es-git';
  *
- * console.assert(isReferenceNameValid("HEAD"));
- * console.assert(isReferenceNameValid("refs/heads/main"));
+ * console.assert(isValidReferenceName("HEAD"));
+ * console.assert(isValidReferenceName("refs/heads/main"));
  *
  * // But:
- * console.assert(!isReferenceNameValid("main"));
- * console.assert(!isReferenceNameValid("refs/heads/*"));
- * console.assert(!isReferenceNameValid("foo//bar"));
+ * console.assert(!isValidReferenceName("main"));
+ * console.assert(!isValidReferenceName("refs/heads/*"));
+ * console.assert(!isValidReferenceName("foo//bar"));
  * ```
  */
-export declare function isReferenceNameValid(refname: string): boolean
+export declare function isValidReferenceName(refname: string): boolean
 /** Options for normalize reference name. */
 export const enum ReferenceFormat {
   /** No particular normalization. */
@@ -368,7 +374,6 @@ export const enum ReferenceFormat {
    * do not contain multiple `/`-separated components). Those are
    * expected to be written only using uppercase letters and underscore
    * (e.g. `HEAD`, `FETCH_HEAD`).
-   * (1 << 0)
    */
   AllowOnelevel = 1,
   /**
@@ -376,14 +381,12 @@ export const enum ReferenceFormat {
    * used with remote repositories). If this option is enabled, the name
    * is allowed to contain a single `*` in place of a full pathname
    * components (e.g., `foo/*\/bar` but not `foo/bar*`).
-   * (1 << 1)
    */
   RefspecPattern = 2,
   /**
    * Interpret the name as part of a refspec in shorthand form so the
    * `AllowOnelevel` naming rules aren't enforced and `main` becomes a
    * valid name.
-   * (1 << 2)
    */
   RefspecShorthand = 4
 }
@@ -452,8 +455,16 @@ export interface RenameReferenceOptions {
   force?: boolean
   logMessage?: string
 }
+/** An enumeration of the possible directions for a remote. */
 export type Direction = 'Fetch' | 'Push';
-export interface RefspecObject {
+/**
+ * A structure to represent a git [refspec][1].
+ *
+ * Refspecs are currently mainly accessed/created through a `Remote`.
+ *
+ * [1]: http://git-scm.com/book/en/Git-Internals-The-Refspec
+ */
+export interface Refspec {
   direction: Direction
   src: string
   dst: string
@@ -474,6 +485,7 @@ export interface ProxyOptions {
    */
   url?: string
 }
+/** Configuration for how pruning is done on a fetch */
 export type FetchPrune = /** Use the setting from the configuration */
 'Unspecified' | /** Force pruning on */
 'On' | /** Force pruning off */
@@ -595,29 +607,129 @@ export interface PruneOptions {
 }
 /** A listing of the possible states that a repository can be in. */
 export type RepositoryState = 'Clean' | 'Merge' | 'Revert' | 'RevertSequence' | 'CherryPick' | 'CherryPickSequence' | 'Bisect' | 'Rebase' | 'RebaseInteractive' | 'RebaseMerge' | 'ApplyMailbox' | 'ApplyMailboxOrRebase';
+/** Options which can be used to configure how a repository is initialized */
 export interface RepositoryInitOptions {
+  /**
+   * Create a bare repository with no working directory.
+   *
+   * Defaults to `false`.
+   */
   bare?: boolean
+  /**
+   * Return an error if the repository path appears to already be a git
+   * repository.
+   *
+   * Defaults to `false`.
+   */
+  noReinit?: boolean
+  /**
+   * Normally a '/.git/' will be appended to the repo path for non-bare repos
+   * (if it is not already there), but passing this flag prevents that
+   * behavior.
+   *
+   * Defaults to `false`.
+   */
+  noDotgitDir?: boolean
+  /**
+   * Make the repo path (and workdir path) as needed. The ".git" directory
+   * will always be created regardless of this flag.
+   *
+   * Defaults to `true`.
+   */
+  mkdir?: boolean
+  /**
+   * Recursively make all components of the repo and workdir path as
+   * necessary.
+   *
+   * Defaults to `true`.
+   */
+  mkpath?: boolean
+  /**
+   * Enable or disable using external templates.
+   *
+   * If enabled, then the `template_path` option will be queried first, then
+   * `init.templatedir` from the global config, and finally
+   * `/usr/share/git-core-templates` will be used (if it exists).
+   *
+   * Defaults to `true`.
+   */
+  externalTemplate?: boolean
+  /**
+   * The name of the head to point HEAD at.
+   *
+   * If not configured, this will be taken from your git configuration.
+   * If this begins with `refs/` it will be used verbatim;
+   * otherwise `refs/heads/` will be prefixed
+   */
   initialHead?: string
+  /**
+   * If set, then after the rest of the repository initialization is
+   * completed an `origin` remote will be added pointing to this URL.
+   */
   originUrl?: string
 }
 export interface RepositoryOpenOptions {
+  /**
+   * If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
+   * directly to a repository; otherwise, this may point to a subdirectory
+   * of a repository, and `open` will search up through parent
+   * directories.
+   *
+   * If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
+   * directories will not cross a filesystem boundary (detected when the
+   * stat st_dev field changes).
+   *
+   * If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
+   * bare even if it isn't, ignoring any working directory, and defer
+   * loading the repository configuration for performance.
+   *
+   * If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
+   * `/.git` to `path`.
+   *
+   * If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
+   * other flags and `ceilingDirs`, and respect the same environment
+   * variables git does. Note, however, that `path` overrides `$GIT_DIR`.
+   */
   flags: number
+  /**
+   * ceiling_dirs specifies a list of paths that the search through parent
+   * directories will stop before entering.
+   */
   ceilingDirs?: Array<string>
 }
+/** Flags for opening repository */
 export const enum RepositoryOpenFlags {
-  /** Only open the specified path; don't walk upward searching. (1 << 0) */
+  /** Only open the specified path; don't walk upward searching. */
   NoSearch = 1,
-  /** Search across filesystem boundaries. (1 << 1) */
+  /** Search across filesystem boundaries. */
   CrossFS = 2,
-  /** Force opening as a bare repository, and defer loading its config. (1 << 2) */
+  /** Force opening as a bare repository, and defer loading its config. */
   Bare = 4,
-  /** Don't try appending `/.git` to the specified repository path. (1 << 3) */
+  /** Don't try appending `/.git` to the specified repository path. */
   NoDotGit = 8,
-  /** Respect environment variables like `$GIT_DIR`. (1 << 4) */
+  /** Respect environment variables like `$GIT_DIR`. */
   FromEnv = 16
 }
 export interface RepositoryCloneOptions {
+  /**
+   * Indicate whether the repository will be cloned as a bare repository or
+   * not.
+   */
+  bare?: boolean
+  /**
+   * Specify the name of the branch to check out after the clone.
+   *
+   * If not specified, the remote's default branch will be used.
+   */
+  branch?: string
+  /**
+   * Clone a remote repository, initialize and update its submodules
+   * recursively.
+   *
+   * This is similar to `git clone --recursive`.
+   */
   recursive?: boolean
+  /** Options which control the fetch. */
   fetch?: FetchOptions
 }
 /** Creates a new repository in the specified folder. */
@@ -640,11 +752,11 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 /** Flags for the Revspec. */
 export const enum RevparseMode {
-  /** The spec targeted a single object (1 << 0) */
+  /** The spec targeted a single object */
   Single = 1,
-  /** The spec targeted a range of commits (1 << 1) */
+  /** The spec targeted a range of commits */
   Range = 2,
-  /** The spec used the `...` operator, which invokes special semantics. (1 << 2) */
+  /** The spec used the `...` operator, which invokes special semantics. */
   MergeBase = 4
 }
 /** Check revparse mode contains specific flags. */
@@ -672,21 +784,18 @@ export const enum RevwalkSort {
    * parents).
    *
    * This sorting mode can be combined with time sorting.
-   * (1 << 0)
    */
   Topological = 1,
   /**
    * Sort the repository contents by commit time.
    *
    * This sorting mode can be combined with topological sorting.
-   * (1 << 1)
    */
   Time = 2,
   /**
    * Iterate through the repository contents in reverse order.
    *
    * This sorting mode can be combined with any others.
-   * (1 << 2)
    */
   Reverse = 4
 }
@@ -747,9 +856,14 @@ export interface CreateAnnotationTagOptions {
 export interface CreateLightweightTagOptions {
   force?: boolean
 }
+/**
+ * A binary indicator of whether a tree walk should be performed in pre-order
+ * or post-order.
+ */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /**
  * A structure to represent a git [blob][1]
+ * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -802,13 +916,7 @@ export declare class Commit {
    * Throws error if the summary is not valid utf-8.
    */
   body(): string | null
-  /**
-   * Get the commit time (i.e. committer time) of a commit.
-   *
-   * The first element of the tuple is the time, in seconds, since the epoch.
-   * The second element is the offset, in minutes, of the time zone of the
-   * committer's preferred time zone.
-   */
+  /** Get the commit time (i.e. committer time) of a commit. */
   time(): Date
   /** Get the tree pointed to by a commit. */
   tree(): Tree
@@ -819,8 +927,8 @@ export declare class Commit {
  * The diff object that contains all individual file deltas.
  *
  * This is an opaque structure which will be allocated by one of the diff
- * generator functions on the `Repository` structure (e.g. `diff_tree_to_tree`
- * or other `diff_*` functions).
+ * generator functions on the `Repository` structure (e.g. `diffTreeToTree`
+ * or other `diff*` functions).
  *
  * @hideconstructor
  */
@@ -910,7 +1018,7 @@ export declare class DiffFile {
   /**
    * Returns the Oid of this item.
    *
-   * If this entry represents an absent side of a diff (e.g. the `old_file`
+   * If this entry represents an absent side of a diff (e.g. the `oldFile`
    * of a `Added` delta), then the oid returned will be zeroes.
    */
   id(): string
@@ -940,7 +1048,7 @@ export declare class Index {
   /**
    * Get index on-disk version.
    *
-   * Valid return values are 2, 3, or 4.  If 3 is returned, an index
+   * Valid return values are 2, 3, or 4. If 3 is returned, an index
    * with version 2 may be written instead, if the extension data in
    * version 3 is not necessary.
    */
@@ -948,7 +1056,7 @@ export declare class Index {
   /**
    * Set index on-disk version.
    *
-   * Valid values are 2, 3, or 4.  If 2 is given, git_index_write may
+   * Valid values are 2, 3, or 4. If 2 is given, git_index_write may
    * write an index with version 3 instead, if necessary to accurately
    * represent the index.
    */
@@ -1059,7 +1167,7 @@ export declare class Index {
   /**
    * Get the full path to the index file on disk.
    *
-   * Returns `None` if this is an in-memory index.
+   * Returns `null` if this is an in-memory index.
    */
   path(): string | null
   /**
@@ -1238,7 +1346,7 @@ export declare class Remote {
    *
    * Filter refspec if has not valid src or dst with utf-8
    */
-  refspecs(): Array<RefspecObject>
+  refspecs(): Array<Refspec>
   /**
    * Download new data and update tips
    *
@@ -1254,14 +1362,18 @@ export declare class Remote {
   push(refspecs: Array<string>, options?: PushOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /** Prune tracking refs that are no longer present on remote */
   prune(options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
-  /** Get the remote’s default branch. */
+  /**
+   * Get the remote’s default branch.
+   *
+   * The `fetch` operation from the remote is also performed.
+   */
   defaultBranch(signal?: AbortSignal | undefined | null): Promise<string>
 }
 /**
  * An owned git repository, representing all state associated with the
  * underlying filesystem.
  *
- * This structure corresponds to a `git_repository` in libgit2.
+ * This structure corresponds to a Git Repository in libgit2.
  *
  * When a repository goes out of scope, it is freed in memory but not deleted
  * from the filesystem.
@@ -1280,7 +1392,7 @@ export declare class Repository {
   /**
    * Create new commit in the repository
    *
-   * If the `update_ref` is not `null`, name of the reference that will be
+   * If the `updateRef` is not `null`, name of the reference that will be
    * updated to point to this commit. If the reference is not direct, it will
    * be resolved to a direct reference. Use "HEAD" to update the HEAD of the
    * current branch and make it point to this commit. If the reference
@@ -1302,20 +1414,20 @@ export declare class Repository {
   /**
    * Create a diff between two index objects.
    *
-   * The first index will be used for the "old_file" side of the delta, and
-   * the second index will be used for the "new_file" side of the delta.
+   * The first index will be used for the "oldFile" side of the delta, and
+   * the second index will be used for the "newFile" side of the delta.
    */
   diffIndexToIndex(oldIndex: Index, newIndex: Index, options?: DiffOptions | undefined | null): Diff
   /**
    * Create a diff between the repository index and the workdir directory.
    *
    * This matches the `git diff` command.  See the note below on
-   * `tree_to_workdir` for a discussion of the difference between
+   * `treeToWorkdir` for a discussion of the difference between
    * `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
    * using libgit2.
    *
-   * The index will be used for the "old_file" side of the delta, and the
-   * working directory will be used for the "new_file" side of the delta.
+   * The index will be used for the "oldFile" side of the delta, and the
+   * working directory will be used for the "newFile" side of the delta.
    *
    * If you pass `null` for the index, then the existing index of the `repo`
    * will be used. In this case, the index will be refreshed from disk
@@ -1325,16 +1437,16 @@ export declare class Repository {
   /**
    * Create a diff between a tree and the working directory.
    *
-   * The tree you provide will be used for the "old_file" side of the delta,
-   * and the working directory will be used for the "new_file" side.
+   * The tree you provide will be used for the "oldFile" side of the delta,
+   * and the working directory will be used for the "newFile" side.
    *
    * This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
    * Those commands use information from the index, whereas this
    * function strictly returns the differences between the tree and the files
    * in the working directory, regardless of the state of the index.  Use
-   * `tree_to_workdir_with_index` to emulate those commands.
+   * `treeToWorkdirWithIndex` to emulate those commands.
    *
-   * To see difference between this and `tree_to_workdir_with_index`,
+   * To see difference between this and `treeToWorkdirWithIndex`,
    * consider the example of a staged file deletion where the file has then
    * been put back into the working dir and further modified.  The
    * tree-to-workdir diff for that file is 'modified', but `git diff` would
@@ -1357,11 +1469,6 @@ export declare class Repository {
    *
    * If a custom index has not been set, the default index for the repository
    * will be returned (the one located in .git/index).
-   *
-   * **Caution**: If the [`git2::Repository`] of this index is dropped, then this
-   * [`git2::Index`] will become detached, and most methods on it will fail. See
-   * [`git2::Index::open`]. Be sure the repository has a binding such as a local
-   * variable to keep it alive at least as long as the index.
    */
   index(): Index
   /**
@@ -1372,19 +1479,31 @@ export declare class Repository {
   findObject(oid: string): GitObject | null
   /** Lookup a reference to one of the objects in a repository. */
   getObject(oid: string): GitObject
-  /** Lookup a reference to one of the objects in a repository. */
+  /**
+   * Lookup a reference to one of the objects in a repository.
+   *
+   * Returns `null` if reference not exists.
+   */
   findReference(name: string): Reference | null
-  /** Lookup a reference to one of the objects in a repository. */
+  /**
+   * Lookup a reference to one of the objects in a repository.
+   *
+   * Throws error if reference not exists.
+   */
   getReference(name: string): Reference
   /** List all remotes for a given repository */
   remoteNames(): Array<string>
   /**
    * Get remote from repository
    *
-   * Throws error if not exists
+   * Throws error if it does not exist
    */
   getRemote(name: string): Remote
-  /** Find remote from repository */
+  /**
+   * Find remote from repository
+   *
+   * Returns `null` if it does not exist
+   */
   findRemote(name: string): Remote | null
   /** Add a remote with the default fetch refspec to the repository’s configuration. */
   createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): Remote
@@ -1440,10 +1559,14 @@ export declare class Repository {
   /**
    * Lookup a tag object by prefix hash from the repository.
    *
-   * Returns `null` if tag does not exist.
+   * Returns `null` if it does not exist
    */
   findTag(oid: string): Tag | null
-  /** Lookup a tag object by prefix hash from the repository. */
+  /**
+   * Lookup a tag object by prefix hash from the repository.
+   *
+   * Throws error if it does not exist
+   */
   getTag(oid: string): Tag
   /**
    * Get a list with all the tags in the repository.
@@ -1459,7 +1582,7 @@ export declare class Repository {
   /**
    * Delete an existing tag reference.
    *
-   * The tag name will be checked for validity, see `tag` for some rules
+   * The tag name will be checked for validity, see `isValidTagName` for some rules
    * about valid names.
    */
   deleteTag(name: string): void
@@ -1495,12 +1618,16 @@ export declare class Repository {
    * it'll be replaced.
    */
   createLightweightTag(name: string, target: GitObject, options?: CreateLightweightTagOptions | undefined | null): string
-  /** Lookup a reference to one of the objects in a repository. */
+  /**
+   * Lookup a reference to one of the objects in a repository.
+   *
+   * Throws error if it does not exist
+   */
   getTree(oid: string): Tree
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * If it does not exists, returns `null`.
+   * Returns `null` if it does not exist
    */
   findTree(oid: string): Tree | null
 }
@@ -1560,7 +1687,7 @@ export declare class Revwalk {
    * Push and hide the respective endpoints of the given range.
    *
    * The range should be of the form `<commit>..<commit>` where each
-   * `<commit>` is in the form accepted by `revparse_single`. The left-hand
+   * `<commit>` is in the form accepted by `revparseSingle`. The left-hand
    * commit will be hidden and the right-hand commit pushed.
    */
   pushRange(range: string): this
@@ -1610,7 +1737,7 @@ export declare class Tag {
   /**
    * Get the message of a tag
    *
-   * Returns `null`` if there is no message or if it is not valid utf8
+   * Returns `null` if there is no message or if it is not valid utf8
    */
   message(): string | null
   /**
@@ -1619,7 +1746,7 @@ export declare class Tag {
    * Throws error if it is not valid utf8
    */
   name(): string
-  /** Recursively peel a tag until a non tag git_object is found */
+  /** Recursively peel a tag until a non tag `GitObject` is found */
   peel(): GitObject
   /**
    * Get the tagger (author) of a tag

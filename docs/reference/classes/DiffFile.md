@@ -16,7 +16,7 @@ you are tracking type changes or ignored/untracked directories).
 
 Returns the Oid of this item.
 
-If this entry represents an absent side of a diff (e.g. the `old_file`
+If this entry represents an absent side of a diff (e.g. the `oldFile`
 of a `Added` delta), then the oid returned will be zeroes.
 
 #### Returns

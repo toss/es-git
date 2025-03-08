@@ -41,9 +41,49 @@ impl From<git2::RepositoryState> for RepositoryState {
 }
 
 #[napi(object)]
+/// Options which can be used to configure how a repository is initialized
 pub struct RepositoryInitOptions {
+  /// Create a bare repository with no working directory.
+  ///
+  /// Defaults to `false`.
   pub bare: Option<bool>,
+  /// Return an error if the repository path appears to already be a git
+  /// repository.
+  ///
+  /// Defaults to `false`.
+  pub no_reinit: Option<bool>,
+  /// Normally a '/.git/' will be appended to the repo path for non-bare repos
+  /// (if it is not already there), but passing this flag prevents that
+  /// behavior.
+  ///
+  /// Defaults to `false`.
+  pub no_dotgit_dir: Option<bool>,
+  /// Make the repo path (and workdir path) as needed. The ".git" directory
+  /// will always be created regardless of this flag.
+  ///
+  /// Defaults to `true`.
+  pub mkdir: Option<bool>,
+  /// Recursively make all components of the repo and workdir path as
+  /// necessary.
+  ///
+  /// Defaults to `true`.
+  pub mkpath: Option<bool>,
+  /// Enable or disable using external templates.
+  ///
+  /// If enabled, then the `template_path` option will be queried first, then
+  /// `init.templatedir` from the global config, and finally
+  /// `/usr/share/git-core-templates` will be used (if it exists).
+  ///
+  /// Defaults to `true`.
+  pub external_template: Option<bool>,
+  /// The name of the head to point HEAD at.
+  ///
+  /// If not configured, this will be taken from your git configuration.
+  /// If this begins with `refs/` it will be used verbatim;
+  /// otherwise `refs/heads/` will be prefixed
   pub initial_head: Option<String>,
+  /// If set, then after the rest of the repository initialization is
+  /// completed an `origin` remote will be added pointing to this URL.
   pub origin_url: Option<String>,
 }
 
@@ -52,6 +92,21 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
     let mut opts = git2::RepositoryInitOptions::new();
     if let Some(bare) = value.bare {
       opts.bare(bare);
+    }
+    if let Some(no_reinit) = value.no_reinit {
+      opts.no_reinit(no_reinit);
+    }
+    if let Some(no_dotgit_dir) = value.no_dotgit_dir {
+      opts.no_dotgit_dir(no_dotgit_dir);
+    }
+    if let Some(mkdir) = value.mkdir {
+      opts.mkdir(mkdir);
+    }
+    if let Some(mkpath) = value.mkpath {
+      opts.mkpath(mkpath);
+    }
+    if let Some(external_template) = value.external_template {
+      opts.external_template(external_template);
     }
     if let Some(ref initial_head) = value.initial_head {
       opts.initial_head(initial_head);
@@ -65,28 +120,62 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 
 #[napi(object)]
 pub struct RepositoryOpenOptions {
+  /// If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
+  /// directly to a repository; otherwise, this may point to a subdirectory
+  /// of a repository, and `open` will search up through parent
+  /// directories.
+  ///
+  /// If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
+  /// directories will not cross a filesystem boundary (detected when the
+  /// stat st_dev field changes).
+  ///
+  /// If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
+  /// bare even if it isn't, ignoring any working directory, and defer
+  /// loading the repository configuration for performance.
+  ///
+  /// If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
+  /// `/.git` to `path`.
+  ///
+  /// If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
+  /// other flags and `ceilingDirs`, and respect the same environment
+  /// variables git does. Note, however, that `path` overrides `$GIT_DIR`.
   pub flags: u32,
+  /// ceiling_dirs specifies a list of paths that the search through parent
+  /// directories will stop before entering.
   pub ceiling_dirs: Option<Vec<String>>,
 }
 
 #[napi]
 #[repr(u32)]
+/// Flags for opening repository
 pub enum RepositoryOpenFlags {
-  /// Only open the specified path; don't walk upward searching. (1 << 0)
+  /// Only open the specified path; don't walk upward searching.
   NoSearch = 1,
-  /// Search across filesystem boundaries. (1 << 1)
+  /// Search across filesystem boundaries.
   CrossFS = 2,
-  /// Force opening as a bare repository, and defer loading its config. (1 << 2)
+  /// Force opening as a bare repository, and defer loading its config.
   Bare = 4,
-  /// Don't try appending `/.git` to the specified repository path. (1 << 3)
+  /// Don't try appending `/.git` to the specified repository path.
   NoDotGit = 8,
-  /// Respect environment variables like `$GIT_DIR`. (1 << 4)
+  /// Respect environment variables like `$GIT_DIR`.
   FromEnv = 16,
 }
 
 #[napi(object)]
 pub struct RepositoryCloneOptions {
+  /// Indicate whether the repository will be cloned as a bare repository or
+  /// not.
+  pub bare: Option<bool>,
+  /// Specify the name of the branch to check out after the clone.
+  ///
+  /// If not specified, the remote's default branch will be used.
+  pub branch: Option<String>,
+  /// Clone a remote repository, initialize and update its submodules
+  /// recursively.
+  ///
+  /// This is similar to `git clone --recursive`.
   pub recursive: Option<bool>,
+  /// Options which control the fetch.
   pub fetch: Option<FetchOptions>,
 }
 
@@ -94,7 +183,7 @@ pub struct RepositoryCloneOptions {
 /// An owned git repository, representing all state associated with the
 /// underlying filesystem.
 ///
-/// This structure corresponds to a `git_repository` in libgit2.
+/// This structure corresponds to a Git Repository in libgit2.
 ///
 /// When a repository goes out of scope, it is freed in memory but not deleted
 /// from the filesystem.
@@ -315,6 +404,12 @@ impl Task for CloneRepositoryTask {
     let mut builder = git2::build::RepoBuilder::new();
     let mut recursive = false;
     if let Some(opts) = &self.options {
+      if let Some(bare) = opts.bare {
+        builder.bare(bare);
+      }
+      if let Some(branch) = &opts.branch {
+        builder.branch(branch);
+      }
       if let Some(fetch) = &opts.fetch {
         let fetch_options = fetch.to_git2_fetch_options();
         builder.fetch_options(fetch_options);

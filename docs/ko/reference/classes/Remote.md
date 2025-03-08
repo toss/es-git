@@ -54,7 +54,7 @@ Throws error if the URL is not valid utf-8
 
 ### refspecs()
 
-> **refspecs**(): [`RefspecObject`](../interfaces/RefspecObject.md)[]
+> **refspecs**(): [`Refspec`](../interfaces/Refspec.md)[]
 
 List all refspecs.
 
@@ -62,7 +62,7 @@ Filter refspec if has not valid src or dst with utf-8
 
 #### 반환 형식:
 
-[`RefspecObject`](../interfaces/RefspecObject.md)[]
+[`Refspec`](../interfaces/Refspec.md)[]
 
 ***
 
@@ -135,6 +135,8 @@ Prune tracking refs that are no longer present on remote
 > **defaultBranch**(`signal`?): `Promise`\<`string`\>
 
 Get the remote’s default branch.
+
+The `fetch` operation from the remote is also performed.
 
 #### 매개변수
 

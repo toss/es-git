@@ -2,6 +2,11 @@
 
 # Interface: IndexEntry
 
+A structure to represent an entry or a file inside of an index.
+
+All fields of an entry are public for modification and inspection. This is
+also how a new index entry is created.
+
 ## Properties
 
 | Property | Type | Description |
