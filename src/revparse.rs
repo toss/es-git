@@ -4,13 +4,13 @@ use napi_derive::napi;
 
 #[napi]
 #[repr(u32)]
-/// Flags for the Revspec.
+/// Flags for the revparse.
 pub enum RevparseMode {
-  /// The spec targeted a single object (1 << 0)
+  /// The spec targeted a single object
   Single = 1,
-  /// The spec targeted a range of commits (1 << 1)
+  /// The spec targeted a range of commits
   Range = 2,
-  /// The spec used the `...` operator, which invokes special semantics. (1 << 2)
+  /// The spec used the `...` operator, which invokes special semantics.
   MergeBase = 4,
 }
 
