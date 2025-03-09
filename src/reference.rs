@@ -31,10 +31,10 @@ impl From<git2::ReferenceType> for ReferenceType {
 }
 
 #[napi]
-/// A structure to represent a git [reference][1].
+/// A class to represent a git [reference][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-References
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-References
 pub struct Reference {
   pub(crate) inner: napi::bindgen_prelude::SharedReference<Repository, git2::Reference<'static>>,
 }
@@ -189,13 +189,13 @@ impl Reference {
   }
 
   #[napi]
-  /// Check if a reference is a remote tracking branch
+  /// Check if a reference is a remote tracking branch.
   pub fn is_remote(&self) -> bool {
     self.inner.is_remote()
   }
 
   #[napi]
-  /// Check if a reference is a tag
+  /// Check if a reference is a tag.
   pub fn is_tag(&self) -> bool {
     self.inner.is_tag()
   }
@@ -241,14 +241,13 @@ impl Reference {
   #[napi]
   /// Return the peeled OID target of this reference.
   ///
-  /// This peeled OID only applies to direct references that point to a hard
-  /// Tag object: it is the result of peeling such Tag.
+  /// This peeled OID only applies to direct references that point to a hard.
   pub fn target_peel(&self) -> Option<String> {
     self.inner.target_peel().map(|x| x.to_string())
   }
 
   #[napi]
-  /// Peel a reference to a tree
+  /// Peel a reference to a tree.
   ///
   /// This method recursively peels the reference until it reaches
   /// a tree.
@@ -322,6 +321,8 @@ impl Reference {
 impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Returns `null` if the reference does not exist.
   pub fn find_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,
@@ -333,6 +334,8 @@ impl Repository {
 
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Throws error if the reference does not exist.
   pub fn get_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,

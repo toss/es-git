@@ -15,17 +15,14 @@ pub enum RevwalkSort {
   /// parents).
   ///
   /// This sorting mode can be combined with time sorting.
-  /// (1 << 0)
   Topological = 1,
   /// Sort the repository contents by commit time.
   ///
   /// This sorting mode can be combined with topological sorting.
-  /// (1 << 1)
   Time = 2,
   /// Iterate through the repository contents in reverse order.
   ///
   /// This sorting mode can be combined with any others.
-  /// (1 << 2)
   Reverse = 4,
 }
 
@@ -73,7 +70,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Simplify the history by first-parent
+  /// Simplify the history by first-parent.
   ///
   /// No parents other than the first for each commit will be enqueued.
   pub fn simplify_first_parent(&mut self) -> Result<&Self> {
@@ -102,7 +99,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push the repository's HEAD
+  /// Push the repository's HEAD.
   ///
   /// For more information, see `push`.
   pub fn push_head(&mut self) -> Result<&Self> {
@@ -115,7 +112,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push matching references
+  /// Push matching references.
   ///
   /// The OIDs pointed to by the references that match the given glob pattern
   /// will be pushed to the revision walker.
@@ -138,7 +135,7 @@ impl Revwalk {
   /// Push and hide the respective endpoints of the given range.
   ///
   /// The range should be of the form `<commit>..<commit>` where each
-  /// `<commit>` is in the form accepted by `revparse_single`. The left-hand
+  /// `<commit>` is in the form accepted by `revparseSingle`. The left-hand
   /// commit will be hidden and the right-hand commit pushed.
   pub fn push_range(&mut self, range: String) -> Result<&Self> {
     self
@@ -150,7 +147,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push the OID pointed to by a reference
+  /// Push the OID pointed to by a reference.
   ///
   /// The reference must point to a commitish.
   pub fn push_ref(&mut self, reference: String) -> Result<&Self> {
@@ -173,7 +170,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Hide the repository's HEAD
+  /// Hide the repository's HEAD.
   ///
   /// For more information, see `hide`.
   pub fn hide_head(&mut self) -> Result<&Self> {

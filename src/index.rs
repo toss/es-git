@@ -186,10 +186,10 @@ pub struct IndexUpdateAllOptions {
 }
 
 #[napi]
-/// A structure to represent a git [index][1]
+/// A class to represent a git [index][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Index {
   pub(crate) inner: git2::Index,
 }
@@ -199,7 +199,7 @@ impl Index {
   #[napi]
   /// Get index on-disk version.
   ///
-  /// Valid return values are 2, 3, or 4.  If 3 is returned, an index
+  /// Valid return values are 2, 3, or 4. If 3 is returned, an index
   /// with version 2 may be written instead, if the extension data in
   /// version 3 is not necessary.
   pub fn version(&self) -> u32 {
@@ -209,7 +209,7 @@ impl Index {
   #[napi]
   /// Set index on-disk version.
   ///
-  /// Valid values are 2, 3, or 4.  If 2 is given, git_index_write may
+  /// Valid values are 2, 3, or 4. If 2 is given, git_index_write may
   /// write an index with version 3 instead, if necessary to accurately
   /// represent the index.
   pub fn set_version(&mut self, version: u32) -> crate::Result<()> {
@@ -227,7 +227,7 @@ impl Index {
   }
 
   #[napi]
-  /// Add or update an index entry from a file on disk
+  /// Add or update an index entry from a file on disk.
   ///
   /// The file path must be relative to the repository's working folder and
   /// must be readable.
@@ -394,7 +394,7 @@ impl Index {
   }
 
   #[napi]
-  /// Update all index entries to match the working directory
+  /// Update all index entries to match the working directory.
   ///
   /// This method will fail in bare index instances.
   ///
@@ -433,13 +433,13 @@ impl Index {
   }
 
   #[napi]
-  /// Get the count of entries currently in the index
+  /// Get the count of entries currently in the index.
   pub fn count(&self) -> u32 {
     self.inner.len() as u32
   }
 
   #[napi]
-  /// Return `true` is there is no entry in the index
+  /// Return `true` is there is no entry in the index.
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
@@ -469,7 +469,7 @@ impl Index {
 }
 
 #[napi(iterator)]
-/// An iterator over the entries in an index
+/// An iterator over the entries in an index.
 ///
 /// @hideconstructor
 pub struct IndexEntries {
@@ -493,12 +493,7 @@ impl Repository {
   /// Get the Index file for this repository.
   ///
   /// If a custom index has not been set, the default index for the repository
-  /// will be returned (the one located in .git/index).
-  ///
-  /// **Caution**: If the [`git2::Repository`] of this index is dropped, then this
-  /// [`git2::Index`] will become detached, and most methods on it will fail. See
-  /// [`git2::Index::open`]. Be sure the repository has a binding such as a local
-  /// variable to keep it alive at least as long as the index.
+  /// will be returned (the one located in `.git/index`).
   pub fn index(&self) -> crate::Result<Index> {
     Ok(Index {
       inner: self.inner.index()?,
