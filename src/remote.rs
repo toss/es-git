@@ -6,6 +6,7 @@ use std::path::Path;
 use std::sync::RwLock;
 
 #[napi(string_enum)]
+/// An enumeration of the possible directions for a remote.
 pub enum Direction {
   Fetch,
   Push,
@@ -21,14 +22,19 @@ impl From<git2::Direction> for Direction {
 }
 
 #[napi(object)]
-pub struct RefspecObject {
+/// A data object to represent a git [refspec][1].
+///
+/// Refspecs are currently mainly accessed/created through a `Remote`.
+///
+/// [1]: https://git-scm.com/book/en/Git-Internals-The-Refspec
+pub struct Refspec {
   pub direction: Direction,
   pub src: String,
   pub dst: String,
   pub force: bool,
 }
 
-impl<'a> TryFrom<git2::Refspec<'a>> for RefspecObject {
+impl<'a> TryFrom<git2::Refspec<'a>> for Refspec {
   type Error = crate::Error;
 
   fn try_from(value: git2::Refspec<'a>) -> std::result::Result<Self, Self::Error> {
@@ -54,6 +60,7 @@ pub enum CredentialType {
 
 #[napi(object)]
 #[derive(Clone)]
+/// A data object to represent git credentials in libgit2.
 pub struct Credential {
   pub r#type: CredentialType,
   pub username: Option<String>,
@@ -121,6 +128,7 @@ impl ProxyOptions {
 }
 
 #[napi(string_enum)]
+/// Configuration for how pruning is done on a fetch.
 pub enum FetchPrune {
   /// Use the setting from the configuration
   Unspecified,
@@ -454,10 +462,10 @@ impl Task for GetRemoteDefaultBranchTask {
 }
 
 #[napi]
-/// A structure representing a [remote][1] of a git repository.
+/// A class representing a [remote][1] of a git repository.
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+/// [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 pub struct Remote {
   pub(crate) inner: SharedReference<Repository, git2::Remote<'static>>,
 }
@@ -468,7 +476,7 @@ impl Remote {
   /// Get the remote's name.
   ///
   /// Returns `null` if this remote has not yet been named, and
-  /// Throws error if the URL is not valid utf-8
+  /// throws error if the name is not valid utf-8.
   pub fn name(&self) -> crate::Result<Option<String>> {
     let name = match self.inner.name_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -480,7 +488,7 @@ impl Remote {
   #[napi]
   /// Get the remote's URL.
   ///
-  /// Throws error if the URL is not valid utf-8
+  /// Throws error if the URL is not valid utf-8.
   pub fn url(&self) -> crate::Result<String> {
     let url = std::str::from_utf8(self.inner.url_bytes())?.to_string();
     Ok(url)
@@ -490,7 +498,7 @@ impl Remote {
   /// Get the remote's URL.
   ///
   /// Returns `null` if push url not exists, and
-  /// Throws error if the URL is not valid utf-8
+  /// throws error if the URL is not valid utf-8.
   pub fn pushurl(&self) -> crate::Result<Option<String>> {
     let pushurl = match self.inner.pushurl_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -502,17 +510,17 @@ impl Remote {
   #[napi]
   /// List all refspecs.
   ///
-  /// Filter refspec if has not valid src or dst with utf-8
-  pub fn refspecs(&self) -> Vec<RefspecObject> {
+  /// Filter refspec if has not valid `src` or `dst` with utf-8.
+  pub fn refspecs(&self) -> Vec<Refspec> {
     self
       .inner
       .refspecs()
-      .filter_map(|x| RefspecObject::try_from(x).ok())
+      .filter_map(|x| Refspec::try_from(x).ok())
       .collect::<Vec<_>>()
   }
 
   #[napi]
-  /// Download new data and update tips
+  /// Download new data and update tips.
   ///
   /// Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
   pub fn fetch(
@@ -533,7 +541,7 @@ impl Remote {
   }
 
   #[napi]
-  /// Perform a push
+  /// Perform a push.
   ///
   /// Perform all the steps for a push.
   /// If no refspecs are passed, then the configured refspecs will be used.
@@ -555,7 +563,7 @@ impl Remote {
   }
 
   #[napi]
-  /// Prune tracking refs that are no longer present on remote
+  /// Prune tracking refs that are no longer present on remote.
   pub fn prune(
     &self,
     self_ref: Reference<Remote>,
@@ -573,6 +581,8 @@ impl Remote {
 
   #[napi]
   /// Get the remote’s default branch.
+  ///
+  /// The `fetch` operation from the remote is also performed.
   pub fn default_branch(
     &self,
     self_ref: Reference<Remote>,
@@ -600,9 +610,9 @@ impl Repository {
   }
 
   #[napi]
-  /// Get remote from repository
+  /// Get remote from repository.
   ///
-  /// Throws error if not exists
+  /// Throws error if remote does not exist.
   pub fn get_remote(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Remote> {
     let remote = Remote {
       inner: this.share_with(env, move |repo| {
@@ -617,7 +627,9 @@ impl Repository {
   }
 
   #[napi]
-  /// Find remote from repository
+  /// Find remote from repository.
+  ///
+  /// Returns `null` if remote does not exist.
   pub fn find_remote(&self, this: Reference<Repository>, env: Env, name: String) -> Option<Remote> {
     self.get_remote(this, env, name).ok()
   }

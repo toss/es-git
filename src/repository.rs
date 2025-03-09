@@ -189,16 +189,17 @@ pub struct RepositoryOpenOptions {
 
 #[napi]
 #[repr(u32)]
+/// Flags for opening repository.
 pub enum RepositoryOpenFlags {
-  /// Only open the specified path; don't walk upward searching. (1 << 0)
+  /// Only open the specified path; don't walk upward searching.
   NoSearch = 1,
-  /// Search across filesystem boundaries. (1 << 1)
+  /// Search across filesystem boundaries.
   CrossFS = 2,
-  /// Force opening as a bare repository, and defer loading its config. (1 << 2)
+  /// Force opening as a bare repository, and defer loading its config.
   Bare = 4,
-  /// Don't try appending `/.git` to the specified repository path. (1 << 3)
+  /// Don't try appending `/.git` to the specified repository path.
   NoDotGit = 8,
-  /// Respect environment variables like `$GIT_DIR`. (1 << 4)
+  /// Respect environment variables like `$GIT_DIR`.
   FromEnv = 16,
 }
 
@@ -224,10 +225,7 @@ pub struct RepositoryCloneOptions {
 /// An owned git repository, representing all state associated with the
 /// underlying filesystem.
 ///
-/// This structure corresponds to a `git_repository` in libgit2.
-///
-/// When a repository goes out of scope, it is freed in memory but not deleted
-/// from the filesystem.
+/// This class corresponds to a git repository in libgit2.
 ///
 /// @hideconstructor
 pub struct Repository {
@@ -269,7 +267,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Returns the current state of this repository
+  /// Returns the current state of this repository.
   pub fn state(&self) -> RepositoryState {
     self.inner.state().into()
   }
@@ -422,7 +420,7 @@ impl Task for DiscoverRepositoryTask {
 }
 
 #[napi]
-/// Attempt to open an already-existing repository at or above `path`
+/// Attempt to open an already-existing repository at or above `path`.
 ///
 /// This starts at `path` and looks up the filesystem hierarchy
 /// until it finds a repository.
