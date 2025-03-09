@@ -3,6 +3,8 @@ import path from 'node:path';
 import { cloneDeep } from 'es-toolkit';
 import { execa } from 'execa';
 
+const [, , lang] = process.argv;
+
 function prefixSidebarLink(items, prefix) {
   const cloned = cloneDeep(items);
   for (const item of cloned) {
@@ -42,8 +44,4 @@ async function genTypedoc(lang) {
   );
 }
 
-const languages = [undefined, 'ko'];
-
-for (const lang of languages) {
-  await genTypedoc(lang);
-}
+await genTypedoc(lang);

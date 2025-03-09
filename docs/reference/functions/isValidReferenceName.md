@@ -7,7 +7,7 @@
 Ensure the reference name is well-formed.
 
 Validation is performed as if `ReferenceFormat.AllowOneLevel`
-was given to [`normalizeReferenceName`]. No normalization is
+was given to `normalizeReferenceName`. No normalization is
 performed, however.
 
 ## Parameters

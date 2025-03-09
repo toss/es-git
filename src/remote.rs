@@ -465,7 +465,7 @@ impl Task for GetRemoteDefaultBranchTask {
 /// A structure representing a [remote][1] of a git repository.
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+/// [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 pub struct Remote {
   pub(crate) inner: SharedReference<Repository, git2::Remote<'static>>,
 }
@@ -476,7 +476,7 @@ impl Remote {
   /// Get the remote's name.
   ///
   /// Returns `null` if this remote has not yet been named, and
-  /// Throws error if the URL is not valid utf-8
+  /// Throws error if the name is not valid utf-8
   pub fn name(&self) -> crate::Result<Option<String>> {
     let name = match self.inner.name_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),

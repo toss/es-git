@@ -348,7 +348,7 @@ export type ReferenceType = /** A reference which points at an object id. */
  * Ensure the reference name is well-formed.
  *
  * Validation is performed as if `ReferenceFormat.AllowOneLevel`
- * was given to [`normalizeReferenceName`]. No normalization is
+ * was given to `normalizeReferenceName`. No normalization is
  * performed, however.
  *
  * @example
@@ -865,7 +865,7 @@ export type TreeWalkMode = 'PreOrder' | 'PostOrder';
  * A structure to represent a git [blob][1]
  * @hideconstructor
  *
- * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+ * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
 export declare class Blob {
   /** Get the id (SHA1) of a repository blob */
@@ -1188,7 +1188,7 @@ export declare class IndexEntries {
   [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
 /**
- * A structure to represent a git [object][1]
+ * A structure to represent a Git [Object][1]
  * @hideconstructor
  *
  * [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
@@ -1225,7 +1225,7 @@ export declare class GitObject {
  * A structure to represent a git [reference][1].
  * @hideconstructor
  *
- * [1]: http://git-scm.com/book/en/Git-Internals-Git-References
+ * [1]: https://git-scm.com/book/en/Git-Internals-Git-References
  */
 export declare class Reference {
   /**
@@ -1318,14 +1318,14 @@ export declare class Reference {
  * A structure representing a [remote][1] of a git repository.
  * @hideconstructor
  *
- * [1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+ * [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
  */
 export declare class Remote {
   /**
    * Get the remote's name.
    *
    * Returns `null` if this remote has not yet been named, and
-   * Throws error if the URL is not valid utf-8
+   * Throws error if the name is not valid utf-8
    */
   name(): string | null
   /**
@@ -1375,9 +1375,6 @@ export declare class Remote {
  *
  * This structure corresponds to a Git Repository in libgit2.
  *
- * When a repository goes out of scope, it is freed in memory but not deleted
- * from the filesystem.
- *
  * @hideconstructor
  */
 export declare class Repository {
@@ -1405,8 +1402,8 @@ export declare class Repository {
    *
    * This is equivalent to `git diff <old-tree> <new-tree>`
    *
-   * The first tree will be used for the "old_file" side of the delta and the
-   * second tree will be used for the "new_file" side of the delta.  You can
+   * The first tree will be used for the "oldFile" side of the delta and the
+   * second tree will be used for the "newFile" side of the delta.  You can
    * pass `null` to indicate an empty tree, although it is an error to pass
    * `null` for both the `oldTree` and `newTree`.
    */
@@ -1422,7 +1419,7 @@ export declare class Repository {
    * Create a diff between the repository index and the workdir directory.
    *
    * This matches the `git diff` command.  See the note below on
-   * `treeToWorkdir` for a discussion of the difference between
+   * `diffTreeToWorkdir` for a discussion of the difference between
    * `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
    * using libgit2.
    *
@@ -1444,7 +1441,7 @@ export declare class Repository {
    * Those commands use information from the index, whereas this
    * function strictly returns the differences between the tree and the files
    * in the working directory, regardless of the state of the index.  Use
-   * `treeToWorkdirWithIndex` to emulate those commands.
+   * `diffTreeToWorkdirWithIndex` to emulate those commands.
    *
    * To see difference between this and `treeToWorkdirWithIndex`,
    * consider the example of a staged file deletion where the file has then
@@ -1482,13 +1479,13 @@ export declare class Repository {
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Returns `null` if reference not exists.
+   * Returns `null` if it does not exist.
    */
   findReference(name: string): Reference | null
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Throws error if reference not exists.
+   * Throws error if it does not exist.
    */
   getReference(name: string): Reference
   /** List all remotes for a given repository */

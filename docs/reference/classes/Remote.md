@@ -4,7 +4,7 @@
 
 A structure representing a [remote][1] of a git repository.
 
-[1]: http://git-scm.com/book/en/Git-Basics-Working-with-Remotes
+[1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 
 ## Methods
 
@@ -15,7 +15,7 @@ A structure representing a [remote][1] of a git repository.
 Get the remote's name.
 
 Returns `null` if this remote has not yet been named, and
-Throws error if the URL is not valid utf-8
+Throws error if the name is not valid utf-8
 
 #### Returns
 

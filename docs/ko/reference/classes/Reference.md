@@ -2,9 +2,9 @@
 
 # 클래스: Reference
 
-A structure to represent a git [reference][1].
+Git [레퍼런스(reference)][1]를 나타내는 클래스예요.
 
-[1]: http://git-scm.com/book/en/Git-Internals-Git-References
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%eb%82%b4%eb%b6%80-Git-Refs
 
 ## 메소드
 
@@ -12,13 +12,11 @@ A structure to represent a git [reference][1].
 
 > **delete**(): `void`
 
-Delete an existing reference.
+기존 레퍼런스를 삭제해요.
 
-This method works for both direct and symbolic references. The reference
-will be immediately removed on disk.
+이 메서드는 직접적인(direct) 레퍼런스와 심볼릭(symbolic) 레퍼런스 모두에서 작동해요. 레퍼런스는 디스크에서 즉시 삭제돼요.
 
-This function will return an error if the reference has changed from the
-time it was looked up.
+레퍼런스가 조회된 이후 변경된 경우, 이 함수는 에러를 반환해요.
 
 #### 반환 형식:
 
@@ -30,7 +28,7 @@ time it was looked up.
 
 > **isBranch**(): `boolean`
 
-Check if a reference is a local branch.
+레퍼런스가 로컬 브랜치인지 확인해요.
 
 #### 반환 형식:
 
@@ -42,7 +40,7 @@ Check if a reference is a local branch.
 
 > **isNote**(): `boolean`
 
-Check if a reference is a note.
+레퍼런스가 노트인지 확인해요.
 
 #### 반환 형식:
 
@@ -54,7 +52,7 @@ Check if a reference is a note.
 
 > **isRemote**(): `boolean`
 
-Check if a reference is a remote tracking branch
+레퍼런스가 리모트인지 확인해요.
 
 #### 반환 형식:
 
@@ -66,7 +64,7 @@ Check if a reference is a remote tracking branch
 
 > **isTag**(): `boolean`
 
-Check if a reference is a tag
+레퍼런스가 태그인지 확인해요.
 
 #### 반환 형식:
 
@@ -78,9 +76,9 @@ Check if a reference is a tag
 
 > **type**(): `null` \| [`ReferenceType`](../type-aliases/ReferenceType.md)
 
-Get the reference type of a reference.
+레퍼런스의 타입을 가져와요.
 
-If the type is unknown, then `null` is returned.
+타입이 알려지지 않은 경우 `null`을 반환해요.
 
 #### 반환 형식:
 
@@ -92,9 +90,9 @@ If the type is unknown, then `null` is returned.
 
 > **name**(): `string`
 
-Get the full name of a reference.
+레퍼런스의 전체 이름을 가져와요.
 
-Throws error if the name is not valid utf-8.
+이름이 유효한 UTF-8이 아닌 경우 오류를 발생시켜요.
 
 #### 반환 형식:
 
@@ -106,12 +104,11 @@ Throws error if the name is not valid utf-8.
 
 > **shorthand**(): `string`
 
-Get the full shorthand of a reference.
+레퍼런스의 축약 이름을 가져와요.
 
-This will transform the reference name into a name "human-readable"
-version. If no shortname is appropriate, it will return the full name.
+이 메서드는 레퍼런스 이름을 "사람이 읽을 수 있는" 형태로 변환해요. 적절한 축약 이름이 없는 경우 전체 이름을 반환해요.
 
-Throws error if the shorthand is not valid utf-8.
+축약 이름이 유효한 UTF-8이 아닌 경우 오류를 발생시켜요.
 
 #### 반환 형식:
 
@@ -123,10 +120,9 @@ Throws error if the shorthand is not valid utf-8.
 
 > **target**(): `null` \| `string`
 
-Get the OID pointed to by a direct reference.
+직접적인 레퍼런스(direct reference)가 가리키는 OID를 가져와요.
 
-Only available if the reference is direct (i.e. an object id reference,
-not a symbolic one).
+이 메서드는 레퍼런스가 직접적인 경우에만 사용할 수 있어요. (즉, 객체 ID 참조이며 심볼릭 레퍼런스가 아님)
 
 #### 반환 형식:
 
@@ -138,10 +134,9 @@ not a symbolic one).
 
 > **targetPeel**(): `null` \| `string`
 
-Return the peeled OID target of this reference.
+이 레퍼런스를 추적(peel)해 OID를 반환해요.
 
-This peeled OID only applies to direct references that point to a hard
-Tag object: it is the result of peeling such Tag.
+이 OID는 직접적인 레퍼런스 중 하드 태그 객체를 가리키는 레퍼런스에만 적용돼요.
 
 #### 반환 형식:
 
@@ -153,10 +148,7 @@ Tag object: it is the result of peeling such Tag.
 
 > **peelToTree**(): [`Tree`](Tree.md)
 
-Peel a reference to a tree
-
-This method recursively peels the reference until it reaches
-a tree.
+레퍼런스를 트리(tree)가 발견될 때까지 재귀적으로 추적해요.
 
 #### 반환 형식:
 
@@ -168,9 +160,9 @@ a tree.
 
 > **symbolicTarget**(): `null` \| `string`
 
-Get full name to the reference pointed to by a symbolic reference.
+심볼릭 레퍼런스가 가리키는 레퍼런스의 전체 이름을 가져와요.
 
-Only available if the reference is symbolic.
+이 메서드는 레퍼런스가 심볼릭인 경우에만 사용할 수 있어요.
 
 #### 반환 형식:
 
@@ -182,13 +174,9 @@ Only available if the reference is symbolic.
 
 > **resolve**(): [`Reference`](Reference.md)
 
-Resolve a symbolic reference to a direct reference.
+심볼릭 레퍼런스를 직접적인 레퍼런스로 반환해요.
 
-This method iteratively peels a symbolic reference until it resolves to
-a direct reference to an OID.
-
-If a direct reference is passed as an argument, a copy of that
-reference is returned.
+이 메서드는 심볼릭 레퍼런스를 추적해 OID에 대한 직접적인 레퍼런스로 변환해요.
 
 #### 반환 형식:
 
@@ -200,12 +188,11 @@ reference is returned.
 
 > **rename**(`newName`, `options`?): [`Reference`](Reference.md)
 
-Rename an existing reference.
+기존 레퍼런스의 이름을 변경해요.
 
-This method works for both direct and symbolic references.
+이 메서드는 직접적인 레퍼런스와 심볼릭 레퍼런스 모두에서 작동해요.
 
-If the force flag is not enabled, and there's already a reference with
-the given name, the renaming will fail.
+`force` 옵션이 `true`가 아니고 동일한 이름을 가진 레퍼런스가 이미 존재하는 경우 이름 변경은 실패해요.
 
 #### 매개변수
 

@@ -2,11 +2,9 @@
 
 # 클래스: DiffFile
 
-Description of one side of a delta.
+Delta의 한 면에 대한 클래스예요.
 
-Although this is called a "file" it could represent a file, a symbolic
-link, a submodule commit id, or even a tree (although that only happens if
-you are tracking type changes or ignored/untracked directories).
+이 클래스명이 "파일"이라 불리지만, 실제로는 파일, 심볼릭 링크, 하위 모듈 커밋 ID, 또는 트리를 나타낼 수 있어요. (다만, 이는 타입 변경 추적이나 무시된 혹은 추적되지 않은 디렉토리를 다룰 때 발생해요)
 
 ## 메소드
 
@@ -14,10 +12,9 @@ you are tracking type changes or ignored/untracked directories).
 
 > **id**(): `string`
 
-Returns the Oid of this item.
+이 항목의 Oid를 반환해요.
 
-If this entry represents an absent side of a diff (e.g. the `oldFile`
-of a `Added` delta), then the oid returned will be zeroes.
+이 항목이 delta의 없는 측(예: `Added` 델타의 `oldFile`)을 나타내는 경우, 반환된 Oid는 모두 0으로 표시돼요.
 
 #### 반환 형식:
 
@@ -29,8 +26,7 @@ of a `Added` delta), then the oid returned will be zeroes.
 
 > **path**(): `null` \| `string`
 
-Returns the path of the entry relative to the working directory of the
-repository.
+저장소의 작업 디렉토리를 기준으로 엔트리의 경로를 반환해요.
 
 #### 반환 형식:
 
@@ -42,7 +38,7 @@ repository.
 
 > **size**(): `bigint`
 
-Returns the size of this entry, in bytes
+이 항목의 크기를 바이트 단위로 반환해요.
 
 #### 반환 형식:
 
@@ -54,7 +50,7 @@ Returns the size of this entry, in bytes
 
 > **isBinary**(): `boolean`
 
-Returns `true` if file(s) are treated as binary data.
+파일이 이진 데이터로 처리되면 `true`를 반환해요.
 
 #### 반환 형식:
 
@@ -66,7 +62,7 @@ Returns `true` if file(s) are treated as binary data.
 
 > **isValidId**(): `boolean`
 
-Returns `true` if `id` value is known correct.
+`id` 값이 올바른 경우 `true`를 반환해요.
 
 #### 반환 형식:
 
@@ -78,7 +74,7 @@ Returns `true` if `id` value is known correct.
 
 > **exists**(): `boolean`
 
-Returns `true` if file exists at this side of the delta.
+파일이 delta의 이 측에 존재하면 `true`를 반환해요.
 
 #### 반환 형식:
 
@@ -90,7 +86,7 @@ Returns `true` if file exists at this side of the delta.
 
 > **mode**(): [`FileMode`](../type-aliases/FileMode.md)
 
-Returns file mode.
+파일 모드를 반환해요.
 
 #### 반환 형식:
 

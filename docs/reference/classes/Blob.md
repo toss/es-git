@@ -4,7 +4,7 @@
 
 A structure to represent a git [blob][1]
 
-[1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 
 ## Methods
 

@@ -2,13 +2,9 @@
 
 # 클래스: Repository
 
-An owned git repository, representing all state associated with the
-underlying filesystem.
+Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 상태를 관리해요.
 
-This structure corresponds to a Git Repository in libgit2.
-
-When a repository goes out of scope, it is freed in memory but not deleted
-from the filesystem.
+이 클래스는 libgit2에서 Git 리포지토리 사용과 동일해요.
 
 ## 메소드
 
@@ -16,9 +12,9 @@ from the filesystem.
 
 > **findCommit**(`oid`): `null` \| [`Commit`](Commit.md)
 
-Lookup a reference to one of the commits in a repository.
+리포지토리에서 특정 커밋에 대한 레퍼런스를 조회해요.
 
-Returns `null` if the commit does not exist.
+해당 커밋이 존재하지 않는 경우 `null`을 반환해요.
 
 #### 매개변수
 
@@ -36,7 +32,7 @@ Returns `null` if the commit does not exist.
 
 > **getCommit**(`oid`): [`Commit`](Commit.md)
 
-Lookup a reference to one of the commits in a repository.
+리포지토리에서 특정 커밋에 대한 레퍼런스를 조회해요.
 
 #### 매개변수
 
@@ -54,14 +50,12 @@ Lookup a reference to one of the commits in a repository.
 
 > **commit**(`tree`, `message`, `options`?): `string`
 
-Create new commit in the repository
+리포지토리에 새 커밋을 생성해요.
 
-If the `updateRef` is not `null`, name of the reference that will be
-updated to point to this commit. If the reference is not direct, it will
-be resolved to a direct reference. Use "HEAD" to update the HEAD of the
-current branch and make it point to this commit. If the reference
-doesn't exist yet, it will be created. If it does exist, the first
-parent must be the tip of this branch.
+`updateRef`가 `null`이 아닌 경우, 해당 이름의 레퍼런스가 이 커밋을 가리키도록 업데이트돼요.
+레퍼런스가 직접적인(direct) 레퍼런스가 아닌 경우, 이를 직접 레퍼런스로 해석해요.
+"HEAD"를 사용하여 현재 브랜치의 HEAD를 업데이트하고, 해당 HEAD가 이 커밋을 가리키도록 만들 수 있어요.
+레퍼런스가 아직 존재하지 않는 경우 새로 생성돼요. 존재하는 경우, 첫 번째 부모는 반드시 이 브랜치의 현재 머리(tip)여야 해요.
 
 #### 매개변수
 
@@ -81,14 +75,14 @@ parent must be the tip of this branch.
 
 > **diffTreeToTree**(`oldTree`?, `newTree`?, `options`?): [`Diff`](Diff.md)
 
-Create a diff with the difference between two tree objects.
+두 트리 개체 간의 차이를 비교(diff)해요.
 
-This is equivalent to `git diff <old-tree> <new-tree>`
+이 메서드는 `git diff <old-tree> <new-tree>` 명령과 동일해요.
 
-The first tree will be used for the "old_file" side of the delta and the
-second tree will be used for the "new_file" side of the delta.  You can
-pass `null` to indicate an empty tree, although it is an error to pass
-`null` for both the `oldTree` and `newTree`.
+첫 번째 트리는 delta의 "oldFile" 측에서 사용되며,
+두 번째 트리는 delta의 "newFile" 측에서 사용돼요.
+`null`을 전달하여 빈 트리를 나타낼 수 있지만,
+`oldTree`와 `newTree` 둘 다에 대해 `null`을 전달하면 오류가 발생해요.
 
 #### 매개변수
 
@@ -108,10 +102,10 @@ pass `null` to indicate an empty tree, although it is an error to pass
 
 > **diffIndexToIndex**(`oldIndex`, `newIndex`, `options`?): [`Diff`](Diff.md)
 
-Create a diff between two index objects.
+두 인덱스 객체 간의 차이를 비교(diff)해요.
 
-The first index will be used for the "oldFile" side of the delta, and
-the second index will be used for the "newFile" side of the delta.
+첫 번째 인덱스는 delta의 "oldFile" 측에서 사용되며,
+두 번째 인덱스는 delta의 "newFile" 측에서 사용돼요.
 
 #### 매개변수
 
@@ -131,19 +125,18 @@ the second index will be used for the "newFile" side of the delta.
 
 > **diffIndexToWorkdir**(`index`?, `options`?): [`Diff`](Diff.md)
 
-Create a diff between the repository index and the workdir directory.
+리포지토리 인덱스와 작업 디렉토리 간의 차이를 비교(diff)합니다.
 
-This matches the `git diff` command.  See the note below on
-`treeToWorkdir` for a discussion of the difference between
-`git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
-using libgit2.
+이 작업은 `git diff` 명령과 일치해요.
+`git diff`와 `git diff HEAD`의 차이점에 대한 설명 및
+libgit2를 사용하여 `git diff <treeish>`를 에뮬레이트하는 방법에 대한 참고 사항은
+`diffTreeToWorkdir` 설명을 확인하세요.
 
-The index will be used for the "oldFile" side of the delta, and the
-working directory will be used for the "newFile" side of the delta.
+인덱스는 delta의 "oldFile" 측에서 사용되며,
+작업 디렉토리는 delta의 "newFile" 측에서 사용돼요.
 
-If you pass `null` for the index, then the existing index of the `repo`
-will be used. In this case, the index will be refreshed from disk
-(if it has changed) before the diff is generated.
+인덱스에 대해 `null`을 전달한 경우, 기존 리포지토리 인덱스가 사용돼요.
+이 경우 diff가 생성되기 전에 인덱스가 디스크에서 새로 고쳐질 수 있어요(변경된 경우).
 
 #### 매개변수
 
@@ -162,24 +155,22 @@ will be used. In this case, the index will be refreshed from disk
 
 > **diffTreeToWorkdir**(`oldTree`?, `options`?): [`Diff`](Diff.md)
 
-Create a diff between a tree and the working directory.
+트리와 작업 디렉토리 간의 차이를 비교(diff)해요.
 
-The tree you provide will be used for the "oldFile" side of the delta,
-and the working directory will be used for the "newFile" side.
+제공된 트리는 delta의 "oldFile" 측으로 사용되며,
+작업 디렉토리는 delta의 "newFile" 측으로 사용돼요.
 
-This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
-Those commands use information from the index, whereas this
-function strictly returns the differences between the tree and the files
-in the working directory, regardless of the state of the index.  Use
-`treeToWorkdirWithIndex` to emulate those commands.
+이 함수는 `git diff <treeish>` 또는 `git diff-index <treeish>` 명령과 동일하지 않아요.
+이 명령은 인덱스 정보를 이용하지만, 이 함수는 트리와 작업 디렉토리 내 파일 간의 차이만을 반환해요.
+인덱스 상태와는 상관없이 작동해요.
+해당 명령을 사용하려면 `diffTreeToWorkdirWithIndex`를 사용하세요.
 
-To see difference between this and `treeToWorkdirWithIndex`,
-consider the example of a staged file deletion where the file has then
-been put back into the working dir and further modified.  The
-tree-to-workdir diff for that file is 'modified', but `git diff` would
-show status 'deleted' since there is a staged delete.
+`diffTreeToWorkdirWithIndex`와 이 함수의 차이를 이해하려면, 파일이 스테이징된 상태에서 삭제된 후,
+다시 작업 디렉토리에 추가되고 수정된 경우를 고려해볼 수 있어요.
+`diffTreeToWorkdirWithIndex`의 결과는 해당 파일이 '수정(modified)'되었다고 나타내지만,
+`git diff`는 '삭제(deleted)' 상태를 표시해요. 이는 삭제가 스테이징되었기 때문이에요.
 
-If `null` is passed for `tree`, then an empty tree is used.
+또한, `tree`에 `null`을 전달하면 빈 트리가 사용돼요.
 
 #### 매개변수
 
@@ -198,12 +189,11 @@ If `null` is passed for `tree`, then an empty tree is used.
 
 > **diffTreeToWorkdirWithIndex**(`oldTree`?, `options`?): [`Diff`](Diff.md)
 
-Create a diff between a tree and the working directory using index data
-to account for staged deletes, tracked files, etc.
+인덱스 데이터를 사용하여 트리와 작업 디렉토리 간의 차이를 비교(diff)해요.
 
-This emulates `git diff <tree>` by diffing the tree to the index and
-the index to the working directory and blending the results into a
-single diff that includes staged deleted, etc.
+스테이징된 삭제, 추적된 파일 등의 상태를 고려해요.
+이 함수는 트리와 인덱스 간, 그리고 인덱스와 작업 디렉토리 간의 차이를 비교하여
+스테이징된 삭제 등을 포함한 단일 diff로 결과를 합병하여 `git diff <tree>` 명령을 수행해요.
 
 #### 매개변수
 
@@ -222,10 +212,10 @@ single diff that includes staged deleted, etc.
 
 > **index**(): [`Index`](Index.md)
 
-Get the Index file for this repository.
+이 리포지토리의 인덱스 파일을 가져와요.
 
-If a custom index has not been set, the default index for the repository
-will be returned (the one located in .git/index).
+사용자 지정 인덱스가 설정되지 않은 경우,
+리포지토리의 기본 인덱스(`.git/index`에 위치)가 반환돼요.
 
 #### 반환 형식:
 
@@ -237,9 +227,9 @@ will be returned (the one located in .git/index).
 
 > **findObject**(`oid`): `null` \| [`GitObject`](GitObject.md)
 
-Lookup a reference to one of the objects in a repository.
+리포지토리에서 개체를 조회해요.
 
-Returns `null` if the object does not exist.
+해당 개체가 존재하지 않는 경우 `null`을 반환해요.
 
 #### 매개변수
 
@@ -257,7 +247,7 @@ Returns `null` if the object does not exist.
 
 > **getObject**(`oid`): [`GitObject`](GitObject.md)
 
-Lookup a reference to one of the objects in a repository.
+리포지토리에서 개체를 가져와요.
 
 #### 매개변수
 

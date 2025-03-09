@@ -34,7 +34,7 @@ impl From<git2::ReferenceType> for ReferenceType {
 /// A structure to represent a git [reference][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-References
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-References
 pub struct Reference {
   pub(crate) inner: napi::bindgen_prelude::SharedReference<Repository, git2::Reference<'static>>,
 }
@@ -43,7 +43,7 @@ pub struct Reference {
 /// Ensure the reference name is well-formed.
 ///
 /// Validation is performed as if `ReferenceFormat.AllowOneLevel`
-/// was given to [`normalizeReferenceName`]. No normalization is
+/// was given to `normalizeReferenceName`. No normalization is
 /// performed, however.
 ///
 /// @example
@@ -320,7 +320,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Returns `null` if reference not exists.
+  /// Returns `null` if it does not exist.
   pub fn find_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,
@@ -333,7 +333,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Throws error if reference not exists.
+  /// Throws error if it does not exist.
   pub fn get_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,

@@ -61,7 +61,7 @@ impl Deref for ObjectInner {
 }
 
 #[napi]
-/// A structure to represent a git [object][1]
+/// A structure to represent a Git [Object][1]
 /// @hideconstructor
 ///
 /// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects

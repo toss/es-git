@@ -20,7 +20,7 @@ impl Deref for BlobInner {
 /// A structure to represent a git [blob][1]
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 #[napi]
 pub struct Blob {
   pub(crate) inner: BlobInner,

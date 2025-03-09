@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "gen-typedoc": "node gen-typedoc.js",
+    "gen-typedoc:ko": "node gen-typedoc.js ko",
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"
