@@ -40,10 +40,79 @@ impl From<git2::RepositoryState> for RepositoryState {
   }
 }
 
+#[napi]
+#[repr(u32)]
+/// Mode options for `RepositoryInitOptions`.
+pub enum RepositoryInitMode {
+  /// Use permissions configured by umask (default)
+  SharedUnmask = 0,
+  /// Use `--shared=group` behavior, chmod'ing the new repo to be
+  /// group writable and "g+sx" for sticky group assignment.
+  SharedGroup = 0o002775,
+  /// Use `--shared=all` behavior, adding world readability.
+  SharedAll = 0o002777,
+}
+
 #[napi(object)]
 pub struct RepositoryInitOptions {
+  /// Create a bare repository with no working directory.
+  ///
+  /// Defaults to `false`.
   pub bare: Option<bool>,
+  /// Return an error if the repository path appears to already be a git
+  /// repository.
+  ///
+  /// Defaults to `false`.
+  pub no_reinit: Option<bool>,
+  /// Normally a '/.git/' will be appended to the repo path for non-bare repos
+  /// (if it is not already there), but passing this flag prevents that
+  /// behavior.
+  ///
+  /// Defaults to `false`.
+  pub no_dotgit_dir: Option<bool>,
+  /// Make the repo path (and workdir path) as needed. The ".git" directory
+  /// will always be created regardless of this flag.
+  ///
+  /// Defaults to `true`.
+  pub mkdir: Option<bool>,
+  /// Make the repo path (and workdir path) as needed. The ".git" directory
+  /// will always be created regardless of this flag.
+  ///
+  /// Defaults to `true`.
+  pub mkpath: Option<bool>,
+  /// Set to one of the `RepositoryInit` constants, or a custom value.
+  pub mode: Option<u32>,
+  /// Enable or disable using external templates.
+  ///
+  /// If enabled, then the `template_path` option will be queried first, then
+  /// `init.templatedir` from the global config, and finally
+  /// `/usr/share/git-core-templates` will be used (if it exists).
+  ///
+  /// Defaults to `true`.
+  pub external_template: Option<bool>,
+  /// When the `externalTemplate` option is set, this is the first location
+  /// to check for the template directory.
+  ///
+  /// If this is not configured, then the default locations will be searched
+  /// instead.
+  pub template_path: Option<String>,
+  /// The path to the working directory.
+  ///
+  /// If this is a relative path it will be evaluated relative to the repo
+  /// path. If this is not the "natural" working directory, a .git gitlink
+  /// file will be created here linking to the repo path.
+  pub workdir_path: Option<String>,
+  /// If set, this will be used to initialize the "description" file in the
+  /// repository instead of using the template content.
+  pub description: Option<String>,
+  /// The name of the head to point HEAD at.
+  ///
+  /// If not configured, this will be taken from your git configuration.
+  /// If this begins with `refs/` it will be used verbatim;
+  /// otherwise `refs/heads/` will be prefixed.
   pub initial_head: Option<String>,
+  /// If set, then after the rest of the repository initialization is
+  /// completed an `origin` remote will be added pointing to this URL.
   pub origin_url: Option<String>,
 }
 
@@ -52,6 +121,33 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
     let mut opts = git2::RepositoryInitOptions::new();
     if let Some(bare) = value.bare {
       opts.bare(bare);
+    }
+    if let Some(no_reinit) = value.no_reinit {
+      opts.no_reinit(no_reinit);
+    }
+    if let Some(no_dotgit_dir) = value.no_dotgit_dir {
+      opts.no_dotgit_dir(no_dotgit_dir);
+    }
+    if let Some(mkdir) = value.mkdir {
+      opts.mkdir(mkdir);
+    }
+    if let Some(mkpath) = value.mkpath {
+      opts.mkpath(mkpath);
+    }
+    if let Some(mode) = value.mode {
+      opts.mode(git2::RepositoryInitMode::from_bits_truncate(mode));
+    }
+    if let Some(external_template) = value.external_template {
+      opts.external_template(external_template);
+    }
+    if let Some(template_path) = &value.template_path {
+      opts.template_path(Path::new(template_path));
+    }
+    if let Some(workdir_path) = &value.workdir_path {
+      opts.workdir_path(Path::new(workdir_path));
+    }
+    if let Some(description) = &value.description {
+      opts.description(description);
     }
     if let Some(ref initial_head) = value.initial_head {
       opts.initial_head(initial_head);
@@ -64,8 +160,30 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 }
 
 #[napi(object)]
+/// Options which can be used to configure how a repository is initialized.
 pub struct RepositoryOpenOptions {
+  /// If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
+  /// directly to a repository; otherwise, this may point to a subdirectory
+  /// of a repository, and `open` will search up through parent
+  /// directories.
+  ///
+  /// If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
+  /// directories will not cross a filesystem boundary (detected when the
+  /// stat st_dev field changes).
+  ///
+  /// If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
+  /// bare even if it isn't, ignoring any working directory, and defer
+  /// loading the repository configuration for performance.
+  ///
+  /// If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
+  /// `/.git` to `path`.
+  ///
+  /// If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
+  /// other flags and `ceilingDirs`, and respect the same environment
+  /// variables git does. Note, however, that `path` overrides `$GIT_DIR`.
   pub flags: u32,
+  /// ceiling_dirs specifies a list of paths that the search through parent
+  /// directories will stop before entering.
   pub ceiling_dirs: Option<Vec<String>>,
 }
 
@@ -86,7 +204,19 @@ pub enum RepositoryOpenFlags {
 
 #[napi(object)]
 pub struct RepositoryCloneOptions {
+  /// Indicate whether the repository will be cloned as a bare repository or
+  /// not.
+  pub bare: Option<bool>,
+  /// Specify the name of the branch to check out after the clone.
+  ///
+  /// If not specified, the remote's default branch will be used.
+  pub branch: Option<String>,
+  /// Clone a remote repository, initialize and update its submodules
+  /// recursively.
+  ///
+  /// This is similar to `git clone --recursive`.
   pub recursive: Option<bool>,
+  /// Options which control the fetch.
   pub fetch: Option<FetchOptions>,
 }
 
@@ -315,6 +445,12 @@ impl Task for CloneRepositoryTask {
     let mut builder = git2::build::RepoBuilder::new();
     let mut recursive = false;
     if let Some(opts) = &self.options {
+      if let Some(bare) = opts.bare {
+        builder.bare(bare);
+      }
+      if let Some(branch) = &opts.branch {
+        builder.branch(branch);
+      }
       if let Some(fetch) = &opts.fetch {
         let fetch_options = fetch.to_git2_fetch_options();
         builder.fetch_options(fetch_options);
