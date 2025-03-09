@@ -42,23 +42,23 @@ pub struct Reference {
 #[napi]
 /// Ensure the reference name is well-formed.
 ///
-/// Validation is performed as if [`ReferenceFormat::ALLOW_ONELEVEL`]
-/// was given to [`Reference::normalize_name`]. No normalization is
-/// performed, however.
+/// Validation is performed as if `ReferenceFormat.AllowOnelevel`
+/// was given to `normalizeReferenceName`
+/// No normalization is performed, however.
 ///
 /// @example
 /// ```ts
-/// import { isReferenceNameValid } from 'es-git';
+/// import { isValidReferenceName } from 'es-git';
 ///
-/// console.assert(isReferenceNameValid("HEAD"));
-/// console.assert(isReferenceNameValid("refs/heads/main"));
+/// console.assert(isValidReferenceName("HEAD"));
+/// console.assert(isValidReferenceName("refs/heads/main"));
 ///
 /// // But:
-/// console.assert(!isReferenceNameValid("main"));
-/// console.assert(!isReferenceNameValid("refs/heads/*"));
-/// console.assert(!isReferenceNameValid("foo//bar"));
+/// console.assert(!isValidReferenceName("main"));
+/// console.assert(!isValidReferenceName("refs/heads/*"));
+/// console.assert(!isValidReferenceName("foo//bar"));
 /// ```
-pub fn is_reference_name_valid(refname: String) -> bool {
+pub fn is_valid_reference_name(refname: String) -> bool {
   git2::Reference::is_valid_name(&refname)
 }
 

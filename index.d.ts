@@ -341,24 +341,24 @@ export type ReferenceType = /** A reference which points at an object id. */
 /**
  * Ensure the reference name is well-formed.
  *
- * Validation is performed as if [`ReferenceFormat::ALLOW_ONELEVEL`]
- * was given to [`Reference::normalize_name`]. No normalization is
- * performed, however.
+ * Validation is performed as if `ReferenceFormat.AllowOnelevel`
+ * was given to `normalizeReferenceName`
+ * No normalization is performed, however.
  *
  * @example
  * ```ts
- * import { isReferenceNameValid } from 'es-git';
+ * import { isValidReferenceName } from 'es-git';
  *
- * console.assert(isReferenceNameValid("HEAD"));
- * console.assert(isReferenceNameValid("refs/heads/main"));
+ * console.assert(isValidReferenceName("HEAD"));
+ * console.assert(isValidReferenceName("refs/heads/main"));
  *
  * // But:
- * console.assert(!isReferenceNameValid("main"));
- * console.assert(!isReferenceNameValid("refs/heads/*"));
- * console.assert(!isReferenceNameValid("foo//bar"));
+ * console.assert(!isValidReferenceName("main"));
+ * console.assert(!isValidReferenceName("refs/heads/*"));
+ * console.assert(!isValidReferenceName("foo//bar"));
  * ```
  */
-export declare function isReferenceNameValid(refname: string): boolean
+export declare function isValidReferenceName(refname: string): boolean
 /** Options for normalize reference name. */
 export enum ReferenceFormat {
   /** No particular normalization. */

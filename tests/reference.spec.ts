@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ReferenceFormat, isReferenceNameValid, normalizeReferenceName, openRepository } from '../index';
+import { ReferenceFormat, isValidReferenceName, normalizeReferenceName, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('reference', () => {
   it('check is valid reference name', () => {
-    expect(isReferenceNameValid('HEAD')).toBe(true);
-    expect(isReferenceNameValid('refs/heads/main')).toBe(true);
-    expect(isReferenceNameValid('main')).toBe(false);
-    expect(isReferenceNameValid('refs/heads/*')).toBe(false);
-    expect(isReferenceNameValid('foo//bar')).toBe(false);
+    expect(isValidReferenceName('HEAD')).toBe(true);
+    expect(isValidReferenceName('refs/heads/main')).toBe(true);
+    expect(isValidReferenceName('main')).toBe(false);
+    expect(isValidReferenceName('refs/heads/*')).toBe(false);
+    expect(isValidReferenceName('foo//bar')).toBe(false);
   });
 
   it('normalize reference name', () => {
