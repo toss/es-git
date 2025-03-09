@@ -21,7 +21,7 @@ export interface CommitOptions {
   committer?: SignaturePayload
   parents?: Array<string>
 }
-export const enum DiffFlags {
+export enum DiffFlags {
   /** File(s) treated as binary data. (1 << 0) */
   Binary = 1,
   /** File(s) treated as text data. (1 << 1) */
@@ -299,7 +299,7 @@ export interface IndexUpdateAllOptions {
   onMatch?: (args: IndexOnMatchCallbackArgs) => number
 }
 /** An enumeration all possible kinds objects may have. */
-export const enum ObjectType {
+export enum ObjectType {
   /** Any kind of git object */
   Any = 0,
   /** An object which corresponds to a git commit */
@@ -360,7 +360,7 @@ export type ReferenceType = /** A reference which points at an object id. */
  */
 export declare function isReferenceNameValid(refname: string): boolean
 /** Options for normalize reference name. */
-export const enum ReferenceFormat {
+export enum ReferenceFormat {
   /** No particular normalization. */
   Normal = 0,
   /**
@@ -604,7 +604,7 @@ export interface RepositoryOpenOptions {
   flags: number
   ceilingDirs?: Array<string>
 }
-export const enum RepositoryOpenFlags {
+export enum RepositoryOpenFlags {
   /** Only open the specified path; don't walk upward searching. (1 << 0) */
   NoSearch = 1,
   /** Search across filesystem boundaries. (1 << 1) */
@@ -639,7 +639,7 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 /** Flags for the Revspec. */
-export const enum RevparseMode {
+export enum RevparseMode {
   /** The spec targeted a single object (1 << 0) */
   Single = 1,
   /** The spec targeted a range of commits (1 << 1) */
@@ -659,7 +659,7 @@ export interface Revspec {
   mode: number
 }
 /** Orderings that may be specified for Revwalk iteration. */
-export const enum RevwalkSort {
+export enum RevwalkSort {
   /**
    * Sort the repository contents in no particular ordering.
    *
