@@ -595,13 +595,129 @@ export interface PruneOptions {
 }
 /** A listing of the possible states that a repository can be in. */
 export type RepositoryState = 'Clean' | 'Merge' | 'Revert' | 'RevertSequence' | 'CherryPick' | 'CherryPickSequence' | 'Bisect' | 'Rebase' | 'RebaseInteractive' | 'RebaseMerge' | 'ApplyMailbox' | 'ApplyMailboxOrRebase';
+/** Mode options for `RepositoryInitOptions`. */
+export const enum RepositoryInitMode {
+  /** Use permissions configured by umask (default) */
+  SharedUnmask = 0,
+  /**
+   * Use `--shared=group` behavior, chmod'ing the new repo to be
+   * group writable and "g+sx" for sticky group assignment.
+   */
+  SharedGroup = 1533,
+  /** Use `--shared=all` behavior, adding world readability. */
+  SharedAll = 1535
+}
 export interface RepositoryInitOptions {
+  /**
+   * Create a bare repository with no working directory.
+   *
+   * Defaults to `false`.
+   */
   bare?: boolean
+  /**
+   * Return an error if the repository path appears to already be a git
+   * repository.
+   *
+   * Defaults to `false`.
+   */
+  noReinit?: boolean
+  /**
+   * Normally a '/.git/' will be appended to the repo path for non-bare repos
+   * (if it is not already there), but passing this flag prevents that
+   * behavior.
+   *
+   * Defaults to `false`.
+   */
+  noDotgitDir?: boolean
+  /**
+   * Make the repo path (and workdir path) as needed. The ".git" directory
+   * will always be created regardless of this flag.
+   *
+   * Defaults to `true`.
+   */
+  mkdir?: boolean
+  /**
+   * Make the repo path (and workdir path) as needed. The ".git" directory
+   * will always be created regardless of this flag.
+   *
+   * Defaults to `true`.
+   */
+  mkpath?: boolean
+  /** Set to one of the `RepositoryInit` constants, or a custom value. */
+  mode?: number
+  /**
+   * Enable or disable using external templates.
+   *
+   * If enabled, then the `template_path` option will be queried first, then
+   * `init.templatedir` from the global config, and finally
+   * `/usr/share/git-core-templates` will be used (if it exists).
+   *
+   * Defaults to `true`.
+   */
+  externalTemplate?: boolean
+  /**
+   * When the `externalTemplate` option is set, this is the first location
+   * to check for the template directory.
+   *
+   * If this is not configured, then the default locations will be searched
+   * instead.
+   */
+  templatePath?: string
+  /**
+   * The path to the working directory.
+   *
+   * If this is a relative path it will be evaluated relative to the repo
+   * path. If this is not the "natural" working directory, a .git gitlink
+   * file will be created here linking to the repo path.
+   */
+  workdirPath?: string
+  /**
+   * If set, this will be used to initialize the "description" file in the
+   * repository instead of using the template content.
+   */
+  description?: string
+  /**
+   * The name of the head to point HEAD at.
+   *
+   * If not configured, this will be taken from your git configuration.
+   * If this begins with `refs/` it will be used verbatim;
+   * otherwise `refs/heads/` will be prefixed.
+   */
   initialHead?: string
+  /**
+   * If set, then after the rest of the repository initialization is
+   * completed an `origin` remote will be added pointing to this URL.
+   */
   originUrl?: string
 }
+/** Options which can be used to configure how a repository is initialized. */
 export interface RepositoryOpenOptions {
+  /**
+   * If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
+   * directly to a repository; otherwise, this may point to a subdirectory
+   * of a repository, and `open` will search up through parent
+   * directories.
+   *
+   * If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
+   * directories will not cross a filesystem boundary (detected when the
+   * stat st_dev field changes).
+   *
+   * If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
+   * bare even if it isn't, ignoring any working directory, and defer
+   * loading the repository configuration for performance.
+   *
+   * If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
+   * `/.git` to `path`.
+   *
+   * If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
+   * other flags and `ceilingDirs`, and respect the same environment
+   * variables git does. Note, however, that `path` overrides `$GIT_DIR`.
+   */
   flags: number
+  /**
+   * ceiling_dirs specifies a list of paths that the search through parent
+   * directories will stop before entering.
+   */
   ceilingDirs?: Array<string>
 }
 export const enum RepositoryOpenFlags {
@@ -617,7 +733,25 @@ export const enum RepositoryOpenFlags {
   FromEnv = 16
 }
 export interface RepositoryCloneOptions {
+  /**
+   * Indicate whether the repository will be cloned as a bare repository or
+   * not.
+   */
+  bare?: boolean
+  /**
+   * Specify the name of the branch to check out after the clone.
+   *
+   * If not specified, the remote's default branch will be used.
+   */
+  branch?: string
+  /**
+   * Clone a remote repository, initialize and update its submodules
+   * recursively.
+   *
+   * This is similar to `git clone --recursive`.
+   */
   recursive?: boolean
+  /** Options which control the fetch. */
   fetch?: FetchOptions
 }
 /** Creates a new repository in the specified folder. */
