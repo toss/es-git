@@ -17,8 +17,7 @@ impl Deref for BlobInner {
   }
 }
 
-/// A structure to represent a git [blob][1]
-/// @hideconstructor
+/// A class to represent a git [blob][1].
 ///
 /// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 #[napi]
@@ -29,7 +28,7 @@ pub struct Blob {
 #[napi]
 impl Blob {
   #[napi]
-  /// Get the id (SHA1) of a repository blob
+  /// Get the id (SHA1) of a repository blob.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }

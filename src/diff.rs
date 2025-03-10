@@ -34,9 +34,9 @@ pub fn diff_flags_contains(source: u32, target: u32) -> bool {
 pub enum DeltaType {
   /// No changes
   Unmodified,
-  /// Entry does not exist in old version
+  /// Entry does not exist in an old version
   Added,
-  /// Entry does not exist in new version
+  /// Entry does not exist in a new version
   Deleted,
   /// Entry content changed between old and new
   Modified,
@@ -93,19 +93,19 @@ impl From<DeltaType> for git2::Delta {
 }
 
 #[napi(string_enum)]
-/// Possible output formats for diff data
+/// Possible output formats for diff data.
 pub enum DiffFormat {
-  /// full git diff (default)
+  /// full `git diff` (default)
   Patch,
   /// just the headers of the patch
   PatchHeader,
-  /// like git diff --raw
+  /// like `git diff --raw`
   Raw,
-  /// like git diff --name-only
+  /// like `git diff --name-only`
   NameOnly,
-  /// like git diff --name-status
+  /// like `git diff --name-status`
   NameStatus,
-  /// git diff as used by git patch-id
+  /// `git diff` as used by `git patch-id`
   PatchId,
 }
 
@@ -137,7 +137,7 @@ pub struct DiffPrintOptions {
 /// The diff object that contains all individual file deltas.
 ///
 /// This is an opaque structure which will be allocated by one of the diff
-/// generator functions on the `Repository` structure (e.g. `diffTreeToTree`
+/// generator functions on the `Repository` class (e.g. `diffTreeToTree`
 /// or other `diff*` functions).
 ///
 /// @hideconstructor
@@ -199,7 +199,7 @@ impl Diff {
 }
 
 #[napi]
-/// Structure describing a hunk of a diff.
+/// A class describing a hunk of a diff.
 ///
 /// @hideconstructor
 pub struct DiffStats {
@@ -228,7 +228,7 @@ impl DiffStats {
 }
 
 #[napi(iterator)]
-/// An iterator over the diffs in a delta
+/// An iterator over the diffs in a delta.
 ///
 /// @hideconstructor
 pub struct Deltas {
@@ -271,7 +271,7 @@ impl DiffDelta {
   }
 
   #[napi]
-  /// Returns the status of this entry
+  /// Returns the status of this entry.
   pub fn status(&self) -> DeltaType {
     self.inner.status().into()
   }
@@ -371,7 +371,7 @@ impl DiffFile {
   }
 
   #[napi]
-  /// Returns the size of this entry, in bytes
+  /// Returns the size of this entry, in bytes.
   pub fn size(&self) -> u64 {
     self.inner.size()
   }
@@ -402,7 +402,7 @@ impl DiffFile {
 }
 
 #[napi(object)]
-/// Structure describing options about how the diff should be executed.
+/// Describing options about how the diff should be executed.
 pub struct DiffOptions {
   /// Flag indicating whether the sides of the diff will be reversed.
   pub reverse: Option<bool>,
@@ -421,7 +421,7 @@ pub struct DiffOptions {
   pub include_typechange: Option<bool>,
   /// Event with `includeTypechange`, the tree returned generally shows a
   /// deleted blob. This flag correctly labels the tree transitions as a
-  /// typechange record with the `newFile`'s mode set to tree.
+  /// typechange record with the `new_file`'s mode set to tree.
   ///
   /// Note that the tree SHA will not be available.
   pub include_typechange_trees: Option<bool>,
@@ -643,10 +643,10 @@ impl Repository {
   #[napi]
   /// Create a diff with the difference between two tree objects.
   ///
-  /// This is equivalent to `git diff <old-tree> <new-tree>`
+  /// This is equivalent to `git diff <old-tree> <new-tree>`.
   ///
   /// The first tree will be used for the "oldFile" side of the delta and the
-  /// second tree will be used for the "newFile" side of the delta.  You can
+  /// second tree will be used for the "newFile" side of the delta. You can
   /// pass `null` to indicate an empty tree, although it is an error to pass
   /// `null` for both the `oldTree` and `newTree`.
   pub fn diff_tree_to_tree(
@@ -721,7 +721,7 @@ impl Repository {
     let inner = this.share_with(env, |repo| {
       repo
         .inner
-        .diff_index_to_workdir(index.map(|x| x.inner.deref()), Some(&mut opts))
+        .diff_index_to_workdir(index.map(|x| &x.inner), Some(&mut opts))
         .map_err(crate::Error::from)
         .map_err(|e| e.into())
     })?;
@@ -737,12 +737,12 @@ impl Repository {
   /// This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
   /// Those commands use information from the index, whereas this
   /// function strictly returns the differences between the tree and the files
-  /// in the working directory, regardless of the state of the index.  Use
+  /// in the working directory, regardless of the state of the index. Use
   /// `diffTreeToWorkdirWithIndex` to emulate those commands.
   ///
-  /// To see difference between this and `treeToWorkdirWithIndex`,
+  /// To see difference between this and `diffTreeToWorkdirWithIndex`,
   /// consider the example of a staged file deletion where the file has then
-  /// been put back into the working dir and further modified.  The
+  /// been put back into the working dir and further modified. The
   /// tree-to-workdir diff for that file is 'modified', but `git diff` would
   /// show status 'deleted' since there is a staged delete.
   ///

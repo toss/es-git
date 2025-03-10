@@ -70,7 +70,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Simplify the history by first-parent
+  /// Simplify the history by first-parent.
   ///
   /// No parents other than the first for each commit will be enqueued.
   pub fn simplify_first_parent(&mut self) -> Result<&Self> {
@@ -99,7 +99,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push the repository's HEAD
+  /// Push the repository's HEAD.
   ///
   /// For more information, see `push`.
   pub fn push_head(&mut self) -> Result<&Self> {
@@ -112,7 +112,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push matching references
+  /// Push matching references.
   ///
   /// The OIDs pointed to by the references that match the given glob pattern
   /// will be pushed to the revision walker.
@@ -147,7 +147,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Push the OID pointed to by a reference
+  /// Push the OID pointed to by a reference.
   ///
   /// The reference must point to a commitish.
   pub fn push_ref(&mut self, reference: String) -> Result<&Self> {
@@ -170,7 +170,7 @@ impl Revwalk {
   }
 
   #[napi]
-  /// Hide the repository's HEAD
+  /// Hide the repository's HEAD.
   ///
   /// For more information, see `hide`.
   pub fn hide_head(&mut self) -> Result<&Self> {

@@ -13,10 +13,10 @@ pub fn is_valid_tag_name(tag_name: String) -> bool {
 }
 
 #[napi]
-/// A structure to represent a git [tag][1]
+/// A class to represent a git [tag][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Basics-Tagging
+/// [1]: https://git-scm.com/book/en/Git-Basics-Tagging
 pub struct Tag {
   pub(crate) inner: SharedReference<Repository, git2::Tag<'static>>,
 }
@@ -24,15 +24,15 @@ pub struct Tag {
 #[napi]
 impl Tag {
   #[napi]
-  /// Get the id (SHA1) of a repository tag
+  /// Get the id (SHA1) of a repository tag.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
 
   #[napi]
-  /// Get the message of a tag
+  /// Get the message of a tag.
   ///
-  /// Returns `null` if there is no message or if it is not valid utf8
+  /// Returns `null` if there is no message or if it is not valid utf8.
   pub fn message(&self) -> Option<String> {
     self
       .inner
@@ -42,16 +42,16 @@ impl Tag {
   }
 
   #[napi]
-  /// Get the name of a tag
+  /// Get the name of a tag.
   ///
-  /// Throws error if it is not valid utf8
+  /// Throws error if it is not valid utf8.
   pub fn name(&self) -> crate::Result<String> {
     let name = std::str::from_utf8(self.inner.name_bytes())?.to_string();
     Ok(name)
   }
 
   #[napi]
-  /// Recursively peel a tag until a non tag `GitObject` is found
+  /// Recursively peel a tag until a non tag git_object is found.
   pub fn peel(&self) -> crate::Result<GitObject> {
     let object = self.inner.peel()?;
     Ok(GitObject {
@@ -60,7 +60,7 @@ impl Tag {
   }
 
   #[napi]
-  /// Get the tagger (author) of a tag
+  /// Get the tagger (author) of a tag.
   ///
   /// If the author is unspecified, then `null` is returned.
   pub fn tagger(&self) -> Option<Signature> {
@@ -68,10 +68,10 @@ impl Tag {
   }
 
   #[napi]
-  /// Get the tagged object of a tag
+  /// Get the tagged object of a tag.
   ///
   /// This method performs a repository lookup for the given object and
-  /// returns it
+  /// returns it.
   pub fn target(&self) -> crate::Result<GitObject> {
     let object = self.inner.target()?;
     Ok(GitObject {
@@ -80,13 +80,13 @@ impl Tag {
   }
 
   #[napi]
-  /// Get the OID of the tagged object of a tag
+  /// Get the OID of the tagged object of a tag.
   pub fn target_id(&self) -> String {
     self.inner.target_id().to_string()
   }
 
   #[napi]
-  /// Get the ObjectType of the tagged object of a tag
+  /// Get the ObjectType of the tagged object of a tag.
   pub fn target_type(&self) -> Option<ObjectType> {
     self.inner.target_type().map(|x| x.into())
   }
@@ -121,15 +121,13 @@ impl Repository {
   #[napi]
   /// Lookup a tag object by prefix hash from the repository.
   ///
-  /// Returns `null` if it does not exist
+  /// Returns `null` if tag does not exist.
   pub fn find_tag(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Tag> {
     self.get_tag(this, env, oid).ok()
   }
 
   #[napi]
   /// Lookup a tag object by prefix hash from the repository.
-  ///
-  /// Throws error if it does not exist
   pub fn get_tag(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Tag> {
     let inner = this.share_with(env, |repo| {
       repo
@@ -156,8 +154,8 @@ impl Repository {
   }
 
   #[napi(ts_args_type = "callback: (oid: string, name: string) => boolean")]
-  /// iterate over all tags calling `callback` on each.
-  /// the callback is provided the tag id and name
+  /// Iterate over all tags calling `callback` on each.
+  /// The callback is provided the tag id and name.
   pub fn tag_foreach(&self, callback: Function<(String, String), bool>) -> crate::Result<()> {
     self.inner.tag_foreach(|oid, name| {
       let oid = oid.to_string();
@@ -182,7 +180,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Create a new tag in the repository from an object
+  /// Create a new tag in the repository from an object.
   ///
   /// A new reference will also be created pointing to this tag object. If
   /// `force` is true and a reference already exists with the given name,
@@ -248,7 +246,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Create a new lightweight tag pointing at a target object
+  /// Create a new lightweight tag pointing at a target object.
   ///
   /// A new direct reference will be created pointing to this target object.
   /// If force is true and a reference already exists with the given name,

@@ -31,7 +31,7 @@ impl From<git2::ReferenceType> for ReferenceType {
 }
 
 #[napi]
-/// A structure to represent a git [reference][1].
+/// A class to represent a git [reference][1].
 /// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Internals-Git-References
@@ -42,9 +42,9 @@ pub struct Reference {
 #[napi]
 /// Ensure the reference name is well-formed.
 ///
-/// Validation is performed as if `ReferenceFormat.AllowOneLevel`
-/// was given to `normalizeReferenceName`. No normalization is
-/// performed, however.
+/// Validation is performed as if `ReferenceFormat.AllowOnelevel`
+/// was given to `normalizeReferenceName`
+/// No normalization is performed, however.
 ///
 /// @example
 /// ```ts
@@ -72,15 +72,18 @@ pub enum ReferenceFormat {
   /// do not contain multiple `/`-separated components). Those are
   /// expected to be written only using uppercase letters and underscore
   /// (e.g. `HEAD`, `FETCH_HEAD`).
+  /// (1 << 0)
   AllowOnelevel = 1,
   /// Interpret the provided name as a reference pattern for a refspec (as
   /// used with remote repositories). If this option is enabled, the name
   /// is allowed to contain a single `*` in place of a full pathname
   /// components (e.g., `foo/*\/bar` but not `foo/bar*`).
+  /// (1 << 1)
   RefspecPattern = 2,
   /// Interpret the name as part of a refspec in shorthand form so the
   /// `AllowOnelevel` naming rules aren't enforced and `main` becomes a
   /// valid name.
+  /// (1 << 2)
   RefspecShorthand = 4,
 }
 
@@ -186,13 +189,13 @@ impl Reference {
   }
 
   #[napi]
-  /// Check if a reference is a remote tracking branch
+  /// Check if a reference is a remote tracking branch.
   pub fn is_remote(&self) -> bool {
     self.inner.is_remote()
   }
 
   #[napi]
-  /// Check if a reference is a tag
+  /// Check if a reference is a tag.
   pub fn is_tag(&self) -> bool {
     self.inner.is_tag()
   }
@@ -238,14 +241,13 @@ impl Reference {
   #[napi]
   /// Return the peeled OID target of this reference.
   ///
-  /// This peeled OID only applies to direct references that point to a hard
-  /// Tag object: it is the result of peeling such Tag.
+  /// This peeled OID only applies to direct references that point to a hard.
   pub fn target_peel(&self) -> Option<String> {
     self.inner.target_peel().map(|x| x.to_string())
   }
 
   #[napi]
-  /// Peel a reference to a tree
+  /// Peel a reference to a tree.
   ///
   /// This method recursively peels the reference until it reaches
   /// a tree.
@@ -320,7 +322,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Returns `null` if it does not exist.
+  /// Returns `null` if the reference does not exist.
   pub fn find_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,
@@ -333,7 +335,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Throws error if it does not exist.
+  /// Throws error if the reference does not exist.
   pub fn get_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,

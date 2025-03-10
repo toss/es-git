@@ -4,7 +4,7 @@ use napi_derive::napi;
 
 #[napi]
 #[repr(u32)]
-/// Flags for the Revspec.
+/// Flags for the revparse.
 pub enum RevparseMode {
   /// The spec targeted a single object
   Single = 1,

@@ -12,12 +12,12 @@ pub struct CommitOptions {
   pub update_ref: Option<String>,
   /// Signature for author.
   ///
-  /// If not provided, default signature of repository will be used.
+  /// If not provided, the default signature of the repository will be used.
   /// If there is no default signature set for the repository, an error will occur.
   pub author: Option<SignaturePayload>,
   /// Signature for commiter.
   ///
-  /// If not provided, default signature of repository will be used.
+  /// If not provided, the default signature of the repository will be used.
   /// If there is no default signature set for the repository, an error will occur.
   pub committer: Option<SignaturePayload>,
   pub parents: Option<Vec<String>>,
@@ -40,7 +40,7 @@ impl Deref for CommitInner {
 }
 
 #[napi]
-/// A structure to represent a git commit
+/// A class to represent a git commit.
 /// @hideconstructor
 pub struct Commit {
   pub(crate) inner: CommitInner,
@@ -74,7 +74,7 @@ impl Commit {
   /// The returned message will be slightly prettified by removing any
   /// potential leading newlines.
   ///
-  /// Throws error if the message is not valid utf-8
+  /// Throws error if the message is not valid utf-8.
   pub fn message(&self) -> crate::Result<String> {
     let message = std::str::from_utf8(self.inner.message_raw_bytes())?.to_string();
     Ok(message)
@@ -130,7 +130,7 @@ impl Commit {
   }
 
   #[napi]
-  /// Casts this Commit to be usable as an `GitObject`
+  /// Casts this Commit to be usable as an `GitObject`.
   pub fn as_object(&self) -> GitObject {
     let obj = self.inner.as_object().clone();
     GitObject {
@@ -165,7 +165,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Create new commit in the repository
+  /// Create new commit in the repository.
   ///
   /// If the `updateRef` is not `null`, name of the reference that will be
   /// updated to point to this commit. If the reference is not direct, it will

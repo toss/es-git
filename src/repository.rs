@@ -40,8 +40,20 @@ impl From<git2::RepositoryState> for RepositoryState {
   }
 }
 
+#[napi]
+#[repr(u32)]
+/// Mode options for `RepositoryInitOptions`.
+pub enum RepositoryInitMode {
+  /// Use permissions configured by umask (default)
+  SharedUnmask = 0,
+  /// Use `--shared=group` behavior, chmod'ing the new repo to be
+  /// group writable and "g+sx" for sticky group assignment.
+  SharedGroup = 0o002775,
+  /// Use `--shared=all` behavior, adding world readability.
+  SharedAll = 0o002777,
+}
+
 #[napi(object)]
-/// Options which can be used to configure how a repository is initialized
 pub struct RepositoryInitOptions {
   /// Create a bare repository with no working directory.
   ///
@@ -63,11 +75,13 @@ pub struct RepositoryInitOptions {
   ///
   /// Defaults to `true`.
   pub mkdir: Option<bool>,
-  /// Recursively make all components of the repo and workdir path as
-  /// necessary.
+  /// Make the repo path (and workdir path) as needed. The ".git" directory
+  /// will always be created regardless of this flag.
   ///
   /// Defaults to `true`.
   pub mkpath: Option<bool>,
+  /// Set to one of the `RepositoryInit` constants, or a custom value.
+  pub mode: Option<u32>,
   /// Enable or disable using external templates.
   ///
   /// If enabled, then the `template_path` option will be queried first, then
@@ -76,11 +90,26 @@ pub struct RepositoryInitOptions {
   ///
   /// Defaults to `true`.
   pub external_template: Option<bool>,
+  /// When the `externalTemplate` option is set, this is the first location
+  /// to check for the template directory.
+  ///
+  /// If this is not configured, then the default locations will be searched
+  /// instead.
+  pub template_path: Option<String>,
+  /// The path to the working directory.
+  ///
+  /// If this is a relative path it will be evaluated relative to the repo
+  /// path. If this is not the "natural" working directory, a .git gitlink
+  /// file will be created here linking to the repo path.
+  pub workdir_path: Option<String>,
+  /// If set, this will be used to initialize the "description" file in the
+  /// repository instead of using the template content.
+  pub description: Option<String>,
   /// The name of the head to point HEAD at.
   ///
   /// If not configured, this will be taken from your git configuration.
   /// If this begins with `refs/` it will be used verbatim;
-  /// otherwise `refs/heads/` will be prefixed
+  /// otherwise `refs/heads/` will be prefixed.
   pub initial_head: Option<String>,
   /// If set, then after the rest of the repository initialization is
   /// completed an `origin` remote will be added pointing to this URL.
@@ -105,8 +134,20 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
     if let Some(mkpath) = value.mkpath {
       opts.mkpath(mkpath);
     }
+    if let Some(mode) = value.mode {
+      opts.mode(git2::RepositoryInitMode::from_bits_truncate(mode));
+    }
     if let Some(external_template) = value.external_template {
       opts.external_template(external_template);
+    }
+    if let Some(template_path) = &value.template_path {
+      opts.template_path(Path::new(template_path));
+    }
+    if let Some(workdir_path) = &value.workdir_path {
+      opts.workdir_path(Path::new(workdir_path));
+    }
+    if let Some(description) = &value.description {
+      opts.description(description);
     }
     if let Some(ref initial_head) = value.initial_head {
       opts.initial_head(initial_head);
@@ -119,6 +160,7 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 }
 
 #[napi(object)]
+/// Options which can be used to configure how a repository is initialized.
 pub struct RepositoryOpenOptions {
   /// If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
   /// directly to a repository; otherwise, this may point to a subdirectory
@@ -147,7 +189,7 @@ pub struct RepositoryOpenOptions {
 
 #[napi]
 #[repr(u32)]
-/// Flags for opening repository
+/// Flags for opening repository.
 pub enum RepositoryOpenFlags {
   /// Only open the specified path; don't walk upward searching.
   NoSearch = 1,
@@ -183,7 +225,7 @@ pub struct RepositoryCloneOptions {
 /// An owned git repository, representing all state associated with the
 /// underlying filesystem.
 ///
-/// This structure corresponds to a Git Repository in libgit2.
+/// This class corresponds to a git repository in libgit2.
 ///
 /// @hideconstructor
 pub struct Repository {
@@ -225,7 +267,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Returns the current state of this repository
+  /// Returns the current state of this repository.
   pub fn state(&self) -> RepositoryState {
     self.inner.state().into()
   }
@@ -378,7 +420,7 @@ impl Task for DiscoverRepositoryTask {
 }
 
 #[napi]
-/// Attempt to open an already-existing repository at or above `path`
+/// Attempt to open an already-existing repository at or above `path`.
 ///
 /// This starts at `path` and looks up the filesystem hierarchy
 /// until it finds a repository.

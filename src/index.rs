@@ -7,10 +7,6 @@ use napi_derive::napi;
 use std::path::Path;
 
 #[napi(object)]
-/// A structure to represent an entry or a file inside of an index.
-///
-/// All fields of an entry are public for modification and inspection. This is
-/// also how a new index entry is created.
 pub struct IndexEntry {
   pub ctime: DateTime<Utc>,
   pub mtime: DateTime<Utc>,
@@ -190,12 +186,12 @@ pub struct IndexUpdateAllOptions {
 }
 
 #[napi]
-/// A structure to represent a git [index][1]
+/// A class to represent a git [index][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Index {
-  pub(crate) inner: SharedReference<Repository, git2::Index>,
+  pub(crate) inner: git2::Index,
 }
 
 #[napi]
@@ -231,7 +227,7 @@ impl Index {
   }
 
   #[napi]
-  /// Add or update an index entry from a file on disk
+  /// Add or update an index entry from a file on disk.
   ///
   /// The file path must be relative to the repository's working folder and
   /// must be readable.
@@ -398,7 +394,7 @@ impl Index {
   }
 
   #[napi]
-  /// Update all index entries to match the working directory
+  /// Update all index entries to match the working directory.
   ///
   /// This method will fail in bare index instances.
   ///
@@ -437,13 +433,13 @@ impl Index {
   }
 
   #[napi]
-  /// Get the count of entries currently in the index
+  /// Get the count of entries currently in the index.
   pub fn count(&self) -> u32 {
     self.inner.len() as u32
   }
 
   #[napi]
-  /// Return `true` is there is no entry in the index
+  /// Return `true` is there is no entry in the index.
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
@@ -451,7 +447,7 @@ impl Index {
   #[napi]
   /// Get the full path to the index file on disk.
   ///
-  /// Returns `null` if this is an in-memory index.
+  /// Returns `None` if this is an in-memory index.
   pub fn path(&self, env: Env) -> Option<JsString> {
     self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
   }
@@ -473,7 +469,7 @@ impl Index {
 }
 
 #[napi(iterator)]
-/// An iterator over the entries in an index
+/// An iterator over the entries in an index.
 ///
 /// @hideconstructor
 pub struct IndexEntries {
@@ -497,11 +493,10 @@ impl Repository {
   /// Get the Index file for this repository.
   ///
   /// If a custom index has not been set, the default index for the repository
-  /// will be returned (the one located in .git/index).
-  pub fn index(&self, env: Env, this: Reference<Repository>) -> crate::Result<Index> {
-    let inner = this.share_with(env, |repo| {
-      repo.inner.index().map_err(crate::Error::from).map_err(|e| e.into())
-    })?;
-    Ok(Index { inner })
+  /// will be returned (the one located in `.git/index`).
+  pub fn index(&self) -> crate::Result<Index> {
+    Ok(Index {
+      inner: self.inner.index()?,
+    })
   }
 }

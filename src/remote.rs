@@ -22,11 +22,11 @@ impl From<git2::Direction> for Direction {
 }
 
 #[napi(object)]
-/// A structure to represent a git [refspec][1].
+/// A data object to represent a git [refspec][1].
 ///
 /// Refspecs are currently mainly accessed/created through a `Remote`.
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-The-Refspec
+/// [1]: https://git-scm.com/book/en/Git-Internals-The-Refspec
 pub struct Refspec {
   pub direction: Direction,
   pub src: String,
@@ -128,7 +128,7 @@ impl ProxyOptions {
 }
 
 #[napi(string_enum)]
-/// Configuration for how pruning is done on a fetch
+/// Configuration for how pruning is done on a fetch.
 pub enum FetchPrune {
   /// Use the setting from the configuration
   Unspecified,
@@ -462,7 +462,7 @@ impl Task for GetRemoteDefaultBranchTask {
 }
 
 #[napi]
-/// A structure representing a [remote][1] of a git repository.
+/// A class representing a [remote][1] of a git repository.
 /// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
@@ -476,7 +476,7 @@ impl Remote {
   /// Get the remote's name.
   ///
   /// Returns `null` if this remote has not yet been named, and
-  /// Throws error if the name is not valid utf-8
+  /// throws error if the name is not valid utf-8.
   pub fn name(&self) -> crate::Result<Option<String>> {
     let name = match self.inner.name_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -488,7 +488,7 @@ impl Remote {
   #[napi]
   /// Get the remote's URL.
   ///
-  /// Throws error if the URL is not valid utf-8
+  /// Throws error if the URL is not valid utf-8.
   pub fn url(&self) -> crate::Result<String> {
     let url = std::str::from_utf8(self.inner.url_bytes())?.to_string();
     Ok(url)
@@ -498,7 +498,7 @@ impl Remote {
   /// Get the remote's URL.
   ///
   /// Returns `null` if push url not exists, and
-  /// Throws error if the URL is not valid utf-8
+  /// throws error if the URL is not valid utf-8.
   pub fn pushurl(&self) -> crate::Result<Option<String>> {
     let pushurl = match self.inner.pushurl_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -510,7 +510,7 @@ impl Remote {
   #[napi]
   /// List all refspecs.
   ///
-  /// Filter refspec if has not valid src or dst with utf-8
+  /// Filter refspec if has not valid `src` or `dst` with utf-8.
   pub fn refspecs(&self) -> Vec<Refspec> {
     self
       .inner
@@ -520,7 +520,7 @@ impl Remote {
   }
 
   #[napi]
-  /// Download new data and update tips
+  /// Download new data and update tips.
   ///
   /// Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
   pub fn fetch(
@@ -541,7 +541,7 @@ impl Remote {
   }
 
   #[napi]
-  /// Perform a push
+  /// Perform a push.
   ///
   /// Perform all the steps for a push.
   /// If no refspecs are passed, then the configured refspecs will be used.
@@ -563,7 +563,7 @@ impl Remote {
   }
 
   #[napi]
-  /// Prune tracking refs that are no longer present on remote
+  /// Prune tracking refs that are no longer present on remote.
   pub fn prune(
     &self,
     self_ref: Reference<Remote>,
@@ -610,9 +610,9 @@ impl Repository {
   }
 
   #[napi]
-  /// Get remote from repository
+  /// Get remote from repository.
   ///
-  /// Throws error if it does not exist
+  /// Throws error if remote does not exist.
   pub fn get_remote(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Remote> {
     let remote = Remote {
       inner: this.share_with(env, move |repo| {
@@ -627,9 +627,9 @@ impl Repository {
   }
 
   #[napi]
-  /// Find remote from repository
+  /// Find remote from repository.
   ///
-  /// Returns `null` if it does not exist
+  /// Returns `null` if remote does not exist.
   pub fn find_remote(&self, this: Reference<Repository>, env: Env, name: String) -> Option<Remote> {
     self.get_remote(this, env, name).ok()
   }

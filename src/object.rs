@@ -61,10 +61,10 @@ impl Deref for ObjectInner {
 }
 
 #[napi]
-/// A structure to represent a Git [Object][1]
+/// A class to represent a git [object][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct GitObject {
   pub(crate) inner: ObjectInner,
 }
@@ -72,7 +72,7 @@ pub struct GitObject {
 #[napi]
 impl GitObject {
   #[napi]
-  /// Get the id (SHA1) of a repository object
+  /// Get the id (SHA1) of a repository object.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
@@ -100,7 +100,7 @@ impl GitObject {
   }
 
   #[napi]
-  /// Recursively peel an object until a commit is found
+  /// Recursively peel an object until a commit is found.
   pub fn peel_to_commit(&self) -> crate::Result<Commit> {
     let git_commit = self.inner.peel_to_commit()?;
     let commit = Commit {
@@ -110,7 +110,7 @@ impl GitObject {
   }
 
   #[napi]
-  /// Recursively peel an object until a blob is found
+  /// Recursively peel an object until a blob is found.
   pub fn peel_to_blob(&self, env: Env, this: Reference<GitObject>) -> crate::Result<Blob> {
     let blob = this.share_with(env, |obj| {
       obj
@@ -147,6 +147,8 @@ impl Repository {
 
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
+  ///
+  /// Throws error if the object does not exist.
   pub fn get_object(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<GitObject> {
     let object = this.share_with(env, |repo| {
       repo

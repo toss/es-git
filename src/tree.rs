@@ -42,10 +42,10 @@ impl Deref for TreeInner {
 }
 
 #[napi]
-/// A structure to represent a git [tree][1]
+/// A class to represent a git [tree][1].
 /// @hideconstructor
 ///
-/// [1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+/// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Tree {
   pub(crate) inner: TreeInner,
 }
@@ -53,7 +53,7 @@ pub struct Tree {
 #[napi]
 impl Tree {
   #[napi]
-  /// Get the id (SHA1) of a repository object
+  /// Get the id (SHA1) of a repository object.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
@@ -65,7 +65,7 @@ impl Tree {
   }
 
   #[napi]
-  /// Return `true` if there is not entry
+  /// Return `true` if there is no entry.
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
@@ -124,7 +124,7 @@ impl Tree {
   }
 
   #[napi]
-  /// Lookup a tree entry by its position in the tree
+  /// Lookup a tree entry by its position in the tree.
   pub fn get(&self, this: Reference<Tree>, env: Env, index: u32) -> crate::Result<Option<TreeEntry>> {
     let entry = this
       .share_with(env, |tree| {
@@ -141,7 +141,7 @@ impl Tree {
   }
 
   #[napi]
-  /// Lookup a tree entry by its filename
+  /// Lookup a tree entry by its filename.
   pub fn get_name(&self, this: Reference<Tree>, env: Env, filename: String) -> crate::Result<Option<TreeEntry>> {
     let entry = this
       .share_with(env, |tree| {
@@ -177,7 +177,7 @@ impl Tree {
   }
 
   #[napi]
-  /// Casts this Tree to be usable as an `GitObject`
+  /// Casts this Tree to be usable as an `GitObject`.
   pub fn as_object(&self) -> GitObject {
     GitObject {
       inner: ObjectInner::Owned(self.inner.as_object().clone()),
@@ -223,7 +223,7 @@ impl Deref for TreeEntryInner {
 }
 
 #[napi]
-/// A structure representing an entry inside of a tree. An entry is borrowed
+/// A class representing an entry inside of a tree. An entry is borrowed
 /// from a tree.
 ///
 /// @hideconstructor
@@ -234,28 +234,28 @@ pub struct TreeEntry {
 #[napi]
 impl TreeEntry {
   #[napi]
-  /// Get the id of the object pointed by the entry
+  /// Get the id of the object pointed by the entry.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
 
   #[napi]
-  /// Get the filename of a tree entry
+  /// Get the filename of a tree entry.
   ///
-  /// Throws error if the name is not valid utf-8
+  /// Throws error if the name is not valid utf-8.
   pub fn name(&self) -> crate::Result<String> {
     let name = std::str::from_utf8(self.inner.name_bytes())?;
     Ok(name.to_string())
   }
 
   #[napi(js_name = "type")]
-  /// Get the type of the object pointed by the entry
+  /// Get the type of the object pointed by the entry.
   pub fn kind(&self) -> Option<ObjectType> {
     self.inner.kind().map(|x| x.into())
   }
 
   #[napi]
-  /// Get the UNIX file attributes of a tree entry
+  /// Get the UNIX file attributes of a tree entry.
   pub fn filemode(&self) -> i32 {
     self.inner.filemode()
   }
@@ -280,8 +280,6 @@ impl TreeEntry {
 impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
-  ///
-  /// Throws error if it does not exist
   pub fn get_tree(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Tree> {
     let oid = git2::Oid::from_str(&oid)?;
     let inner = this.share_with(env, |repo| {
@@ -299,7 +297,7 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Returns `null` if it does not exist
+  /// If it does not exist, returns `null`.
   pub fn find_tree(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Tree> {
     self.get_tree(this, env, oid).ok()
   }
