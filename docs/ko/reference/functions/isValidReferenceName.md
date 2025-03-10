@@ -6,9 +6,9 @@
 
 Ensure the reference name is well-formed.
 
-Validation is performed as if `ReferenceFormat.AllowOneLevel`
-was given to [`normalizeReferenceName`]. No normalization is
-performed, however.
+Validation is performed as if `ReferenceFormat.AllowOnelevel`
+was given to `normalizeReferenceName`
+No normalization is performed, however.
 
 ## 매개변수
 

@@ -2,7 +2,7 @@
 
 # 클래스: DiffDelta
 
-Diff 엔트리에 대한 클래스예요.
+Description of changes to one entry.
 
 ## 메소드
 
@@ -10,9 +10,9 @@ Diff 엔트리에 대한 클래스예요.
 
 > **flags**(): `number`
 
-이 delta에 대한 플래그를 반환해요.
+Returns the flags on the delta.
 
-자세한 내용은 `DiffFlags`의 문서를 참조하세요.
+For more information, see `DiffFlags`'s documentation.
 
 #### 반환 형식:
 
@@ -24,7 +24,7 @@ Diff 엔트리에 대한 클래스예요.
 
 > **numFiles**(): `number`
 
-이 delta에 포함된 파일 수를 반환해요.
+Returns the number of files in this delta.
 
 #### 반환 형식:
 
@@ -36,7 +36,7 @@ Diff 엔트리에 대한 클래스예요.
 
 > **status**(): [`DeltaType`](../type-aliases/DeltaType.md)
 
-이 엔트리의 상태를 반환해요.
+Returns the status of this entry.
 
 #### 반환 형식:
 
@@ -48,9 +48,10 @@ Diff 엔트리에 대한 클래스예요.
 
 > **oldFile**(): [`DiffFile`](DiffFile.md)
 
-Diff의 "from" 측을 나타내는 파일을 반환해요.
+Return the file which represents the "from" side of the diff.
 
-여기서 "from" 측의 의미는 diff 생성에 사용된 함수에 따라 달라지며, 해당 함수의 문서에서 설명해요.
+What side this means depends on the function that was used to generate
+the diff and will be documented on the function itself.
 
 #### 반환 형식:
 
@@ -62,9 +63,10 @@ Diff의 "from" 측을 나타내는 파일을 반환해요.
 
 > **newFile**(): [`DiffFile`](DiffFile.md)
 
-Diff의 "to" 측을 나타내는 파일을 반환해요.
+Return the file which represents the "to" side of the diff.
 
-여기서 "to" 측의 의미는 diff 생성에 사용된 함수에 따라 달라지며, 해당 함수의 문서에서 설명해요.
+What side this means depends on the function that was used to generate
+the diff and will be documented on the function itself.
 
 #### 반환 형식:
 

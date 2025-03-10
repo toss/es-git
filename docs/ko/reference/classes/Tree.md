@@ -2,9 +2,9 @@
 
 # 클래스: Tree
 
-A structure to represent a git [tree][1]
+A class to represent a git [tree][1].
 
-[1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 
 ## 메소드
 
@@ -12,7 +12,7 @@ A structure to represent a git [tree][1]
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository object
+Get the id (SHA1) of a repository object.
 
 #### 반환 형식:
 
@@ -36,7 +36,7 @@ Get the number of entries listed in this tree.
 
 > **isEmpty**(): `boolean`
 
-Return `true` if there is not entry
+Return `true` if there is no entry.
 
 #### 반환 형식:
 
@@ -106,7 +106,7 @@ Lookup a tree entry by SHA value.
 
 > **get**(`index`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Lookup a tree entry by its position in the tree
+Lookup a tree entry by its position in the tree.
 
 #### 매개변수
 
@@ -124,7 +124,7 @@ Lookup a tree entry by its position in the tree
 
 > **getName**(`filename`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Lookup a tree entry by its filename
+Lookup a tree entry by its filename.
 
 #### 매개변수
 
@@ -161,7 +161,7 @@ given its relative path.
 
 > **asObject**(): [`GitObject`](GitObject.md)
 
-Casts this Tree to be usable as an `GitObject`
+Casts this Tree to be usable as an `GitObject`.
 
 #### 반환 형식:
 

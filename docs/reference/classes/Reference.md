@@ -2,7 +2,7 @@
 
 # Class: Reference
 
-A structure to represent a git [reference][1].
+A class to represent a git [reference][1].
 
 [1]: https://git-scm.com/book/en/Git-Internals-Git-References
 
@@ -54,7 +54,7 @@ Check if a reference is a note.
 
 > **isRemote**(): `boolean`
 
-Check if a reference is a remote tracking branch
+Check if a reference is a remote tracking branch.
 
 #### Returns
 
@@ -66,7 +66,7 @@ Check if a reference is a remote tracking branch
 
 > **isTag**(): `boolean`
 
-Check if a reference is a tag
+Check if a reference is a tag.
 
 #### Returns
 
@@ -140,8 +140,7 @@ not a symbolic one).
 
 Return the peeled OID target of this reference.
 
-This peeled OID only applies to direct references that point to a hard
-Tag object: it is the result of peeling such Tag.
+This peeled OID only applies to direct references that point to a hard.
 
 #### Returns
 
@@ -153,7 +152,7 @@ Tag object: it is the result of peeling such Tag.
 
 > **peelToTree**(): [`Tree`](Tree.md)
 
-Peel a reference to a tree
+Peel a reference to a tree.
 
 This method recursively peels the reference until it reaches
 a tree.

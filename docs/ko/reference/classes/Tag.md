@@ -2,9 +2,9 @@
 
 # 클래스: Tag
 
-A structure to represent a git [tag][1]
+A class to represent a git [tag][1].
 
-[1]: http://git-scm.com/book/en/Git-Basics-Tagging
+[1]: https://git-scm.com/book/en/Git-Basics-Tagging
 
 ## 메소드
 
@@ -12,7 +12,7 @@ A structure to represent a git [tag][1]
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository tag
+Get the id (SHA1) of a repository tag.
 
 #### 반환 형식:
 
@@ -24,9 +24,9 @@ Get the id (SHA1) of a repository tag
 
 > **message**(): `null` \| `string`
 
-Get the message of a tag
+Get the message of a tag.
 
-Returns `null` if there is no message or if it is not valid utf8
+Returns `null` if there is no message or if it is not valid utf8.
 
 #### 반환 형식:
 
@@ -38,9 +38,9 @@ Returns `null` if there is no message or if it is not valid utf8
 
 > **name**(): `string`
 
-Get the name of a tag
+Get the name of a tag.
 
-Throws error if it is not valid utf8
+Throws error if it is not valid utf8.
 
 #### 반환 형식:
 
@@ -52,7 +52,7 @@ Throws error if it is not valid utf8
 
 > **peel**(): [`GitObject`](GitObject.md)
 
-Recursively peel a tag until a non tag `GitObject` is found
+Recursively peel a tag until a non tag git_object is found.
 
 #### 반환 형식:
 
@@ -64,7 +64,7 @@ Recursively peel a tag until a non tag `GitObject` is found
 
 > **tagger**(): `null` \| [`Signature`](../interfaces/Signature.md)
 
-Get the tagger (author) of a tag
+Get the tagger (author) of a tag.
 
 If the author is unspecified, then `null` is returned.
 
@@ -78,10 +78,10 @@ If the author is unspecified, then `null` is returned.
 
 > **target**(): [`GitObject`](GitObject.md)
 
-Get the tagged object of a tag
+Get the tagged object of a tag.
 
 This method performs a repository lookup for the given object and
-returns it
+returns it.
 
 #### 반환 형식:
 
@@ -93,7 +93,7 @@ returns it
 
 > **targetId**(): `string`
 
-Get the OID of the tagged object of a tag
+Get the OID of the tagged object of a tag.
 
 #### 반환 형식:
 
@@ -105,7 +105,7 @@ Get the OID of the tagged object of a tag
 
 > **targetType**(): `null` \| [`ObjectType`](../enumerations/ObjectType.md)
 
-Get the ObjectType of the tagged object of a tag
+Get the ObjectType of the tagged object of a tag.
 
 #### 반환 형식:
 

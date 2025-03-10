@@ -2,7 +2,7 @@
 
 # 클래스: IndexEntries
 
-인덱스에 있는 항목들에 대한 반복자(iterator)예요.
+An iterator over the entries in an index.
 
 ## 메소드
 

@@ -2,11 +2,11 @@
 
 # Interface: Refspec
 
-A structure to represent a git [refspec][1].
+A data object to represent a git [refspec][1].
 
 Refspecs are currently mainly accessed/created through a `Remote`.
 
-[1]: http://git-scm.com/book/en/Git-Internals-The-Refspec
+[1]: https://git-scm.com/book/en/Git-Internals-The-Refspec
 
 ## Properties
 

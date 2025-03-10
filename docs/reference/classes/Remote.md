@@ -2,7 +2,7 @@
 
 # Class: Remote
 
-A structure representing a [remote][1] of a git repository.
+A class representing a [remote][1] of a git repository.
 
 [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 
@@ -15,7 +15,7 @@ A structure representing a [remote][1] of a git repository.
 Get the remote's name.
 
 Returns `null` if this remote has not yet been named, and
-Throws error if the name is not valid utf-8
+throws error if the name is not valid utf-8.
 
 #### Returns
 
@@ -29,7 +29,7 @@ Throws error if the name is not valid utf-8
 
 Get the remote's URL.
 
-Throws error if the URL is not valid utf-8
+Throws error if the URL is not valid utf-8.
 
 #### Returns
 
@@ -44,7 +44,7 @@ Throws error if the URL is not valid utf-8
 Get the remote's URL.
 
 Returns `null` if push url not exists, and
-Throws error if the URL is not valid utf-8
+throws error if the URL is not valid utf-8.
 
 #### Returns
 
@@ -58,7 +58,7 @@ Throws error if the URL is not valid utf-8
 
 List all refspecs.
 
-Filter refspec if has not valid src or dst with utf-8
+Filter refspec if has not valid `src` or `dst` with utf-8.
 
 #### Returns
 
@@ -70,7 +70,7 @@ Filter refspec if has not valid src or dst with utf-8
 
 > **fetch**(`refspecs`, `options`?, `signal`?): `Promise`\<`void`\>
 
-Download new data and update tips
+Download new data and update tips.
 
 Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
 
@@ -92,7 +92,7 @@ Convenience function to connect to a remote, download the data, disconnect and u
 
 > **push**(`refspecs`, `options`?, `signal`?): `Promise`\<`void`\>
 
-Perform a push
+Perform a push.
 
 Perform all the steps for a push.
 If no refspecs are passed, then the configured refspecs will be used.
@@ -115,7 +115,7 @@ If no refspecs are passed, then the configured refspecs will be used.
 
 > **prune**(`options`?, `signal`?): `Promise`\<`void`\>
 
-Prune tracking refs that are no longer present on remote
+Prune tracking refs that are no longer present on remote.
 
 #### Parameters
 

@@ -42,7 +42,7 @@ repository.
 
 > **size**(): `bigint`
 
-Returns the size of this entry, in bytes
+Returns the size of this entry, in bytes.
 
 #### Returns
 

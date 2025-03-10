@@ -2,6 +2,8 @@
 
 # Interface: RepositoryOpenOptions
 
+Options which can be used to configure how a repository is initialized.
+
 ## Properties
 
 | Property | Type | Description |

@@ -36,7 +36,7 @@ Returns the number of files in this delta.
 
 > **status**(): [`DeltaType`](../type-aliases/DeltaType.md)
 
-Returns the status of this entry
+Returns the status of this entry.
 
 #### Returns
 

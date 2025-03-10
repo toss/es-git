@@ -2,7 +2,7 @@
 
 # Class: DiffStats
 
-Structure describing a hunk of a diff.
+A class describing a hunk of a diff.
 
 ## Accessors
 

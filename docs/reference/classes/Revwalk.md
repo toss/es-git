@@ -44,7 +44,7 @@ Set the order in which commits are visited.
 
 > **simplifyFirstParent**(): `this`
 
-Simplify the history by first-parent
+Simplify the history by first-parent.
 
 No parents other than the first for each commit will be enqueued.
 
@@ -82,7 +82,7 @@ a walk can be started.
 
 > **pushHead**(): `this`
 
-Push the repository's HEAD
+Push the repository's HEAD.
 
 For more information, see `push`.
 
@@ -96,7 +96,7 @@ For more information, see `push`.
 
 > **pushGlob**(`glob`): `this`
 
-Push matching references
+Push matching references.
 
 The OIDs pointed to by the references that match the given glob pattern
 will be pushed to the revision walker.
@@ -145,7 +145,7 @@ commit will be hidden and the right-hand commit pushed.
 
 > **pushRef**(`reference`): `this`
 
-Push the OID pointed to by a reference
+Push the OID pointed to by a reference.
 
 The reference must point to a commitish.
 
@@ -183,7 +183,7 @@ Mark a commit as not of interest to this revwalk.
 
 > **hideHead**(): `this`
 
-Hide the repository's HEAD
+Hide the repository's HEAD.
 
 For more information, see `hide`.
 

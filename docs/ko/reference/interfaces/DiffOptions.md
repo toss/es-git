@@ -2,7 +2,7 @@
 
 # 인터페이스: DiffOptions
 
-Structure describing options about how the diff should be executed.
+Describing options about how the diff should be executed.
 
 ## 속성
 
@@ -15,7 +15,7 @@ Structure describing options about how the diff should be executed.
 | <a id="recurseuntrackeddirs"></a> `recurseUntrackedDirs?` | `boolean` | Flag indicating whether untracked directories are traversed deeply or not. |
 | <a id="includeunmodified"></a> `includeUnmodified?` | `boolean` | Flag indicating whether unmodified files are in the diff. |
 | <a id="includetypechange"></a> `includeTypechange?` | `boolean` | If enabled, then Typechange delta records are generated. |
-| <a id="includetypechangetrees"></a> `includeTypechangeTrees?` | `boolean` | Event with `includeTypechange`, the tree returned generally shows a deleted blob. This flag correctly labels the tree transitions as a typechange record with the `newFile`'s mode set to tree. Note that the tree SHA will not be available. |
+| <a id="includetypechangetrees"></a> `includeTypechangeTrees?` | `boolean` | Event with `includeTypechange`, the tree returned generally shows a deleted blob. This flag correctly labels the tree transitions as a typechange record with the `new_file`'s mode set to tree. Note that the tree SHA will not be available. |
 | <a id="ignorefilemode"></a> `ignoreFilemode?` | `boolean` | Flag indicating whether file mode changes are ignored. |
 | <a id="ignoresubmodules"></a> `ignoreSubmodules?` | `boolean` | Flag indicating whether all submodules should be treated as unmodified. |
 | <a id="ignorecase"></a> `ignoreCase?` | `boolean` | Flag indicating whether case insensitive filenames should be used. |

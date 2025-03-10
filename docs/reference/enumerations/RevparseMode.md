@@ -2,7 +2,7 @@
 
 # Enumeration: RevparseMode
 
-Flags for the Revspec.
+Flags for the revparse.
 
 ## Enumeration Members
 

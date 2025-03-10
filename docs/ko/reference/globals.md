@@ -1,10 +1,11 @@
-# 레퍼런스
+# es-git
 
 ## 열거형
 
 - [DiffFlags](enumerations/DiffFlags.md)
 - [ObjectType](enumerations/ObjectType.md)
 - [ReferenceFormat](enumerations/ReferenceFormat.md)
+- [RepositoryInitMode](enumerations/RepositoryInitMode.md)
 - [RepositoryOpenFlags](enumerations/RepositoryOpenFlags.md)
 - [RevparseMode](enumerations/RevparseMode.md)
 - [RevwalkSort](enumerations/RevwalkSort.md)

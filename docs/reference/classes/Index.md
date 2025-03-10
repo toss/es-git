@@ -2,9 +2,9 @@
 
 # Class: Index
 
-A structure to represent a git [index][1]
+A class to represent a git [index][1].
 
-[1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 
 ## Methods
 
@@ -69,7 +69,7 @@ Get one of the entries in the index by its path.
 
 > **addPath**(`path`): `void`
 
-Add or update an index entry from a file on disk
+Add or update an index entry from a file on disk.
 
 The file path must be relative to the repository's working folder and
 must be readable.
@@ -246,7 +246,7 @@ Remove all matching index entries.
 
 > **updateAll**(`pathspecs`, `options`?): `void`
 
-Update all index entries to match the working directory
+Update all index entries to match the working directory.
 
 This method will fail in bare index instances.
 
@@ -272,7 +272,7 @@ adding the latest version of file to the ODB if needed).
 
 > **count**(): `number`
 
-Get the count of entries currently in the index
+Get the count of entries currently in the index.
 
 #### Returns
 
@@ -284,7 +284,7 @@ Get the count of entries currently in the index
 
 > **isEmpty**(): `boolean`
 
-Return `true` is there is no entry in the index
+Return `true` is there is no entry in the index.
 
 #### Returns
 
@@ -298,7 +298,7 @@ Return `true` is there is no entry in the index
 
 Get the full path to the index file on disk.
 
-Returns `null` if this is an in-memory index.
+Returns `None` if this is an in-memory index.
 
 #### Returns
 

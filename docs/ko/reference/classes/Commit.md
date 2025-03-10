@@ -2,15 +2,15 @@
 
 # 클래스: Commit
 
-Git 커밋을 나타내는 클래스예요.
+A class to represent a git commit.
 
-## 메서드
+## 메소드
 
 ### id()
 
 > **id**(): `string`
 
-리포지토리 커밋의 ID(SHA1 해시)를 가져와요.
+Get the id (SHA1) of a repository commit
 
 #### 반환 형식:
 
@@ -22,7 +22,7 @@ Git 커밋을 나타내는 클래스예요.
 
 > **author**(): [`Signature`](../interfaces/Signature.md)
 
-이 커밋의 작성자 정보를 가져와요.
+Get the author of this commit.
 
 #### 반환 형식:
 
@@ -34,7 +34,7 @@ Git 커밋을 나타내는 클래스예요.
 
 > **committer**(): [`Signature`](../interfaces/Signature.md)
 
-이 커밋의 커미터 정보를 가져와요.
+Get the committer of this commit.
 
 #### 반환 형식:
 
@@ -46,10 +46,12 @@ Git 커밋을 나타내는 클래스예요.
 
 > **message**(): `string`
 
-커밋의 전체 메시지를 가져와요.
+Get the full message of a commit.
 
-반환된 메시지는 앞부분에 있을 수 있는 개행 문자를 제거하여 보기 좋게 정리돼요.  
-메시지가 유효한 UTF-8 형식이 아니면 에러를 발생시켜요.
+The returned message will be slightly prettified by removing any
+potential leading newlines.
+
+Throws error if the message is not valid utf-8.
 
 #### 반환 형식:
 
@@ -61,10 +63,12 @@ Git 커밋을 나타내는 클래스예요.
 
 > **summary**(): `null` \| `string`
 
-Git 커밋 메시지의 짧은 "요약"을 가져와요.
+Get the short "summary" of the git commit message.
 
-반환된 메시지는 커밋 메시지의 첫 번째 단락으로, 공백이 제거되고 정리된 형태예요.  
-요약이 유효한 UTF-8 형식이 아니면 에러를 발생시켜요.
+The returned message is the summary of the commit, comprising the first
+paragraph of the message with whitespace trimmed and squashed.
+
+Throws error if the summary is not valid utf-8.
 
 #### 반환 형식:
 
@@ -76,10 +80,13 @@ Git 커밋 메시지의 짧은 "요약"을 가져와요.
 
 > **body**(): `null` \| `string`
 
-Git 커밋 메시지의 긴 "본문"을 가져와요.
+Get the long "body" of the git commit message.
 
-반환된 메시지는 첫 번째 단락을 제외한 나머지 부분으로, 앞뒤 공백이 제거돼요.  
-본문이 유효한 UTF-8 형식이 아니면 에러를 발생시켜요.
+The returned message is the body of the commit, comprising everything
+but the first paragraph of the message. Leading and trailing whitespaces
+are trimmed.
+
+Throws error if the summary is not valid utf-8.
 
 #### 반환 형식:
 
@@ -91,9 +98,7 @@ Git 커밋 메시지의 긴 "본문"을 가져와요.
 
 > **time**(): `Date`
 
-커밋 시간(커미터의 시간)을 가져와요.
-
-반환된 값은 커밋 시간이 `Date` 객체로 제공돼요.
+Get the commit time (i.e. committer time) of a commit.
 
 #### 반환 형식:
 
@@ -105,7 +110,7 @@ Git 커밋 메시지의 긴 "본문"을 가져와요.
 
 > **tree**(): [`Tree`](Tree.md)
 
-이 커밋이 가리키는 트리를 가져와요.
+Get the tree pointed to by a commit.
 
 #### 반환 형식:
 
@@ -117,7 +122,7 @@ Git 커밋 메시지의 긴 "본문"을 가져와요.
 
 > **asObject**(): [`GitObject`](GitObject.md)
 
-이 커밋을 `GitObject`로 변환해서 사용할 수 있도록 해요.
+Casts this Commit to be usable as an `GitObject`.
 
 #### 반환 형식:
 

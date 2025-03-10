@@ -5,7 +5,7 @@
 An owned git repository, representing all state associated with the
 underlying filesystem.
 
-This structure corresponds to a Git Repository in libgit2.
+This class corresponds to a git repository in libgit2.
 
 ## Methods
 
@@ -51,7 +51,7 @@ Lookup a reference to one of the commits in a repository.
 
 > **commit**(`tree`, `message`, `options`?): `string`
 
-Create new commit in the repository
+Create new commit in the repository.
 
 If the `updateRef` is not `null`, name of the reference that will be
 updated to point to this commit. If the reference is not direct, it will
@@ -80,10 +80,10 @@ parent must be the tip of this branch.
 
 Create a diff with the difference between two tree objects.
 
-This is equivalent to `git diff <old-tree> <new-tree>`
+This is equivalent to `git diff <old-tree> <new-tree>`.
 
 The first tree will be used for the "oldFile" side of the delta and the
-second tree will be used for the "newFile" side of the delta.  You can
+second tree will be used for the "newFile" side of the delta. You can
 pass `null` to indicate an empty tree, although it is an error to pass
 `null` for both the `oldTree` and `newTree`.
 
@@ -167,12 +167,12 @@ and the working directory will be used for the "newFile" side.
 This is not the same as `git diff <treeish>` or `git diff-index <treeish>`.
 Those commands use information from the index, whereas this
 function strictly returns the differences between the tree and the files
-in the working directory, regardless of the state of the index.  Use
+in the working directory, regardless of the state of the index. Use
 `diffTreeToWorkdirWithIndex` to emulate those commands.
 
-To see difference between this and `treeToWorkdirWithIndex`,
+To see difference between this and `diffTreeToWorkdirWithIndex`,
 consider the example of a staged file deletion where the file has then
-been put back into the working dir and further modified.  The
+been put back into the working dir and further modified. The
 tree-to-workdir diff for that file is 'modified', but `git diff` would
 show status 'deleted' since there is a staged delete.
 
@@ -222,7 +222,7 @@ single diff that includes staged deleted, etc.
 Get the Index file for this repository.
 
 If a custom index has not been set, the default index for the repository
-will be returned (the one located in .git/index).
+will be returned (the one located in `.git/index`).
 
 #### Returns
 
@@ -256,6 +256,8 @@ Returns `null` if the object does not exist.
 
 Lookup a reference to one of the objects in a repository.
 
+Throws error if the object does not exist.
+
 #### Parameters
 
 | Parameter | Type |
@@ -274,7 +276,7 @@ Lookup a reference to one of the objects in a repository.
 
 Lookup a reference to one of the objects in a repository.
 
-Returns `null` if it does not exist.
+Returns `null` if the reference does not exist.
 
 #### Parameters
 
@@ -294,7 +296,7 @@ Returns `null` if it does not exist.
 
 Lookup a reference to one of the objects in a repository.
 
-Throws error if it does not exist.
+Throws error if the reference does not exist.
 
 #### Parameters
 
@@ -324,9 +326,9 @@ List all remotes for a given repository
 
 > **getRemote**(`name`): [`Remote`](Remote.md)
 
-Get remote from repository
+Get remote from repository.
 
-Throws error if it does not exist
+Throws error if remote does not exist.
 
 #### Parameters
 
@@ -344,9 +346,9 @@ Throws error if it does not exist
 
 > **findRemote**(`name`): `null` \| [`Remote`](Remote.md)
 
-Find remote from repository
+Find remote from repository.
 
-Returns `null` if it does not exist
+Returns `null` if remote does not exist.
 
 #### Parameters
 
@@ -445,7 +447,7 @@ repository itself for bare repositories.
 
 > **state**(): [`RepositoryState`](../type-aliases/RepositoryState.md)
 
-Returns the current state of this repository
+Returns the current state of this repository.
 
 #### Returns
 
@@ -565,7 +567,7 @@ Create a revwalk that can be used to traverse the commit graph.
 
 Lookup a tag object by prefix hash from the repository.
 
-Returns `null` if it does not exist
+Returns `null` if tag does not exist.
 
 #### Parameters
 
@@ -584,8 +586,6 @@ Returns `null` if it does not exist
 > **getTag**(`oid`): [`Tag`](Tag.md)
 
 Lookup a tag object by prefix hash from the repository.
-
-Throws error if it does not exist
 
 #### Parameters
 
@@ -623,8 +623,8 @@ An optional fnmatch pattern can also be specified.
 
 > **tagForeach**(`callback`): `void`
 
-iterate over all tags calling `callback` on each.
-the callback is provided the tag id and name
+Iterate over all tags calling `callback` on each.
+The callback is provided the tag id and name.
 
 #### Parameters
 
@@ -663,7 +663,7 @@ about valid names.
 
 > **createTag**(`name`, `target`, `message`, `options`?): `string`
 
-Create a new tag in the repository from an object
+Create a new tag in the repository from an object.
 
 A new reference will also be created pointing to this tag object. If
 `force` is true and a reference already exists with the given name,
@@ -721,7 +721,7 @@ The tag name will be checked for validity. You must avoid the characters
 
 > **createLightweightTag**(`name`, `target`, `options`?): `string`
 
-Create a new lightweight tag pointing at a target object
+Create a new lightweight tag pointing at a target object.
 
 A new direct reference will be created pointing to this target object.
 If force is true and a reference already exists with the given name,
@@ -747,8 +747,6 @@ it'll be replaced.
 
 Lookup a reference to one of the objects in a repository.
 
-Throws error if it does not exist
-
 #### Parameters
 
 | Parameter | Type |
@@ -767,7 +765,7 @@ Throws error if it does not exist
 
 Lookup a reference to one of the objects in a repository.
 
-Returns `null` if it does not exist
+If it does not exist, returns `null`.
 
 #### Parameters
 

@@ -4,4 +4,4 @@
 
 > **DiffFormat**: `"Patch"` \| `"PatchHeader"` \| `"Raw"` \| `"NameOnly"` \| `"NameStatus"` \| `"PatchId"`
 
-Possible output formats for diff data
+Possible output formats for diff data.

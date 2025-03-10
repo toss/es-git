@@ -2,7 +2,7 @@
 
 # 클래스: Deltas
 
-Delta에서 변경 사항을 순회하는 반복자예요.
+An iterator over the diffs in a delta.
 
 ## 메소드
 

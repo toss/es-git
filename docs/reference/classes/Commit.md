@@ -2,7 +2,7 @@
 
 # Class: Commit
 
-A structure to represent a git commit
+A class to represent a git commit.
 
 ## Methods
 
@@ -51,7 +51,7 @@ Get the full message of a commit.
 The returned message will be slightly prettified by removing any
 potential leading newlines.
 
-Throws error if the message is not valid utf-8
+Throws error if the message is not valid utf-8.
 
 #### Returns
 
@@ -122,7 +122,7 @@ Get the tree pointed to by a commit.
 
 > **asObject**(): [`GitObject`](GitObject.md)
 
-Casts this Commit to be usable as an `GitObject`
+Casts this Commit to be usable as an `GitObject`.
 
 #### Returns
 

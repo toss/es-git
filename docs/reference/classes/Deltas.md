@@ -2,7 +2,7 @@
 
 # Class: Deltas
 
-An iterator over the diffs in a delta
+An iterator over the diffs in a delta.
 
 ## Methods
 

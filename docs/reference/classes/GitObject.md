@@ -2,9 +2,9 @@
 
 # Class: GitObject
 
-A structure to represent a Git [Object][1]
+A class to represent a git [object][1].
 
-[1]: http://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 
 ## Methods
 
@@ -12,7 +12,7 @@ A structure to represent a Git [Object][1]
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository object
+Get the id (SHA1) of a repository object.
 
 #### Returns
 
@@ -60,7 +60,7 @@ referenced object is no longer a tag).
 
 > **peelToCommit**(): [`Commit`](Commit.md)
 
-Recursively peel an object until a commit is found
+Recursively peel an object until a commit is found.
 
 #### Returns
 
@@ -72,7 +72,7 @@ Recursively peel an object until a commit is found
 
 > **peelToBlob**(): [`Blob`](Blob.md)
 
-Recursively peel an object until a blob is found
+Recursively peel an object until a blob is found.
 
 #### Returns
 

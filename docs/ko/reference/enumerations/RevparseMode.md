@@ -2,7 +2,7 @@
 
 # 열거형: RevparseMode
 
-Flags for the Revspec.
+Flags for the revparse.
 
 ## 포함된 값
 

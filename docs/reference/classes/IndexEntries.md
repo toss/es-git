@@ -2,7 +2,7 @@
 
 # Class: IndexEntries
 
-An iterator over the entries in an index
+An iterator over the entries in an index.
 
 ## Methods
 

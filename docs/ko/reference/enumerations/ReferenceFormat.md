@@ -2,13 +2,13 @@
 
 # 열거형: ReferenceFormat
 
-Options for normalize reference name.
+레퍼런스명을 정규화할 때 사용가능한 옵션
 
 ## 포함된 값
 
-| 포함된 값 | 값 | 설명 |
-| ------ | ------ | ------ |
-| <a id="normal"></a> `Normal` | `0` | No particular normalization. |
-| <a id="allowonelevel"></a> `AllowOnelevel` | `1` | Control whether one-level refname are accepted (i.e., refnames that do not contain multiple `/`-separated components). Those are expected to be written only using uppercase letters and underscore (e.g. `HEAD`, `FETCH_HEAD`). |
-| <a id="refspecpattern"></a> `RefspecPattern` | `2` | Interpret the provided name as a reference pattern for a refspec (as used with remote repositories). If this option is enabled, the name is allowed to contain a single `*` in place of a full pathname components (e.g., `foo/*/bar` but not `foo/bar*`). |
-| <a id="refspecshorthand"></a> `RefspecShorthand` | `4` | Interpret the name as part of a refspec in shorthand form so the `AllowOnelevel` naming rules aren't enforced and `main` becomes a valid name. |
+| 포함된 값                                            | 값   | 설명                                                                                                                                               |
+|--------------------------------------------------|-----|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| <a id="normal"></a> `Normal`                     | `0` | 특별한 정규화 없음                                                                                                                                       |
+| <a id="allowonelevel"></a> `AllowOnelevel`       | `1` | 한단계의 레퍼런스명이 허용되는지 여부를 제어 (즉, 여러 개의 `/`로 구분되지 않은 레퍼런스명). 이러한 레퍼런스 이름은 대문자와 밑줄로만 작성해요. (예: `HEAD`, `FETCH_HEAD`)                                   |
+| <a id="refspecpattern"></a> `RefspecPattern`     | `2` | 제공된 이름을 refspec에 대한 참조 패턴으로 해석 (리모트 리포지토리에서 사용되는). 이 옵션이 활성화된 경우, 레퍼런스명에는 단일 구성 요소에 `*`를 포함할 수 있어요. (예: `foo/*/bar`는 허용되지만 `foo/bar*`는 허용되지 않아요) |
+| <a id="refspecshorthand"></a> `RefspecShorthand` | `4` | `AllowOnelevel` 옵션이 적용되지 않고 `main`이 유효한 이름이 되도록, 해당 이름을 단축형으로 취급해요.                                                                              |

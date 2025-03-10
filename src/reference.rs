@@ -72,18 +72,15 @@ pub enum ReferenceFormat {
   /// do not contain multiple `/`-separated components). Those are
   /// expected to be written only using uppercase letters and underscore
   /// (e.g. `HEAD`, `FETCH_HEAD`).
-  /// (1 << 0)
   AllowOnelevel = 1,
   /// Interpret the provided name as a reference pattern for a refspec (as
   /// used with remote repositories). If this option is enabled, the name
   /// is allowed to contain a single `*` in place of a full pathname
   /// components (e.g., `foo/*\/bar` but not `foo/bar*`).
-  /// (1 << 1)
   RefspecPattern = 2,
   /// Interpret the name as part of a refspec in shorthand form so the
   /// `AllowOnelevel` naming rules aren't enforced and `main` becomes a
   /// valid name.
-  /// (1 << 2)
   RefspecShorthand = 4,
 }
 

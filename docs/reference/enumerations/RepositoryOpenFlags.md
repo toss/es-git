@@ -2,7 +2,7 @@
 
 # Enumeration: RepositoryOpenFlags
 
-Flags for opening repository
+Flags for opening repository.
 
 ## Enumeration Members
 

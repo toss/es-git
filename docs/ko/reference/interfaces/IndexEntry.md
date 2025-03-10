@@ -2,11 +2,6 @@
 
 # 인터페이스: IndexEntry
 
-A structure to represent an entry or a file inside of an index.
-
-All fields of an entry are public for modification and inspection. This is
-also how a new index entry is created.
-
 ## 속성
 
 | 속성 | 유형 | 설명 |

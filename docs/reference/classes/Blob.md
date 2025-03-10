@@ -2,7 +2,7 @@
 
 # Class: Blob
 
-A structure to represent a git [blob][1]
+A class to represent a git [blob][1].
 
 [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 
@@ -12,7 +12,7 @@ A structure to represent a git [blob][1]
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository blob
+Get the id (SHA1) of a repository blob.
 
 #### Returns
 

@@ -2,6 +2,8 @@
 
 # 인터페이스: RepositoryOpenOptions
 
+Options which can be used to configure how a repository is initialized.
+
 ## 속성
 
 | 속성 | 유형 | 설명 |
