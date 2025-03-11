@@ -298,7 +298,7 @@ Return `true` is there is no entry in the index.
 
 Get the full path to the index file on disk.
 
-Returns `None` if this is an in-memory index.
+Returns `null` if this is an in-memory index.
 
 #### Returns
 
