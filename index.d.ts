@@ -368,7 +368,6 @@ export enum ReferenceFormat {
    * do not contain multiple `/`-separated components). Those are
    * expected to be written only using uppercase letters and underscore
    * (e.g. `HEAD`, `FETCH_HEAD`).
-   * (1 << 0)
    */
   AllowOnelevel = 1,
   /**
@@ -376,14 +375,12 @@ export enum ReferenceFormat {
    * used with remote repositories). If this option is enabled, the name
    * is allowed to contain a single `*` in place of a full pathname
    * components (e.g., `foo/*\/bar` but not `foo/bar*`).
-   * (1 << 1)
    */
   RefspecPattern = 2,
   /**
    * Interpret the name as part of a refspec in shorthand form so the
    * `AllowOnelevel` naming rules aren't enforced and `main` becomes a
    * valid name.
-   * (1 << 2)
    */
   RefspecShorthand = 4
 }
@@ -417,7 +414,7 @@ export enum ReferenceFormat {
  * import { normalizeReferenceName, ReferenceFormat } from 'es-git';
  *
  * console.assert(
- *   normalizeReferenceName('foo//bar"),
+ *   normalizeReferenceName('foo//bar'),
  *   'foo/bar'
  * );
  * console.assert(
@@ -895,7 +892,7 @@ export interface CreateLightweightTagOptions {
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /**
  * A class to represent a git [blob][1].
- *
+ * @hideconstructor
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
 export declare class Blob {
@@ -1198,7 +1195,7 @@ export declare class Index {
   /**
    * Get the full path to the index file on disk.
    *
-   * Returns `None` if this is an in-memory index.
+   * Returns `null` if this is an in-memory index.
    */
   path(): string | null
   /**
