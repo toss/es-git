@@ -4,9 +4,11 @@
 
 A data object to represent a git [refspec][1].
 
-Refspecs are currently mainly accessed/created through a `Remote`.
+Git [refspec][1]을 표현하는 데이터 객체에요.
 
-[1]: https://git-scm.com/book/en/Git-Internals-The-Refspec
+Refspec은 주로 `Remote`를 통해 접근하거나 생성돼요.
+
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%eb%82%b4%eb%b6%80-Refspec
 
 ## 속성
 

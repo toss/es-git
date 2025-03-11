@@ -2,7 +2,7 @@
 
 # 클래스: Deltas
 
-An iterator over the diffs in a delta.
+delta 내의 diff들을 순회할 수 있는 iterator에요.
 
 ## 메소드
 

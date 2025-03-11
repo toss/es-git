@@ -75,7 +75,7 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **diffTreeToTree**(`oldTree`?, `newTree`?, `options`?): [`Diff`](Diff.md)
 
-두 개의 트리 객체 간 차이를 비교하는 diff를 생성해요.
+두 개의 트리 개체 간 차이를 비교하는 diff를 생성해요.
 
 이는 `git diff <old-tree> <new-tree>`와 동일해요.  
 첫 번째 트리는 "oldFile" 역할을 하고, 두 번째 트리는 "newFile" 역할을 해요.  
@@ -99,7 +99,7 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **diffIndexToIndex**(`oldIndex`, `newIndex`, `options`?): [`Diff`](Diff.md)
 
-두 개의 인덱스 객체 간 차이를 비교하는 diff를 생성해요.
+두 개의 인덱스 개체 간 차이를 비교하는 diff를 생성해요.
 
 첫 번째 인덱스는 "oldFile", 두 번째 인덱스는 "newFile" 역할을 해요.
 
@@ -128,7 +128,7 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 인덱스는 "oldFile" 역할을 하고, 작업 디렉터리는 "newFile" 역할을 해요.
 
-`index`에 `null`을 전달하면 저장소의 기존 인덱스를 사용해요.  
+`index`에 `null`을 전달하면 리포지토리의 기존 인덱스를 사용해요.  
 이 경우, 인덱스가 변경되었으면 디스크에서 다시 불러온 후 diff를 생성해요.
 
 #### 매개변수
@@ -202,9 +202,9 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **index**(): [`Index`](Index.md)
 
-이 저장소의 인덱스 파일을 가져와요.
+이 리포지토리의 인덱스 파일을 가져와요.
 
-사용자 지정 인덱스가 설정되지 않았다면, 저장소의 기본 인덱스(`.git/index`)를 반환해요.
+사용자 지정 인덱스가 설정되지 않았다면, 리포지토리의 기본 인덱스(`.git/index`)를 반환해요.
 
 #### 반환 형식:
 
@@ -368,7 +368,7 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **isBare**(): `boolean`
 
-이 리포지토리가 `bare`(작업 디렉터리가 없는 저장소)인지 확인해요.
+이 리포지토리가 `bare`(작업 디렉터리가 없는 리포지토리)인지 확인해요.
 
 #### 반환 형식:
 
@@ -640,7 +640,7 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **createTag**(`name`, `target`, `message`, `options`?): `string`
 
-저장소에서 지정된 개체를 기반으로 새 태그를 생성해요.
+리포지토리에서 지정된 개체를 기반으로 새 태그를 생성해요.
 
 새로운 레퍼런스도 함께 생성돼요. `force`가 `true`이면 같은 이름의 참조가 이미 존재해도 덮어써요.
 
@@ -712,7 +712,9 @@ Git 리포지토리를 나타내는 클래스로, 파일 시스템과 관련된 
 
 > **getTree**(`oid`): [`Tree`](Tree.md)
 
-Lookup a reference to one of the objects in a repository.
+리포지토리 내의 개체에 대한 참조를 조회해요.
+
+트리가 존재하지 않으면 오류를 발생시켜요.
 
 #### 매개변수
 
@@ -730,9 +732,9 @@ Lookup a reference to one of the objects in a repository.
 
 > **findTree**(`oid`): `null` \| [`Tree`](Tree.md)
 
-Lookup a reference to one of the objects in a repository.
+리포지토리 내의 개체에 대한 참조를 조회해요.
 
-If it does not exist, returns `null`.
+트리가 존재하지 않으면 `null`을 반환해요.
 
 #### 매개변수
 

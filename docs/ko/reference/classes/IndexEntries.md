@@ -2,7 +2,7 @@
 
 # 클래스: IndexEntries
 
-An iterator over the entries in an index.
+인덱스에 있는 항목들을 순회할 수 있는 iterator예요.
 
 ## 메소드
 

@@ -1,6 +1,6 @@
-# 리포지토리 복제 하기
+# 리포지토리 클론 하기
 
-기존 리포지토리를 복사하기 위해 [`cloneRepository()`](../api/functions/cloneRepository.md)를 사용할 수 있어요. 리모트에서 복사하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
+기존 리포지토리를 클론하기 위해 [`cloneRepository()`](../api/functions/cloneRepository.md)를 사용할 수 있어요. 리모트에서 클론하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
 SSH 프로토콜을 사용할 수 있어요.
 
 ```ts

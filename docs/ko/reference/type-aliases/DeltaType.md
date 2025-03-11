@@ -4,4 +4,4 @@
 
 > **DeltaType**: `"Unmodified"` \| `"Added"` \| `"Deleted"` \| `"Modified"` \| `"Renamed"` \| `"Copied"` \| `"Ignored"` \| `"Untracked"` \| `"Typechange"` \| `"Unreadable"` \| `"Conflicted"`
 
-What type of change is described by a `DiffDelta`?
+`DiffDelta`가 설명하는 변경 타입

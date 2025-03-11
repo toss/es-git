@@ -4,7 +4,7 @@
 
 > **isZeroOid**(`value`): `boolean`
 
-Test if this Oid is all zeros.
+주어진 Oid(개체 ID)가 모두 `0`인지 확인해요.
 
 ## 매개변수
 

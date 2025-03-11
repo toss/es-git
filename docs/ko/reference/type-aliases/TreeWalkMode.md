@@ -4,5 +4,4 @@
 
 > **TreeWalkMode**: `"PreOrder"` \| `"PostOrder"`
 
-A binary indicator of whether a tree walk should be performed in pre-order
-or post-order.
+트리 순회를 전위(pre-order) 또는 후위(post-order) 방식으로 수행할 지 결정하는 이진 지시자예요.

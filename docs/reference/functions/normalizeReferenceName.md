@@ -45,7 +45,7 @@ otherwise an `null` is returned.
 import { normalizeReferenceName, ReferenceFormat } from 'es-git';
 
 console.assert(
-  normalizeReferenceName('foo//bar"),
+  normalizeReferenceName('foo//bar'),
   'foo/bar'
 );
 console.assert(

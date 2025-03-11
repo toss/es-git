@@ -4,4 +4,4 @@
 
 > **AutotagOption**: `"Unspecified"` \| `"Auto"` \| `"None"` \| `"All"`
 
-Automatic tag following options.
+태그 자동 추적 옵션이에요.

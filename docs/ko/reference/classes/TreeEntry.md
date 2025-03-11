@@ -2,8 +2,7 @@
 
 # 클래스: TreeEntry
 
-A class representing an entry inside of a tree. An entry is borrowed
-from a tree.
+트리 내부의 항목을 나타내는 클래스예요. 이 항목은 트리에서 빌려온 것이에요.
 
 ## 메소드
 
@@ -11,7 +10,7 @@ from a tree.
 
 > **id**(): `string`
 
-Get the id of the object pointed by the entry.
+항목이 가리키는 개체의 id를 가져와요.
 
 #### 반환 형식:
 
@@ -23,9 +22,9 @@ Get the id of the object pointed by the entry.
 
 > **name**(): `string`
 
-Get the filename of a tree entry.
+트리 항목의 파일 이름을 가져와요.
 
-Throws error if the name is not valid utf-8.
+이름이 올바른 utf-8 형식이 아니면 오류를 발생시켜요.
 
 #### 반환 형식:
 
@@ -37,7 +36,7 @@ Throws error if the name is not valid utf-8.
 
 > **type**(): `null` \| [`ObjectType`](../enumerations/ObjectType.md)
 
-Get the type of the object pointed by the entry.
+항목이 가리키는 개체의 타입을 가져와요.
 
 #### 반환 형식:
 
@@ -49,7 +48,7 @@ Get the type of the object pointed by the entry.
 
 > **filemode**(): `number`
 
-Get the UNIX file attributes of a tree entry.
+트리 항목의 UNIX 파일 속성을 가져와요.
 
 #### 반환 형식:
 
@@ -61,7 +60,7 @@ Get the UNIX file attributes of a tree entry.
 
 > **toObject**(`repo`): [`GitObject`](GitObject.md)
 
-Convert a tree entry to the object it points to.
+트리 항목을 해당 항목이 가리키는 Git 개체로 변환해요.
 
 #### 매개변수
 

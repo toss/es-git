@@ -4,4 +4,4 @@
 
 > **DiffFormat**: `"Patch"` \| `"PatchHeader"` \| `"Raw"` \| `"NameOnly"` \| `"NameStatus"` \| `"PatchId"`
 
-Possible output formats for diff data.
+diff 데이터의 가능한 출력 형식들이에요.

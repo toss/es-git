@@ -4,7 +4,7 @@
 
 > **zeroOid**(): `string`
 
-Creates an all zero Oid structure.
+모두 `0`으로 구성된 Oid를 생성해요.
 
 ## 반환 형식:
 

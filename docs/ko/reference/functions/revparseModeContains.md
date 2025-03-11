@@ -4,7 +4,7 @@
 
 > **revparseModeContains**(`source`, `target`): `boolean`
 
-Check revparse mode contains specific flags.
+주어진 `source` 모드가 특정 `target` 플래그를 포함하고 있는지 확인해요.
 
 ## 매개변수
 

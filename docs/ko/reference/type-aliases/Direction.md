@@ -4,4 +4,4 @@
 
 > **Direction**: `"Fetch"` \| `"Push"`
 
-An enumeration of the possible directions for a remote.
+리모트에 대한 가능한 방향들을 열거

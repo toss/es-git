@@ -2,9 +2,9 @@
 
 # 클래스: GitObject
 
-A class to represent a git [object][1].
+Git [개체(Object)][1]을 나타내는 클래스로 사용해요.
 
-[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%eb%82%b4%eb%b6%80-Git-%ea%b0%9c%ec%b2%b4
 
 ## 메소드
 
@@ -12,7 +12,7 @@ A class to represent a git [object][1].
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository object.
+리포지토리 개체의 id (SHA1)를 가져와요.
 
 #### 반환 형식:
 
@@ -24,9 +24,9 @@ Get the id (SHA1) of a repository object.
 
 > **type**(): `null` \| [`ObjectType`](../enumerations/ObjectType.md)
 
-Get the object type of object.
+개체의 타입을 가져와요.
 
-If the type is unknown, then `null` is returned.
+타입을 알 수 없으면 `null`을 반환해요.
 
 #### 반환 형식:
 
@@ -38,11 +38,9 @@ If the type is unknown, then `null` is returned.
 
 > **peel**(`objType`): [`GitObject`](GitObject.md)
 
-Recursively peel an object until an object of the specified type is met.
+특정 타입의 개체가 나올 때까지 재귀적으로 개체를 풀어요.
 
-If you pass `Any` as the target type, then the object will be
-peeled until the type changes (e.g. a tag will be chased until the
-referenced object is no longer a tag).
+만약 대상 타입으로 `Any`를 전달하면, 타입이 바뀔 때까지 (예: 태그인 경우 참조된 개체가 더 이상 태그가 아닐 때까지) 개체를 풀어요.
 
 #### 매개변수
 
@@ -60,7 +58,7 @@ referenced object is no longer a tag).
 
 > **peelToCommit**(): [`Commit`](Commit.md)
 
-Recursively peel an object until a commit is found.
+커밋이 나올 때까지 재귀적으로 개체를 풀어요.
 
 #### 반환 형식:
 
@@ -72,7 +70,7 @@ Recursively peel an object until a commit is found.
 
 > **peelToBlob**(): [`Blob`](Blob.md)
 
-Recursively peel an object until a blob is found.
+블롭이 나올 때까지 재귀적으로 개체를 풀어요.
 
 #### 반환 형식:
 
@@ -84,9 +82,9 @@ Recursively peel an object until a blob is found.
 
 > **asCommit**(): `null` \| [`Commit`](Commit.md)
 
-Attempt to view this object as a commit.
+이 개체를 커밋으로 간주하려고 시도해요.
 
-Returns `null` if the object is not actually a commit.
+만약 해당 개체가 실제 커밋이 아니라면 `null`을 반환해요.
 
 #### 반환 형식:
 

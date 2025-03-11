@@ -2,9 +2,9 @@
 
 # 클래스: Tag
 
-A class to represent a git [tag][1].
+Git [태그(Tag)][1]를 나타내는 클래스예요.
 
-[1]: https://git-scm.com/book/en/Git-Basics-Tagging
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%ea%b8%b0%ec%b4%88-%ed%83%9c%ea%b7%b8
 
 ## 메소드
 
@@ -12,7 +12,7 @@ A class to represent a git [tag][1].
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository tag.
+리포지토리 태그의 id (SHA1)를 가져와요.
 
 #### 반환 형식:
 
@@ -24,9 +24,9 @@ Get the id (SHA1) of a repository tag.
 
 > **message**(): `null` \| `string`
 
-Get the message of a tag.
+태그의 메시지를 가져와요.
 
-Returns `null` if there is no message or if it is not valid utf8.
+메시지가 없거나 올바른 utf8 형식이 아니면 `null`을 반환해요.
 
 #### 반환 형식:
 
@@ -38,9 +38,9 @@ Returns `null` if there is no message or if it is not valid utf8.
 
 > **name**(): `string`
 
-Get the name of a tag.
+태그의 이름을 가져와요.
 
-Throws error if it is not valid utf8.
+올바른 utf8 형식이 아니면 오류를 발생시켜요.
 
 #### 반환 형식:
 
@@ -52,7 +52,7 @@ Throws error if it is not valid utf8.
 
 > **peel**(): [`GitObject`](GitObject.md)
 
-Recursively peel a tag until a non tag git_object is found.
+태그가 아닌 git 개체가 나타날 때까지 재귀적으로 태그를 풀어줘요.
 
 #### 반환 형식:
 
@@ -64,9 +64,9 @@ Recursively peel a tag until a non tag git_object is found.
 
 > **tagger**(): `null` \| [`Signature`](../interfaces/Signature.md)
 
-Get the tagger (author) of a tag.
+태그 작성자를 가져와요.
 
-If the author is unspecified, then `null` is returned.
+작성자가 지정되지 않은 경우 `null`을 반환해요.
 
 #### 반환 형식:
 
@@ -78,10 +78,9 @@ If the author is unspecified, then `null` is returned.
 
 > **target**(): [`GitObject`](GitObject.md)
 
-Get the tagged object of a tag.
+태그된 개체를 가져와요.
 
-This method performs a repository lookup for the given object and
-returns it.
+이 메소드는 주어진 개체에 대해 리포지토리 조회를 수행하고 해당 개체를 반환해요.
 
 #### 반환 형식:
 
@@ -93,7 +92,7 @@ returns it.
 
 > **targetId**(): `string`
 
-Get the OID of the tagged object of a tag.
+태그된 개체의 OID를 가져와요.
 
 #### 반환 형식:
 
@@ -105,7 +104,7 @@ Get the OID of the tagged object of a tag.
 
 > **targetType**(): `null` \| [`ObjectType`](../enumerations/ObjectType.md)
 
-Get the ObjectType of the tagged object of a tag.
+태그된 개체의 ObjectType을 가져와요.
 
 #### 반환 형식:
 

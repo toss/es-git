@@ -2,7 +2,7 @@
 
 # 클래스: DiffStats
 
-A class describing a hunk of a diff.
+diff의 hunk(부분)을 설명하는 클래스에요.
 
 ## 접근자
 
@@ -12,7 +12,7 @@ A class describing a hunk of a diff.
 
 > **get** **filesChanged**(): `bigint`
 
-Get the total number of files changed in a diff.
+diff에서 변경된 전체 파일 수를 가져와요.
 
 ##### 반환 형식:
 
@@ -26,7 +26,7 @@ Get the total number of files changed in a diff.
 
 > **get** **insertions**(): `bigint`
 
-Get the total number of insertions in a diff
+diff에서 추가된 총 라인 수를 가져와요.
 
 ##### 반환 형식:
 
@@ -40,7 +40,7 @@ Get the total number of insertions in a diff
 
 > **get** **deletions**(): `bigint`
 
-Get the total number of deletions in a diff
+diff에서 삭제된 총 라인 수를 가져와요.
 
 ##### 반환 형식:
 

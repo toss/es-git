@@ -2,11 +2,11 @@
 
 # 인터페이스: ProxyOptions
 
-Options which can be specified to various fetch operations.
+다양한 fetch 작업에 지정할 수 있는 옵션을 정의해요.
 
 ## 속성
 
-| 속성 | 유형 | 설명 |
-| ------ | ------ | ------ |
-| <a id="auto"></a> `auto?` | `boolean` | Try to auto-detect the proxy from the git configuration. Note that this will override `url` specified before. |
-| <a id="url"></a> `url?` | `string` | Specify the exact URL of the proxy to use. Note that this will override `auto` specified before. |
+| 속성                        | 유형        | 설명                                                            |
+|---------------------------|-----------|---------------------------------------------------------------|
+| <a id="auto"></a> `auto?` | `boolean` | Git 설정에서 프록시를 자동으로 감지하려고 시도해요. 이 옵션은 이전에 지정한 `url`을 재정의하게 돼요. |
+| <a id="url"></a> `url?`   | `string`  | 사용할 프록시의 정확한 URL을 명시적으로 지정해요. 이 옵션은 이전에 지정한 `auto`을 재정의하게 돼요. |

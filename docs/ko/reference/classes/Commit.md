@@ -2,7 +2,7 @@
 
 # 클래스: Commit
 
-A class to represent a git commit.
+git 커밋을 나타내는 클래스로 사용해요.
 
 ## 메소드
 
@@ -10,7 +10,7 @@ A class to represent a git commit.
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository commit
+리포지토리 커밋의 id (SHA1)를 가져와요.
 
 #### 반환 형식:
 
@@ -22,7 +22,7 @@ Get the id (SHA1) of a repository commit
 
 > **author**(): [`Signature`](../interfaces/Signature.md)
 
-Get the author of this commit.
+이 커밋의 작성자(author)를 가져와요.
 
 #### 반환 형식:
 
@@ -34,7 +34,7 @@ Get the author of this commit.
 
 > **committer**(): [`Signature`](../interfaces/Signature.md)
 
-Get the committer of this commit.
+이 커밋의 커미터(committer)를 가져와요.
 
 #### 반환 형식:
 
@@ -46,12 +46,11 @@ Get the committer of this commit.
 
 > **message**(): `string`
 
-Get the full message of a commit.
+커밋의 전체 메시지를 가져와요.
 
-The returned message will be slightly prettified by removing any
-potential leading newlines.
+반환되는 메시지는 잠재적인 선행 개행을 제거하여 약간 다듬어진 형태로 제공돼요.
 
-Throws error if the message is not valid utf-8.
+메시지가 올바른 utf-8이 아닐 경우 에러를 발생시켜요.
 
 #### 반환 형식:
 
@@ -63,12 +62,11 @@ Throws error if the message is not valid utf-8.
 
 > **summary**(): `null` \| `string`
 
-Get the short "summary" of the git commit message.
+git 커밋 메시지의 간단한 "요약"을 가져와요.
 
-The returned message is the summary of the commit, comprising the first
-paragraph of the message with whitespace trimmed and squashed.
+반환되는 메시지는 커밋의 요약으로, 메시지의 첫 번째 단락을 공백을 제거하고 합친 형태로 제공돼요.
 
-Throws error if the summary is not valid utf-8.
+요약이 올바른 utf-8이 아닐 경우 에러를 발생시켜요.
 
 #### 반환 형식:
 
@@ -80,13 +78,11 @@ Throws error if the summary is not valid utf-8.
 
 > **body**(): `null` \| `string`
 
-Get the long "body" of the git commit message.
+git 커밋 메시지의 긴 "본문"을 가져와요.
 
-The returned message is the body of the commit, comprising everything
-but the first paragraph of the message. Leading and trailing whitespaces
-are trimmed.
+반환되는 메시지는 커밋의 본문으로, 메시지의 첫 번째 단락을 제외한 모든 내용을 포함하며, 선행 및 후행 공백이 제거돼요.
 
-Throws error if the summary is not valid utf-8.
+본문이 올바른 utf-8이 아닐 경우 에러를 발생시켜요.
 
 #### 반환 형식:
 
@@ -98,7 +94,7 @@ Throws error if the summary is not valid utf-8.
 
 > **time**(): `Date`
 
-Get the commit time (i.e. committer time) of a commit.
+커밋 시각(즉, 커미터의 시각)을 가져와요.
 
 #### 반환 형식:
 
@@ -110,7 +106,7 @@ Get the commit time (i.e. committer time) of a commit.
 
 > **tree**(): [`Tree`](Tree.md)
 
-Get the tree pointed to by a commit.
+커밋이 가리키는 트리를 가져와요.
 
 #### 반환 형식:
 
@@ -122,7 +118,7 @@ Get the tree pointed to by a commit.
 
 > **asObject**(): [`GitObject`](GitObject.md)
 
-Casts this Commit to be usable as an `GitObject`.
+이 Commit을 `GitObject`로 사용할 수 있도록 캐스팅해요.
 
 #### 반환 형식:
 

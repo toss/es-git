@@ -4,4 +4,4 @@
 
 > **RepositoryState**: `"Clean"` \| `"Merge"` \| `"Revert"` \| `"RevertSequence"` \| `"CherryPick"` \| `"CherryPickSequence"` \| `"Bisect"` \| `"Rebase"` \| `"RebaseInteractive"` \| `"RebaseMerge"` \| `"ApplyMailbox"` \| `"ApplyMailboxOrRebase"`
 
-A listing of the possible states that a repository can be in.
+리포지토리가 가능한 상태들을 열거

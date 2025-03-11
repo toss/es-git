@@ -4,4 +4,4 @@
 
 > **FileMode**: `"Unreadable"` \| `"Tree"` \| `"Blob"` \| `"BlobGroupWritable"` \| `"BlobExecutable"` \| `"Link"` \| `"Commit"`
 
-Valid modes for index and tree entries.
+인덱스와 트리 항목에 대해 유효한 모드들이에요.

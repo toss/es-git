@@ -447,7 +447,7 @@ impl Index {
   #[napi]
   /// Get the full path to the index file on disk.
   ///
-  /// Returns `None` if this is an in-memory index.
+  /// Returns `null` if this is an in-memory index.
   pub fn path(&self, env: Env) -> Option<JsString> {
     self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
   }

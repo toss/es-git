@@ -2,8 +2,7 @@
 
 # 클래스: Revwalk
 
-A revwalk allows traversal of the commit graph defined by including one or
-more leaves and excluding one or more roots.
+Revwalk는 하나 이상의 리프를 포함하고 하나 이상의 루트를 제외하여 정의된 커밋 그래프를 순회할 수 있도록 해줘요.
 
 ## 메소드
 
@@ -11,10 +10,9 @@ more leaves and excluding one or more roots.
 
 > **reset**(): `this`
 
-Reset a revwalk to allow re-configuring it.
+Revwalk를 재구성할 수 있도록 초기화해요.
 
-The revwalk is automatically reset when iteration of its commits
-completes.
+커밋 순회가 완료되면 Revwalk는 자동으로 초기화돼요.
 
 #### 반환 형식:
 
@@ -26,7 +24,7 @@ completes.
 
 > **setSorting**(`sort`): `this`
 
-Set the order in which commits are visited.
+커밋을 방문하는 순서를 설정해요.
 
 #### 매개변수
 
@@ -44,9 +42,9 @@ Set the order in which commits are visited.
 
 > **simplifyFirstParent**(): `this`
 
-Simplify the history by first-parent.
+첫 번째 부모를 기준으로 히스토리를 단순화해요.
 
-No parents other than the first for each commit will be enqueued.
+각 커밋에 대해 첫 번째 부모 이외의 부모들은 큐에 추가되지 않아요.
 
 #### 반환 형식:
 
@@ -58,13 +56,11 @@ No parents other than the first for each commit will be enqueued.
 
 > **push**(`oid`): `this`
 
-Mark a commit to start traversal from.
+순회의 시작점으로 사용할 커밋을 지정해요.
 
-The given OID must belong to a commitish on the walked repository.
+지정된 OID는 순회하는 리포지토리의 커밋에 속해야 해요.
 
-The given commit will be used as one of the roots when starting the
-revision walk. At least one commit must be pushed onto the walker before
-a walk can be started.
+순회 시작 시 이 커밋은 루트 중 하나로 사용돼요. 순회를 시작하기 전에 최소 한 개의 커밋이 푸시되어야 해요.
 
 #### 매개변수
 
@@ -82,9 +78,9 @@ a walk can be started.
 
 > **pushHead**(): `this`
 
-Push the repository's HEAD.
+리포지토리의 HEAD를 푸시해요.
 
-For more information, see `push`.
+자세한 내용은 `push`를 참고하세요.
 
 #### 반환 형식:
 
@@ -96,16 +92,13 @@ For more information, see `push`.
 
 > **pushGlob**(`glob`): `this`
 
-Push matching references.
+일치하는 레퍼런스들을 푸시해요.
 
-The OIDs pointed to by the references that match the given glob pattern
-will be pushed to the revision walker.
+주어진 glob 패턴과 일치하는 레퍼런스가 가리키는 OID들이 Revwalk에 푸시돼요.
 
-A leading 'refs/' is implied if not present as well as a trailing `/ \
-*` if the glob lacks '?', ' \ *' or '['.
+glob에 '?', '*' 또는 '['가 없으면 선행하는 'refs/'와 후행하는 `/\*`가 암시돼요.
 
-Any references matching this glob which do not point to a commitish
-will be ignored.
+해당 glob과 일치하지만 커밋을 가리키지 않는 레퍼런스는 무시돼요.
 
 #### 매개변수
 
@@ -123,11 +116,9 @@ will be ignored.
 
 > **pushRange**(`range`): `this`
 
-Push and hide the respective endpoints of the given range.
+주어진 범위의 끝점을 각각 푸시 및 숨겨요.
 
-The range should be of the form `<commit>..<commit>` where each
-`<commit>` is in the form accepted by `revparseSingle`. The left-hand
-commit will be hidden and the right-hand commit pushed.
+범위는 `<commit>..<commit>` 형식이어야 하며, 각각의 `<commit>`은 `revparseSingle`에서 허용하는 형식이에요. 왼쪽 커밋은 숨겨지고 오른쪽 커밋이 푸시돼요.
 
 #### 매개변수
 
@@ -145,9 +136,9 @@ commit will be hidden and the right-hand commit pushed.
 
 > **pushRef**(`reference`): `this`
 
-Push the OID pointed to by a reference.
+레퍼런스가 가리키는 OID를 푸시해요.
 
-The reference must point to a commitish.
+해당 레퍼런스는 커밋을 가리켜야 해요.
 
 #### 매개변수
 
@@ -165,7 +156,7 @@ The reference must point to a commitish.
 
 > **hide**(`oid`): `this`
 
-Mark a commit as not of interest to this revwalk.
+Revwalk에서 해당 커밋을 관심 대상에서 제외해요.
 
 #### 매개변수
 
@@ -183,9 +174,9 @@ Mark a commit as not of interest to this revwalk.
 
 > **hideHead**(): `this`
 
-Hide the repository's HEAD.
+리포지토리의 HEAD를 숨겨요.
 
-For more information, see `hide`.
+자세한 내용은 `hide`를 참고하세요.
 
 #### 반환 형식:
 
@@ -197,16 +188,13 @@ For more information, see `hide`.
 
 > **hideGlob**(`glob`): `this`
 
-Hide matching references.
+일치하는 레퍼런스들을 숨겨요.
 
-The OIDs pointed to by the references that match the given glob pattern
-and their ancestors will be hidden from the output on the revision walk.
+주어진 glob 패턴과 일치하는 레퍼런스 및 이들이 가리키는 OID와 해당 조상들은 Revwalk 출력에서 숨겨져요.
 
-A leading 'refs/' is implied if not present as well as a trailing `/ \
-*` if the glob lacks '?', ' \ *' or '['.
+glob에 '?', '*' 또는 '['가 없으면 선행하는 'refs/'와 후행하는 `/\*`가 암시돼요.
 
-Any references matching this glob which do not point to a commitish
-will be ignored.
+해당 glob과 일치하지만 커밋을 가리키지 않는 레퍼런스는 무시돼요.
 
 #### 매개변수
 
@@ -224,9 +212,9 @@ will be ignored.
 
 > **hideRef**(`reference`): `this`
 
-Hide the OID pointed to by a reference.
+레퍼런스가 가리키는 OID를 숨겨요.
 
-The reference must point to a commitish.
+해당 레퍼런스는 커밋을 가리켜야 해요.
 
 #### 매개변수
 

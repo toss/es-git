@@ -4,9 +4,9 @@
 
 > **cloneRepository**(`url`, `path`, `options`?, `signal`?): `Promise`\<[`Repository`](../classes/Repository.md)\>
 
-원격 리포지토리를 클론(clone)해요.
+리모트 리포지토리를 클론(clone)해요.
 
-지정한 URL의 원격 리포지토리를 로컬 경로에 복제하며, 제공된 옵션을 사용해 설정할 수 있어요.
+지정한 URL의 리모트 리포지토리를 로컬 경로에 복제하며, 제공된 옵션을 사용해 설정할 수 있어요.
 
 ## 매개변수
 

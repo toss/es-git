@@ -4,4 +4,4 @@
 
 > **ReferenceType**: `"Direct"` \| `"Symbolic"`
 
-An enumeration of all possible kinds of references.
+모든 가능한 종류의 레퍼런스를 열거

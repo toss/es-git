@@ -4,7 +4,7 @@
 
 > **openRepository**(`path`, `options`?, `signal`?): `Promise`\<[`Repository`](../classes/Repository.md)\>
 
-Attempt to open an already-existing repository at `path`.
+주어진 경로(`path`)에 이미 존재하는 리포지토리를 열려고 시도해요.
 
 ## 매개변수
 

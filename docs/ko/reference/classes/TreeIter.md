@@ -2,7 +2,7 @@
 
 # 클래스: TreeIter
 
-An iterator over the entries in a tree.
+트리 내 항목을 순회하기 위한 이터레이터예요.
 
 ## 메소드
 

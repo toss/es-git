@@ -120,7 +120,7 @@ impl Default for ReferenceFormat {
 /// import { normalizeReferenceName, ReferenceFormat } from 'es-git';
 ///
 /// console.assert(
-///   normalizeReferenceName('foo//bar"),
+///   normalizeReferenceName('foo//bar'),
 ///   'foo/bar'
 /// );
 /// console.assert(

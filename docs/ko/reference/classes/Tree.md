@@ -2,9 +2,9 @@
 
 # 클래스: Tree
 
-A class to represent a git [tree][1].
+Git [트리(Tree)][1]를 나타내는 클래스예요.
 
-[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%eb%82%b4%eb%b6%80-Git-%ea%b0%9c%ec%b2%b4
 
 ## 메소드
 
@@ -12,7 +12,7 @@ A class to represent a git [tree][1].
 
 > **id**(): `string`
 
-Get the id (SHA1) of a repository object.
+리포지토리 개체의 id (SHA1)를 가져와요.
 
 #### 반환 형식:
 
@@ -24,7 +24,7 @@ Get the id (SHA1) of a repository object.
 
 > **len**(): `bigint`
 
-Get the number of entries listed in this tree.
+이 트리에 나열된 항목의 개수를 가져와요.
 
 #### 반환 형식:
 
@@ -36,7 +36,7 @@ Get the number of entries listed in this tree.
 
 > **isEmpty**(): `boolean`
 
-Return `true` if there is no entry.
+항목이 없으면 `true`를 반환해요.
 
 #### 반환 형식:
 
@@ -48,7 +48,7 @@ Return `true` if there is no entry.
 
 > **iter**(): [`TreeIter`](TreeIter.md)
 
-Returns an iterator over the entries in this tree.
+이 트리의 항목들을 순회할 수 있는 이터레이터를 반환해요.
 
 #### 반환 형식:
 
@@ -60,14 +60,9 @@ Returns an iterator over the entries in this tree.
 
 > **walk**(`mode`, `callback`): `void`
 
-Traverse the entries in a tree and its subtrees in post or pre-order.
-The callback function will be run on each node of the tree that's
-walked. The return code of this function will determine how the walk
-continues.
+후위 또는 전위 순회(post 또는 pre-order) 방식으로 트리와 그 하위 트리의 항목들을 탐색해요. 순회하는 트리의 각 노드마다 콜백 함수가 실행돼요. 이 함수의 반환 코드가 순회의 진행 방식을 결정해요.
 
-libgit2 requires that the callback be an integer, where 0 indicates a
-successful visit, 1 skips the node, and -1 aborts the traversal completely.
-See [libgit2 documentation][1] for more information.
+libgit2에서는 반환값이 정수여야 하며, 0은 정상 방문, 1은 해당 노드를 건너뛰고, -1은 순회를 완전히 중단함을 의미해요. 자세한 내용은 [libgit2 문서][1]를 참고하세요.
 
 [1]: https://libgit2.org/libgit2/#HEAD/group/tree/git_tree_walk
 
@@ -88,7 +83,7 @@ See [libgit2 documentation][1] for more information.
 
 > **getId**(`id`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Lookup a tree entry by SHA value.
+SHA 값으로 트리 항목을 조회해요.
 
 #### 매개변수
 
@@ -106,7 +101,7 @@ Lookup a tree entry by SHA value.
 
 > **get**(`index`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Lookup a tree entry by its position in the tree.
+트리 내 위치로 트리 항목을 조회해요.
 
 #### 매개변수
 
@@ -124,7 +119,7 @@ Lookup a tree entry by its position in the tree.
 
 > **getName**(`filename`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Lookup a tree entry by its filename.
+파일 이름으로 트리 항목을 조회해요.
 
 #### 매개변수
 
@@ -142,8 +137,7 @@ Lookup a tree entry by its filename.
 
 > **getPath**(`path`): `null` \| [`TreeEntry`](TreeEntry.md)
 
-Retrieve a tree entry contained in a tree or in any of its subtrees,
-given its relative path.
+상대 경로를 이용해 트리 또는 그 하위 트리에 포함된 트리 항목을 가져와요.
 
 #### 매개변수
 
@@ -161,7 +155,7 @@ given its relative path.
 
 > **asObject**(): [`GitObject`](GitObject.md)
 
-Casts this Tree to be usable as an `GitObject`.
+이 트리를 `GitObject`로 사용할 수 있도록 형변환해요.
 
 #### 반환 형식:
 

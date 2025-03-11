@@ -2,9 +2,9 @@
 
 # 클래스: Index
 
-A class to represent a git [index][1].
+Git [인덱스(Index)][1]를 나타내는 클래스로 사용해요.
 
-[1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
+[1]: https://git-scm.com/book/ko/v2/Git%ec%9d%98-%eb%82%b4%eb%b6%80-Git-%ea%b0%9c%ec%b2%b4
 
 ## 메소드
 
@@ -12,11 +12,9 @@ A class to represent a git [index][1].
 
 > **version**(): `number`
 
-Get index on-disk version.
+디스크에 기록된 인데스 버전을 가져와요.
 
-Valid return values are 2, 3, or 4. If 3 is returned, an index
-with version 2 may be written instead, if the extension data in
-version 3 is not necessary.
+유효한 반환 값은 2, 3 또는 4예요. 만약 3이 반환된다면, 확장 데이터가 필요 없을 경우 버전 2의 인덱스가 기록될 수도 있어요.
 
 #### 반환 형식:
 
@@ -28,11 +26,9 @@ version 3 is not necessary.
 
 > **setVersion**(`version`): `void`
 
-Set index on-disk version.
+디스크에 기록된 인덱스 버전을 설정해요.
 
-Valid values are 2, 3, or 4. If 2 is given, git_index_write may
-write an index with version 3 instead, if necessary to accurately
-represent the index.
+유효한 값은 2, 3 또는 4예요. 만약 2가 주어지면, 인덱스를 정확하게 표현하기 위해 필요한 경우 git_index_write가 버전 3의 인덱스를 기록할 수도 있어요.
 
 #### 매개변수
 
@@ -50,7 +46,7 @@ represent the index.
 
 > **getByPath**(`path`, `stage`?): `null` \| [`IndexEntry`](../interfaces/IndexEntry.md)
 
-Get one of the entries in the index by its path.
+경로를 기준으로 인덱스 내의 항목 중 하나를 가져와요.
 
 #### 매개변수
 
@@ -69,19 +65,15 @@ Get one of the entries in the index by its path.
 
 > **addPath**(`path`): `void`
 
-Add or update an index entry from a file on disk.
+디스크상의 파일로부터 인덱스 항목을 추가 또는 업데이트해요.
 
-The file path must be relative to the repository's working folder and
-must be readable.
+파일 경로는 리포지토리의 작업 폴더에 상대적이어야 하며 읽을 수 있어야 해요.
 
-This method will fail in bare index instances.
+bare 인덱스 인스턴스에서는 이 메소드가 실패할 거예요.
 
-This forces the file to be added to the index, not looking at gitignore
-rules.
+이 메소드는 gitignore 규칙을 무시하고 파일을 인덱스에 추가하도록 강제해요.
 
-If this file currently is the result of a merge conflict, this file will
-no longer be marked as conflicting. The data about the conflict will be
-moved to the "resolve undo" (REUC) section.
+현재 이 파일이 병합 충돌의 결과라면, 더 이상 충돌 상태로 표시되지 않고, 충돌에 관한 데이터는 "resolve undo" (REUC) 영역으로 이동돼요.
 
 #### 매개변수
 
@@ -99,14 +91,12 @@ moved to the "resolve undo" (REUC) section.
 
 > **addAll**(`pathspecs`, `options`?): `void`
 
-Add or update index entries matching files in the working directory.
+작업 디렉터리 내의 파일과 일치하는 인덱스 항목들을 추가 또는 업데이트해요.
 
-This method will fail in bare index instances.
+bare 인덱스 인스턴스에서는 이 메소드가 실패할 거예요.
 
-The `pathspecs` are a list of file names or shell glob patterns that
-will matched against files in the repository's working directory. Each
-file that matches will be added to the index (either updating an
-existing entry or adding a new entry).
+`pathspecs`는 리포지토리의 작업 디렉터리의 파일들과 매칭될 파일 이름 또는 쉘 glob 패턴의 목록이에요. 매칭되는 각 파일은 인덱스에 추가돼요(기존 항목은 업데이트되거나, 새 항목이 추가돼요).
+
 
 #### 매개변수
 
@@ -121,7 +111,7 @@ existing entry or adding a new entry).
 
 #### Example
 
-Emulate `git add *`:
+`git add *`를 수행:
 
 ```ts
 import { openRepository } from 'es-git';
@@ -138,17 +128,11 @@ index.write();
 
 > **read**(`force`?): `void`
 
-Update the contents of an existing index object in memory by reading
-from the hard disk.
+하드 디스크에서 읽어 메모리 내에 존재하는 인덱스 개체의 내용을 업데이트해요.
 
-If force is true, this performs a "hard" read that discards in-memory
-changes and always reloads the on-disk index data. If there is no
-on-disk version, the index will be cleared.
+만약 force가 true로 설정되면, 메모리상의 변경 사항을 모두 버리고 항상 디스크상의 인덱스 데이터를 다시 로드하는 "강제" 읽기를 수행해요. 디스크상에 version 데이터가 없으면 인덱스는 초기화돼요.
 
-If force is false, this does a "soft" read that reloads the index data
-from disk only if it has changed since the last time it was loaded.
-Purely in-memory index data will be untouched. Be aware: if there are
-changes on disk, unwritten in-memory changes are discarded.
+force가 false면, 마지막 로드 이후에 디스크상의 데이터가 변경되었을 경우에만 인덱스 데이터를 재로딩하는 "소프트" 읽기를 수행해요. 메모리상의 순수 데이터는 그대로 유지돼요. 주의할 점은, 디스크에 변경 사항이 있을 경우 메모리상의 기록되지 않은 변경 사항은 버려진다는 거예요.
 
 #### 매개변수
 
@@ -166,8 +150,7 @@ changes on disk, unwritten in-memory changes are discarded.
 
 > **write**(): `void`
 
-Write an existing index object from memory back to disk using an atomic
-file lock.
+메모리 내의 기존 인덱스 개체를 원자적 파일 잠금을 사용하여 디스크에 다시 기록해요.
 
 #### 반환 형식:
 
@@ -179,17 +162,14 @@ file lock.
 
 > **writeTree**(): `string`
 
-Write the index as a tree.
+인덱스를 트리 형태로 기록해요.
 
-This method will scan the index and write a representation of its
-current state back to disk; it recursively creates tree objects for each
-of the subtrees stored in the index, but only returns the OID of the
-root tree. This is the OID that can be used e.g. to create a commit.
+이 메소드는 인덱스를 검색하여 현재 상태를 디스크에 기록해요; 인덱스에 저장된 각 서브트리에 대해 재귀적으로 트리 개체를 생성하지만, 최종적으로는 루트 트리의 OID만 반환해요. 이 OID는 예를 들어 커밋을 생성할 때 사용될 수 있어요.
 
-The index instance cannot be bare, and needs to be associated to an
-existing repository.
+인덱스 인스턴스는 bare이면 안 되며, 기존 리포지토리와 연결되어 있어야 해요.
 
-The index must not contain any file in conflict.
+인덱스에는 충돌 상태인 파일이 없어야 해요.
+
 
 #### 반환 형식:
 
@@ -201,14 +181,11 @@ The index must not contain any file in conflict.
 
 > **removePath**(`path`, `options`?): `void`
 
-Remove an index entry corresponding to a file on disk.
+디스크상의 파일에 해당하는 인덱스 항목을 제거해요.
 
-The file path must be relative to the repository's working folder. It
-may exist.
+파일 경로는 리포지토리의 작업 폴더에 상대적이어야 해요. 파일이 존재할 수도 있어요.
 
-If this file currently is the result of a merge conflict, this file will
-no longer be marked as conflicting. The data about the conflict will be
-moved to the "resolve undo" (REUC) section.
+만약 이 파일이 현재 병합 충돌의 결과라면, 더 이상 충돌 상태로 표시되지 않아요. 충돌에 관한 데이터는 "resolve undo" (REUC) 섹션으로 이동돼요.
 
 #### 매개변수
 
@@ -227,7 +204,7 @@ moved to the "resolve undo" (REUC) section.
 
 > **removeAll**(`pathspecs`, `options`?): `void`
 
-Remove all matching index entries.
+일치하는 모든 인덱스 항목들을 제거해요.
 
 #### 매개변수
 
@@ -246,14 +223,11 @@ Remove all matching index entries.
 
 > **updateAll**(`pathspecs`, `options`?): `void`
 
-Update all index entries to match the working directory.
+작업 디렉토리와 일치하도록 모든 인덱스 항목들을 업데이트해요.
 
-This method will fail in bare index instances.
+이 메소드는 bare 인덱스 인스턴스에서는 실패할 거예요.
 
-This scans the existing index entries and synchronizes them with the
-working directory, deleting them if the corresponding working directory
-file no longer exists otherwise updating the information (including
-adding the latest version of file to the ODB if needed).
+기존의 인덱스 항목들을 스캔하여 작업 디렉토리와 동기화하고, 해당 작업 디렉토리 파일이 더 이상 존재하지 않으면 삭제하며, 그렇지 않으면 정보를 업데이트해요 (필요한 경우 파일의 최신 버전을 ODB에 추가하는 것도 포함돼요).
 
 #### 매개변수
 
@@ -272,7 +246,7 @@ adding the latest version of file to the ODB if needed).
 
 > **count**(): `number`
 
-Get the count of entries currently in the index.
+현재 인덱스에 있는 항목들의 개수를 가져와요.
 
 #### 반환 형식:
 
@@ -284,7 +258,7 @@ Get the count of entries currently in the index.
 
 > **isEmpty**(): `boolean`
 
-Return `true` is there is no entry in the index.
+인덱스에 항목이 하나도 없으면 `true`를 반환해요.
 
 #### 반환 형식:
 
@@ -296,9 +270,9 @@ Return `true` is there is no entry in the index.
 
 > **path**(): `null` \| `string`
 
-Get the full path to the index file on disk.
+디스크상의 인덱스 파일 전체 경로를 가져와요.
 
-Returns `None` if this is an in-memory index.
+만약 인메모리 인덱스라면 `null`을 반환해요.
 
 #### 반환 형식:
 
@@ -310,9 +284,9 @@ Returns `None` if this is an in-memory index.
 
 > **hasConflicts**(): `boolean`
 
-Does this index have conflicts?
+이 인덱스에 충돌이 있나요?
 
-Returns `true` if the index contains conflicts, `false` if it does not.
+충돌이 포함되어 있으면 `true`, 그렇지 않으면 `false`를 반환해요.
 
 #### 반환 형식:
 
@@ -324,7 +298,7 @@ Returns `true` if the index contains conflicts, `false` if it does not.
 
 > **entries**(): [`IndexEntries`](IndexEntries.md)
 
-Get an iterator over the entries in this index.
+이 인덱스에 있는 항목들을 순회할 수 있는 iterator를 가져와요.
 
 #### 반환 형식:
 
