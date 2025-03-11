@@ -4,7 +4,7 @@
 
 > **diffFlagsContains**(`source`, `target`): `boolean`
 
-Check diff flags contains given flags.
+diff 플래그가 특정 플래그를 포함하는지 확인해요.
 
 ## 매개변수
 

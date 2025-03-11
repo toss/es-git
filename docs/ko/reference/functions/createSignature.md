@@ -4,7 +4,7 @@
 
 > **createSignature**(`name`, `email`, `timeOptions`?): [`Signature`](../interfaces/Signature.md)
 
-Create a new action signature.
+새로운 서명을 생성해요.
 
 ## 매개변수
 

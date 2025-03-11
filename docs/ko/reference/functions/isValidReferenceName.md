@@ -4,16 +4,14 @@
 
 > **isValidReferenceName**(`refname`): `boolean`
 
-Ensure the reference name is well-formed.
+주어진 레퍼런스명(`refname`)이 올바른 형식인지 확인해요.
 
-Validation is performed as if `ReferenceFormat.AllowOnelevel`
-was given to `normalizeReferenceName`
-No normalization is performed, however.
+이 검사는 `normalizeReferenceName` 함수에 `ReferenceFormat.AllowOnelevel` 옵션을 적용한 것처럼 동작하지만, 실제로 레퍼런스 이름을 변환하지는 않아요.
 
 ## 매개변수
 
-| 매개변수 | 유형 |
-| ------ | ------ |
+| 매개변수      | 유형       |
+|-----------|----------|
 | `refname` | `string` |
 
 ## 반환 형식:

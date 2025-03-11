@@ -2,45 +2,45 @@
 
 # 인터페이스: DiffOptions
 
-Describing options about how the diff should be executed.
+`diff`를 실행하는 방법을 설정하는 옵션이에요.
 
 ## 속성
 
-| 속성 | 유형 | 설명 |
-| ------ | ------ | ------ |
-| <a id="reverse"></a> `reverse?` | `boolean` | Flag indicating whether the sides of the diff will be reversed. |
-| <a id="includeignored"></a> `includeIgnored?` | `boolean` | Flag indicating whether ignored files are included. |
-| <a id="recurseignoreddirs"></a> `recurseIgnoredDirs?` | `boolean` | Flag indicating whether ignored directories are traversed deeply or not. |
-| <a id="includeuntracked"></a> `includeUntracked?` | `boolean` | Flag indicating whether untracked files are in the diff |
-| <a id="recurseuntrackeddirs"></a> `recurseUntrackedDirs?` | `boolean` | Flag indicating whether untracked directories are traversed deeply or not. |
-| <a id="includeunmodified"></a> `includeUnmodified?` | `boolean` | Flag indicating whether unmodified files are in the diff. |
-| <a id="includetypechange"></a> `includeTypechange?` | `boolean` | If enabled, then Typechange delta records are generated. |
-| <a id="includetypechangetrees"></a> `includeTypechangeTrees?` | `boolean` | Event with `includeTypechange`, the tree returned generally shows a deleted blob. This flag correctly labels the tree transitions as a typechange record with the `new_file`'s mode set to tree. Note that the tree SHA will not be available. |
-| <a id="ignorefilemode"></a> `ignoreFilemode?` | `boolean` | Flag indicating whether file mode changes are ignored. |
-| <a id="ignoresubmodules"></a> `ignoreSubmodules?` | `boolean` | Flag indicating whether all submodules should be treated as unmodified. |
-| <a id="ignorecase"></a> `ignoreCase?` | `boolean` | Flag indicating whether case insensitive filenames should be used. |
-| <a id="disablepathspecmatch"></a> `disablePathspecMatch?` | `boolean` | If pathspecs are specified, this flag means that they should be applied as an exact match instead of a fnmatch pattern. |
-| <a id="skipbinarycheck"></a> `skipBinaryCheck?` | `boolean` | Disable updating the `binary` flag in delta records. This is useful when iterating over a diff if you don't need hunk and data callbacks and want to avoid having to load a file completely. |
-| <a id="enablefastuntrackeddirs"></a> `enableFastUntrackedDirs?` | `boolean` | When diff finds an untracked directory, to match the behavior of core Git, it scans the contents for ignored and untracked files. If all contents are ignored, then the directory is ignored; if any contents are not ignored, then the directory is untracked. This is extra work that may not matter in many cases. This flag turns off that scan and immediately labels an untracked directory as untracked (changing the behavior to not match core git). |
-| <a id="updateindex"></a> `updateIndex?` | `boolean` | When diff finds a file in the working directory with stat information different from the index, but the OID ends up being the same, write the correct stat information into the index. Note: without this flag, diff will always leave the index untouched. |
-| <a id="includeunreadable"></a> `includeUnreadable?` | `boolean` | Include unreadable files in the diff |
-| <a id="includeunreadableasuntracked"></a> `includeUnreadableAsUntracked?` | `boolean` | Include unreadable files in the diff as untracked files |
-| <a id="forcetext"></a> `forceText?` | `boolean` | Treat all files as text, disabling binary attributes and detection. |
-| <a id="forcebinary"></a> `forceBinary?` | `boolean` | Treat all files as binary, disabling text diffs |
-| <a id="ignorewhitespace"></a> `ignoreWhitespace?` | `boolean` | Ignore all whitespace |
-| <a id="ignorewhitespacechange"></a> `ignoreWhitespaceChange?` | `boolean` | Ignore changes in the amount of whitespace |
-| <a id="ignorewhitespaceeol"></a> `ignoreWhitespaceEol?` | `boolean` | Ignore whitespace at the end of line |
-| <a id="ignoreblanklines"></a> `ignoreBlankLines?` | `boolean` | Ignore blank lines |
-| <a id="showuntrackedcontent"></a> `showUntrackedContent?` | `boolean` | When generating patch text, include the content of untracked files. This automatically turns on `includeUntracked` but it does not turn on `recurseUntrackedDirs`. Add that flag if you want the content of every single untracked file. |
-| <a id="showunmodified"></a> `showUnmodified?` | `boolean` | When generating output, include the names of unmodified files if they are included in the `Diff`. Normally these are skipped in the formats that list files (e.g. name-only, name-status, raw). Even with this these will not be included in the patch format. |
-| <a id="patience"></a> `patience?` | `boolean` | Use the "patience diff" algorithm |
-| <a id="minimal"></a> `minimal?` | `boolean` | Take extra time to find the minimal diff |
-| <a id="showbinary"></a> `showBinary?` | `boolean` | Include the necessary deflate/delta information so that `git-apply` can apply given diff information to binary files. |
-| <a id="indentheuristic"></a> `indentHeuristic?` | `boolean` | Use a heuristic that takes indentation and whitespace into account which generally can produce better diffs when dealing with ambiguous diff hunks. |
-| <a id="contextlines"></a> `contextLines?` | `number` | Set the number of unchanged lines that define the boundary of a hunk (and to display before and after). The default value for this is 3. |
-| <a id="interhunklines"></a> `interhunkLines?` | `number` | Set the maximum number of unchanged lines between hunk boundaries before the hunks will be merged into one. The default value for this is 0. |
-| <a id="idabbrev"></a> `idAbbrev?` | `number` | The default value for this is `core.abbrev` or 7 if unset. |
-| <a id="maxsize"></a> `maxSize?` | `number` | Maximum size (in bytes) above which a blob will be marked as binary automatically. A negative value will disable this entirely. The default value for this is 512MB. |
-| <a id="oldprefix"></a> `oldPrefix?` | `string` | The virtual "directory" to prefix old file names with in hunk headers. The default value for this is "a". |
-| <a id="newprefix"></a> `newPrefix?` | `string` | The virtual "directory" to prefix new file names with in hunk headers. The default value for this is "b". |
-| <a id="pathspecs"></a> `pathspecs?` | `string`[] | Add to the array of paths/fnmatch patterns to constrain the diff. |
+| 속성                                                                        | 유형         | 설명                                                                                                              |
+|---------------------------------------------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------|
+| <a id="reverse"></a> `reverse?`                                           | `boolean`  | `diff`의 비교 방향을 반대로 설정할지 여부를 나타내는 값이에요.                                                                          |
+| <a id="includeignored"></a> `includeIgnored?`                             | `boolean`  | 무시된 파일을 `diff`에 포함할지 여부를 설정해요.                                                                                  |
+| <a id="recurseignoreddirs"></a> `recurseIgnoredDirs?`                     | `boolean`  | 무시된 디렉터리를 재귀적으로 탐색할지 여부를 설정해요.                                                                                  |
+| <a id="includeuntracked"></a> `includeUntracked?`                         | `boolean`  | 추적되지 않은 파일을 `diff`에 포함할지 여부를 설정해요.                                                                              |
+| <a id="recurseuntrackeddirs"></a> `recurseUntrackedDirs?`                 | `boolean`  | 추적되지 않은 디렉터리를 재귀적으로 탐색할지 여부를 설정해요.                                                                              |
+| <a id="includeunmodified"></a> `includeUnmodified?`                       | `boolean`  | 수정되지 않은 파일을 `diff`에 포함할지 여부를 설정해요.                                                                              |
+| <a id="includetypechange"></a> `includeTypechange?`                       | `boolean`  | 이 옵션을 활성화하면 타입 변경(`Typechange`) 차이를 기록해요.                                                                       |
+| <a id="includetypechangetrees"></a> `includeTypechangeTrees?`             | `boolean`  | `includeTypechange` 옵션과 함께 사용하면 삭제된 블롭(blob) 대신 트리 변경을 올바르게 기록해요. 다만, 트리 SHA는 제공되지 않아요.                         |
+| <a id="ignorefilemode"></a> `ignoreFilemode?`                             | `boolean`  | 파일 권한 변경을 무시할지 여부를 설정해요.                                                                                        |
+| <a id="ignoresubmodules"></a> `ignoreSubmodules?`                         | `boolean`  | 모든 서브모듈을 변경되지 않은 것으로 처리할지 여부를 설정해요.                                                                             |
+| <a id="ignorecase"></a> `ignoreCase?`                                     | `boolean`  | 파일 이름을 대소문자를 구분하지 않고 비교할지 여부를 설정해요.                                                                             |
+| <a id="disablepathspecmatch"></a> `disablePathspecMatch?`                 | `boolean`  | `pathspecs`가 지정된 경우, 패턴 일치가 아닌 정확한 경로 일치 방식으로 적용할지 설정해요.                                                        |
+| <a id="skipbinarycheck"></a> `skipBinaryCheck?`                           | `boolean`  | `binary` 플래그 업데이트를 비활성화해요. 파일을 완전히 로드할 필요가 없을 때 유용해요.                                                           |
+| <a id="enablefastuntrackeddirs"></a> `enableFastUntrackedDirs?`           | `boolean`  | 기본적으로 Git은 추적되지 않은 디렉터리를 스캔해 포함 여부를 결정해요. 이 옵션을 활성화하면 스캔을 생략하고 즉시 디렉터리를 추적되지 않은 것으로 표시해요.                       |
+| <a id="updateindex"></a> `updateIndex?`                                   | `boolean`  | 워킹 디렉터리의 파일이 `index`와 다르지만 OID가 같을 경우, 올바른 `stat` 정보를 `index`에 기록해요. 기본적으로 `diff`는 `index`를 수정하지 않아요.           |
+| <a id="includeunreadable"></a> `includeUnreadable?`                       | `boolean`  | 읽을 수 없는 파일을 `diff`에 포함할지 여부를 설정해요.                                                                              |
+| <a id="includeunreadableasuntracked"></a> `includeUnreadableAsUntracked?` | `boolean`  | 읽을 수 없는 파일을 추적되지 않은 파일로 간주할지 설정해요.                                                                              |
+| <a id="forcetext"></a> `forceText?`                                       | `boolean`  | 모든 파일을 텍스트로 처리하고 바이너리 속성과 감지를 비활성화해요.                                                                           |
+| <a id="forcebinary"></a> `forceBinary?`                                   | `boolean`  | 모든 파일을 바이너리로 처리하고 텍스트 비교를 비활성화해요.                                                                               |
+| <a id="ignorewhitespace"></a> `ignoreWhitespace?`                         | `boolean`  | 모든 공백 변경을 무시할지 여부를 설정해요.                                                                                        |
+| <a id="ignorewhitespacechange"></a> `ignoreWhitespaceChange?`             | `boolean`  | 공백 수량 변경을 무시할지 여부를 설정해요.                                                                                        |
+| <a id="ignorewhitespaceeol"></a> `ignoreWhitespaceEol?`                   | `boolean`  | 줄 끝(`EOL`)의 공백 변경을 무시할지 여부를 설정해요.                                                                               |
+| <a id="ignoreblanklines"></a> `ignoreBlankLines?`                         | `boolean`  | 빈 줄을 무시할지 여부를 설정해요.                                                                                             |
+| <a id="showuntrackedcontent"></a> `showUntrackedContent?`                 | `boolean`  | 패치(`patch`) 생성 시 추적되지 않은 파일의 내용을 포함할지 설정해요. `includeUntracked`를 자동으로 활성화하지만, `recurseUntrackedDirs`는 활성화하지 않아요. |
+| <a id="showunmodified"></a> `showUnmodified?`                             | `boolean`  | 출력에서 수정되지 않은 파일 이름을 포함할지 설정해요. 기본적으로 `Diff`의 일부 형식에서는 이를 생략해요.                                                  |
+| <a id="patience"></a> `patience?`                                         | `boolean`  | "Patience diff" 알고리즘을 사용할지 설정해요.                                                                                |
+| <a id="minimal"></a> `minimal?`                                           | `boolean`  | 최소한의 차이를 찾도록 추가 시간을 들일지 여부를 설정해요.                                                                               |
+| <a id="showbinary"></a> `showBinary?`                                     | `boolean`  | `git-apply`가 바이너리 파일 변경을 적용할 수 있도록 필요한 정보를 포함할지 설정해요.                                                           |
+| <a id="indentheuristic"></a> `indentHeuristic?`                           | `boolean`  | 들여쓰기와 공백을 고려하는 휴리스틱 알고리즘을 사용해 더 나은 `diff` 결과를 생성할지 설정해요.                                                        |
+| <a id="contextlines"></a> `contextLines?`                                 | `number`   | 변경 부분 앞뒤로 표시할 변경되지 않은 줄 수를 설정해요. 기본값은 `3`이에요.                                                                   |
+| <a id="interhunklines"></a> `interhunkLines?`                             | `number`   | 별도 변경 블록을 합칠 기준이 되는 최대 변경되지 않은 줄 수를 설정해요. 기본값은 `0`이에요.                                                          |
+| <a id="idabbrev"></a> `idAbbrev?`                                         | `number`   | `core.abbrev` 값 또는 기본값 `7`로 설정해요.                                                                               |
+| <a id="maxsize"></a> `maxSize?`                                           | `number`   | 지정한 크기(바이트 단위)를 초과하는 블롭(blob)을 자동으로 바이너리로 간주해요. 음수를 지정하면 이 기능을 비활성화할 수 있어요. 기본값은 `512MB`예요.                     |
+| <a id="oldprefix"></a> `oldPrefix?`                                       | `string`   | `diff`의 기존 파일 이름 앞에 붙일 가상 "디렉터리"를 설정해요. 기본값은 `"a"`예요.                                                           |
+| <a id="newprefix"></a> `newPrefix?`                                       | `string`   | `diff`의 새로운 파일 이름 앞에 붙일 가상 "디렉터리"를 설정해요. 기본값은 `"b"`예요.                                                          |
+| <a id="pathspecs"></a> `pathspecs?`                                       | `string`[] | `diff`에 포함할 경로나 패턴 목록을 지정해요.                                                                                    |

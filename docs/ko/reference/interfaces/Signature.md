@@ -2,15 +2,14 @@
 
 # 인터페이스: Signature
 
-A Signature is used to indicate authorship of various actions throughout the
-library.
+`Signature`는 라이브러리에서 다양한 작업의 작성자 정보를 나타내는 데 사용돼요.
 
-Signatures contain a name, email, and timestamp.
+서명에는 이름, 이메일, 타임스탬프가 포함돼요.
 
 ## 속성
 
-| 속성 | 유형 | 설명 |
-| ------ | ------ | ------ |
-| <a id="name"></a> `name` | `string` | Name on the signature. |
-| <a id="email"></a> `email` | `string` | Email on the signature. |
-| <a id="timestamp"></a> `timestamp` | `number` | Time in seconds, from epoch |
+| 속성                                 | 유형       | 설명                                                   |
+|------------------------------------|----------|------------------------------------------------------|
+| <a id="name"></a> `name`           | `string` | 서명에 표시될 이름이에요.                                       |
+| <a id="email"></a> `email`         | `string` | 서명에 표시될 이메일 주소예요.                                    |
+| <a id="timestamp"></a> `timestamp` | `number` | 유닉스 에포크(1970년 1월 1일 00:00:00 UTC)부터 경과한 시간(초 단위)이에요. |

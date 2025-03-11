@@ -4,15 +4,15 @@
 
 > **initRepository**(`path`, `options`?, `signal`?): `Promise`\<[`Repository`](../classes/Repository.md)\>
 
-Creates a new repository in the specified folder.
+새로운 리포지토리를 지정한 디렉터리에 생성해요.
 
 ## 매개변수
 
-| 매개변수 | 유형 |
-| ------ | ------ |
-| `path` | `string` |
+| 매개변수       | 유형                                                                          |
+|------------|-----------------------------------------------------------------------------|
+| `path`     | `string`                                                                    |
 | `options`? | `null` \| [`RepositoryInitOptions`](../interfaces/RepositoryInitOptions.md) |
-| `signal`? | `null` \| `AbortSignal` |
+| `signal`?  | `null` \| `AbortSignal`                                                     |
 
 ## 반환 형식:
 

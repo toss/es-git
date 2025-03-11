@@ -2,12 +2,12 @@
 
 # 열거형: RevparseMode
 
-Flags for the revparse.
+`revparse`에서 사용하는 플래그들이에요.
 
 ## 포함된 값
 
-| 포함된 값 | 값 | 설명 |
-| ------ | ------ | ------ |
-| <a id="single"></a> `Single` | `1` | The spec targeted a single object |
-| <a id="range"></a> `Range` | `2` | The spec targeted a range of commits |
-| <a id="mergebase"></a> `MergeBase` | `4` | The spec used the `...` operator, which invokes special semantics. |
+| 포함된 값                              | 값   | 설명                                    |
+|------------------------------------|-----|---------------------------------------|
+| <a id="single"></a> `Single`       | `1` | 하나의 개체를 가리키는 경우예요.                    |
+| <a id="range"></a> `Range`         | `2` | 여러 커밋을 포함하는 범위를 가리키는 경우예요.            |
+| <a id="mergebase"></a> `MergeBase` | `4` | `...` 연산자를 사용해 병합 기반(공통 조상)을 찾는 경우예요. | 

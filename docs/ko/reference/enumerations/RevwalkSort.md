@@ -2,13 +2,13 @@
 
 # 열거형: RevwalkSort
 
-Orderings that may be specified for Revwalk iteration.
+`Revwalk`을 순회할 때 적용할 수 있는 정렬 방식이에요.
 
 ## 포함된 값
 
-| 포함된 값 | 값 | 설명 |
-| ------ | ------ | ------ |
-| <a id="none"></a> `None` | `0` | Sort the repository contents in no particular ordering. This sorting is arbitrary, implementation-specific, and subject to change at any time. This is the default sorting for new walkers. |
-| <a id="topological"></a> `Topological` | `1` | Sort the repository contents in topological order (children before parents). This sorting mode can be combined with time sorting. |
-| <a id="time"></a> `Time` | `2` | Sort the repository contents by commit time. This sorting mode can be combined with topological sorting. |
-| <a id="reverse"></a> `Reverse` | `4` | Iterate through the repository contents in reverse order. This sorting mode can be combined with any others. |
+| 포함된 값                                  | 값   | 설명                                                               |
+|----------------------------------------|-----|------------------------------------------------------------------|
+| <a id="none"></a> `None`               | `0` | 특정한 순서 없이 임의로 정렬해요. 이 방식은 구현에 따라 달라질 수 있으며, 기본 정렬 방식이에요.         |
+| <a id="topological"></a> `Topological` | `1` | 위상 정렬(자식이 부모보다 먼저 나오도록 정렬)을 적용해요. 이 정렬 방식은 시간 정렬과 함께 사용할 수도 있어요. |
+| <a id="time"></a> `Time`               | `2` | 커밋 시간을 기준으로 정렬해요. 위상 정렬과 함께 사용할 수도 있어요.                          |
+| <a id="reverse"></a> `Reverse`         | `4` | 저장소 내용을 역순으로 순회해요. 다른 정렬 방식과 함께 사용할 수 있어요.                       |
