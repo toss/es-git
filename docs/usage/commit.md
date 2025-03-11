@@ -25,7 +25,7 @@ const commit = repo.getCommit(sha);
 console.log(commit.summary()); // "added new file"
 ```
 
-If you want to stage all files in the staging area, similar to the `git add *` command, you can use [`addAll()`](../api/classes/Index.md#addall).
+If you want to stage all files in the staging area, similar to the `git add *` command, you can use [`addAll()`](../reference/classes/Index.md#addall).
 
 ```ts
 const index = repo.index();

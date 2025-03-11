@@ -2,7 +2,7 @@
 
 ## Listing Tags
 
-To retrieve the names of all tags in a repository, you can use [`tagNames()`](../api/classes/Repository.md#tagnames).
+To retrieve the names of all tags in a repository, you can use [`tagNames()`](../reference/classes/Repository.md#tagnames).
 
 ```ts
 import { openRepository } from 'es-git';
@@ -12,7 +12,7 @@ const tagNames = repo.tagNames();
 console.log(tagNames); // ["v0", "v1", "v2"]
 ```
 
-To get both the tag names and the associated tag hashes, you can iterate through all tags using [`tagForeach()`](../api/classes/Repository.md#tagforeach).
+To get both the tag names and the associated tag hashes, you can iterate through all tags using [`tagForeach()`](../reference/classes/Repository.md#tagforeach).
 
 ```ts
 const tags = [];
@@ -36,7 +36,7 @@ console.log(v0to1Tags);
 //  ['674e3327707fcf32a348ecfc0cb6b93e57398b8c', 'refs/tags/v1']]
 ```
 
-And then, get the tag with [`getTag()`](../api/classes/Repository.md#gettag).
+And then, get the tag with [`getTag()`](../reference/classes/Repository.md#gettag).
 
 ```ts
 const tag = repo.getTag('aa00405');
@@ -51,7 +51,7 @@ console.log(commit.id()); // "828954df9f08dc8e172447cdacf0ddea1adf9e63"
 
 ## Creating Tags
 
-You can create a tag for a specific commit by using [`createTag()`](../api/classes/Repository.md#createtag).
+You can create a tag for a specific commit by using [`createTag()`](../reference/classes/Repository.md#createtag).
 
 ```ts
 import { openRepository } from 'es-git';

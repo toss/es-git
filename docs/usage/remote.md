@@ -2,7 +2,7 @@
 
 ## Viewing the Remotes
 
-To check the names of remotes configured in the current repository, use [`remoteNames()`](../api/classes/Repository.md#remotenames).
+To check the names of remotes configured in the current repository, use [`remoteNames()`](../reference/classes/Repository.md#remotenames).
 
 ```ts
 import { openRepository } from 'es-git';
@@ -11,8 +11,8 @@ const repo = await openRepository('/path/to/repo');
 console.log(repo.remoteNames()); // ["origin"]
 ```
 
-To get a remote, use [`getRemote()`](../api/classes/Repository.md#getremote). If the remote for given name does not exist, it will throw an error. To safely get a remote, you can
-use [`findRemote()`](../api/classes/Repository.md#findremote) instead.
+To get a remote, use [`getRemote()`](../reference/classes/Repository.md#getremote). If the remote for given name does not exist, it will throw an error. To safely get a remote, you can
+use [`findRemote()`](../reference/classes/Repository.md#findremote) instead.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -36,7 +36,7 @@ console.log(refspecs[0]);
 
 ## Fetching from a Remote
 
-To fetch data from a remote repository, use [`fetch()`](../api/classes/Remote.md#fetch).
+To fetch data from a remote repository, use [`fetch()`](../reference/classes/Remote.md#fetch).
 
 ```ts
 import { openRepository } from 'es-git';
@@ -57,7 +57,7 @@ console.log(branch); // "refs/heads/main"
 
 ## Pushing to a Remote
 
-To push local changes to a remote repository, use [`push()`](../api/classes/Remote.md#push).
+To push local changes to a remote repository, use [`push()`](../reference/classes/Remote.md#push).
 
 ```ts
 import { openRepository } from 'es-git';

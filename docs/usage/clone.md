@@ -1,6 +1,6 @@
 # Cloning a Repository
 
-Use [`cloneRepository()`](../api/functions/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
+Use [`cloneRepository()`](../reference/functions/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
 `user@server:path/to/repo.git`).
 
 ```ts

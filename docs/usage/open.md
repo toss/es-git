@@ -1,6 +1,6 @@
 # Opening a Repository
 
-To open a locally stored repository, use [`openRepository()`](../api/functions/openRepository.md).
+To open a locally stored repository, use [`openRepository()`](../reference/functions/openRepository.md).
 
 ```ts
 import { openRepository } from 'es-git';
