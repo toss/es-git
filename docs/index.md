@@ -11,7 +11,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: Usage
-      link: /usage/open
+      link: /usage/repository
     - theme: alt
       text: Reference
       link: /reference/globals

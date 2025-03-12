@@ -1,4 +1,16 @@
-# Cloning a Repository
+# Repository
+
+## Opening a Repository
+
+To open a locally stored repository, use [`openRepository()`](../reference/functions/openRepository.md).
+
+```ts
+import { openRepository } from 'es-git';
+
+const repo = await openRepository('/path/to/repo');
+```
+
+## Cloning a Repository
 
 Use [`cloneRepository()`](../reference/functions/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
 `user@server:path/to/repo.git`).
@@ -9,7 +21,7 @@ import { cloneRepository } from 'es-git';
 const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone');
 ```
 
-## Authentication
+### Authentication
 
 When cloning a repository, you can configure the `credential` option to authenticate.
 

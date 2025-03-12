@@ -25,7 +25,7 @@ function nav(): DefaultTheme.NavItem[] {
   return [
     { text: 'Home', link: '/' },
     { text: 'Getting Started', link: '/getting-started' },
-    { text: 'Usage', link: '/usage/open' },
+    { text: 'Usage', link: '/usage/repository' },
   ];
 }
 
@@ -38,8 +38,7 @@ function sidebar(): DefaultTheme.Sidebar {
     {
       text: 'Usage',
       items: [
-        { text: 'Opening a Repository', link: '/usage/open' },
-        { text: 'Cloning a Repository', link: '/usage/clone' },
+        { text: 'Repository', link: '/usage/repository' },
         { text: 'Remotes', link: '/usage/remote' },
         { text: 'Commit History', link: '/usage/history' },
         { text: 'Commit Changes', link: '/usage/commit' },

@@ -25,7 +25,7 @@ function nav(): DefaultTheme.NavItem[] {
   return [
     { text: '홈', link: '/ko' },
     { text: '시작하기', link: '/ko/getting-started' },
-    { text: '사용법', link: '/ko/usage/open' },
+    { text: '사용법', link: '/ko/usage/repository' },
   ];
 }
 
@@ -38,8 +38,7 @@ function sidebar(): DefaultTheme.Sidebar {
     {
       text: '사용법',
       items: [
-        { text: '리포지토리 열기', link: '/ko/usage/open' },
-        { text: '리포지토리 복제하기', link: '/ko/usage/clone' },
+        { text: '리포지토리', link: '/ko/usage/repository' },
         { text: '리모트', link: '/ko/usage/remote' },
         { text: '커밋 히스토리', link: '/ko/usage/history' },
         { text: '커밋하기', link: '/ko/usage/commit' },

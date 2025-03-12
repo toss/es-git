@@ -1,4 +1,16 @@
-# 리포지토리 클론 하기
+# 리포지토리
+
+## 리포지토리 열기
+
+로컬에 저장된 리포지토리를 열기 위해 [`openRepository()`](../reference/functions/openRepository.md)를 사용해요.
+
+```ts
+import { openRepository } from 'es-git';
+
+const repo = await openRepository('/path/to/repo');
+```
+
+## 리포지토리 클론하기
 
 기존 리포지토리를 클론하기 위해 [`cloneRepository()`](../reference/functions/cloneRepository.md)를 사용할 수 있어요. 리모트에서 클론하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
 SSH 프로토콜을 사용할 수 있어요.
@@ -9,7 +21,7 @@ import { cloneRepository } from 'es-git';
 const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone');
 ```
 
-## 인증
+### 인증하기
 
 리포지토리를 클론할 때 `credential` 옵션을 설정해 인증이 가능해요.
 

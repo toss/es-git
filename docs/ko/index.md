@@ -12,7 +12,7 @@ hero:
       link: /ko/getting-started
     - theme: alt
       text: 사용법
-      link: /ko/usage/open
+      link: /ko/usage/repository
     - theme: alt
       text: 레퍼런스
       link: /ko/reference/globals
