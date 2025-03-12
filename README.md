@@ -23,8 +23,8 @@ console.log(head); // "refs/heads/main"
 
 ## Documentation
 
-- [Usage](https://es-git.slash.page/usage/open)
-- [Reference](https://es-git.slash.page/reference/globals)
+- [Usage](https://es-git.slash.page/usage/repository.html)
+- [Reference](https://es-git.slash.page/reference/globals.html)
 
 ## License
 
