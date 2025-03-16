@@ -72,12 +72,12 @@ export type DeltaType = 'Unmodified' | 'Added' | 'Deleted' | 'Modified' | 'Renam
 /**
  * Possible output formats for diff data.
  *
- * - `DiffFormat.Patch`: Full `git diff` (default)
- * - `DiffFormat.PatchHeader` : Just the headers of the patch
- * - `DiffFormat.Raw` : Like `git diff --raw` the headers of the patch
- * - `DiffFormat.NameOnly` : Like `git diff --name-only`
- * - `DiffFormat.NameStatus` : Like `git diff --name-status`
- * - `DiffFormat.PatchId` : `git diff` as used by `git patch-id`
+ * - `Patch`: Full `git diff` (default)
+ * - `PatchHeader` : Just the headers of the patch
+ * - `Raw` : Like `git diff --raw` the headers of the patch
+ * - `NameOnly` : Like `git diff --name-only`
+ * - `NameStatus` : Like `git diff --name-status`
+ * - `PatchId` : `git diff` as used by `git patch-id`
  */
 export type DiffFormat = 'Patch' | 'PatchHeader' | 'Raw' | 'NameOnly' | 'NameStatus' | 'PatchId';
 export interface DiffPrintOptions {
