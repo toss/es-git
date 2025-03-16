@@ -777,6 +777,29 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
  *
  * This will use the options configured so far to clone the specified URL
  * into the specified local path.
+ *
+ * @category repository
+ *
+ * @signature
+ * ```ts
+ * function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | null, signal?: AbortSignal | null): Promise<Repository>;
+ * ```
+ *
+ * @param {string} url - Remote URL for repository.
+ * @param {string} path - Local path to clone repository.
+ * @param {RepositoryCloneOptions|undefined|null} [options] - Clone options for repository.
+ * @param {AbortSignal|undefined|null} [signal] - Abort signal.
+ * @returns Repository instance
+ *
+ * @example
+ *
+ * Example1
+ *
+ * ```ts
+ * import { cloneRepository } from 'es-git';
+ *
+ * const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone');
+ * ```
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 /** Flags for the revparse. */
@@ -1240,7 +1263,14 @@ export declare class GitObject {
   peel(objType: ObjectType): GitObject
   /** Recursively peel an object until a commit is found. */
   peelToCommit(): Commit
-  /** Recursively peel an object until a blob is found. */
+  /**
+   * Recursively peel an object until a blob is found.
+   *
+   * @signature
+   * test
+   *
+   * @returns peeled blob
+   */
   peelToBlob(): Blob
   /**
    * Attempt to view this object as a commit.
