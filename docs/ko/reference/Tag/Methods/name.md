@@ -1,6 +1,6 @@
 # name
 
-Get the name of a tag.
+태그의 이름을 가져와요.
 
 ## 시그니처
 
@@ -16,7 +16,7 @@ class Tag {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">Name of tag.</p>
+    <p class="param-description">태그의 이름이에요.</p>
   </li>
 </ul>
 
@@ -26,6 +26,6 @@ class Tag {
   <li class="param-li param-li-root">
     <span class="param-type">Error</span>
     <br>
-    <p class="param-description">Throws error if it is not valid utf8.</p>
+    <p class="param-description">유효한 UTF-8 형식이 아닐 경우 에러를 발생시켜요.</p>
   </li>
 </ul>

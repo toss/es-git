@@ -1,10 +1,10 @@
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isNotNil } from 'es-toolkit';
 import type { DeclarationReflection, ParameterReflection, Reflection, SignatureReflection, SomeType } from 'typedoc';
 import * as typedoc from 'typedoc';
-import fs from 'node:fs/promises';
-import { isNotNil } from 'es-toolkit';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(dirname, '..');

@@ -1,6 +1,6 @@
 # peel
 
-Recursively peel a tag until a non tag Git object is found.
+태그가 아닌 Git 개체가 나올 때까지 태그를 재귀적으로 벗겨내요.
 
 ## 시그니처
 
@@ -16,6 +16,6 @@ class Tag {
   <li class="param-li param-li-root">
     <span class="param-type">GitObject</span>
     <br>
-    <p class="param-description">Git object for this tag.</p>
+    <p class="param-description">이 태그의 Git 개체를 반환해요.</p>
   </li>
 </ul>

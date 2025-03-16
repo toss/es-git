@@ -1,6 +1,6 @@
 # id
 
-Get the id (SHA1) of a repository tag.
+리포지토리 태그의 id(SHA1)를 가져와요.
 
 ## 시그니처
 
@@ -16,6 +16,6 @@ class Tag {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">ID(SHA1) of this tag.</p>
+    <p class="param-description">이 태그의 ID(SHA1) 값이에요.</p>
   </li>
 </ul>

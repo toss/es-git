@@ -1,6 +1,6 @@
 # id
 
-Get the id (SHA1) of a repository object.
+리포지토리 개체의 ID(SHA1)를 반환해요.
 
 ## 시그니처
 
@@ -16,6 +16,6 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">ID(SHA1) of a repository object.</p>
+    <p class="param-description">리포지토리 개체의 ID(SHA1) 값이에요.</p>
   </li>
 </ul>

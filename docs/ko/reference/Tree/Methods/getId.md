@@ -1,6 +1,6 @@
 # getId
 
-Lookup a tree entry by SHA value.
+SHA 값을 이용해 트리 항목을 찾아와요.
 
 ## 시그니처
 
@@ -16,7 +16,7 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-name">id</span><span class="param-required">필수</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
-    <p class="param-description">SHA value.</p>
+    <p class="param-description">트리 항목의 SHA 값이에요.</p>
   </li>
 </ul>
 
@@ -26,6 +26,6 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-type">null | TreeEntry</span>
     <br>
-    <p class="param-description">Tree entry with the given ID(SHA1).</p>
+    <p class="param-description">지정된 SHA(ID)를 갖는 트리 항목이에요. 해당 ID를 가진 항목이 없다면 <code>null</code>이 반환돼요.</p>
   </li>
 </ul>

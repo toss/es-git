@@ -1,6 +1,6 @@
 # name
 
-Get the filename of a tree entry.
+트리 항목(tree entry)의 파일 이름을 반환해요.
 
 ## 시그니처
 
@@ -16,7 +16,7 @@ class TreeEntry {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">The filename of a tree entry.</p>
+    <p class="param-description">트리 항목의 파일 이름이에요.</p>
   </li>
 </ul>
 
@@ -26,6 +26,6 @@ class TreeEntry {
   <li class="param-li param-li-root">
     <span class="param-type">Error</span>
     <br>
-    <p class="param-description">Throws error if the name is not valid utf-8.</p>
+    <p class="param-description">파일 이름이 올바른 UTF-8 형식이 아닐 때 오류를 발생시켜요.</p>
   </li>
 </ul>

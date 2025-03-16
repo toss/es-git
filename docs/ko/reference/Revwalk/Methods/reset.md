@@ -1,9 +1,8 @@
 # reset
 
-Reset a revwalk to allow re-configuring it.
+Revwalk를 재구성할 수 있도록 리셋 해요.
 
-The revwalk is automatically reset when iteration of its commits
-completes.
+Iteration)이 완료되면 Revwalk는 자동으로 리셋 돼요.
 
 ## 시그니처
 

@@ -1,6 +1,6 @@
 import path from 'node:path';
-import type { DefaultTheme } from 'vitepress';
 import glob from 'fast-glob';
+import type { DefaultTheme } from 'vitepress';
 
 export function getReferenceSidebarItems(docsRoot: string, lang?: string) {
   const files = glob.sync('**/*.md', {

@@ -1,6 +1,6 @@
 # asObject
 
-Casts this Tree to be usable as an `GitObject`.
+이 트리를 `GitObject` 타입으로 변환해 사용할 수 있게 해요.
 
 ## 시그니처
 
@@ -16,6 +16,6 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-type">GitObject</span>
     <br>
-    <p class="param-description">Git object.</p>
+    <p class="param-description">Git 개체예요.</p>
   </li>
 </ul>

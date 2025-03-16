@@ -1,6 +1,6 @@
 # len
 
-Get the number of entries listed in this tree.
+트리에 포함된 항목(entry)의 개수를 반환해요.
 
 ## 시그니처
 
@@ -16,6 +16,6 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-type">bigint</span>
     <br>
-    <p class="param-description">The number of entries listed in this tree.</p>
+    <p class="param-description">현재 트리에 포함된 항목들의 개수예요.</p>
   </li>
 </ul>
