@@ -5,18 +5,17 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::ops::Deref;
 
-#[napi]
-/// An enumeration all possible kinds objects may have.
+#[napi(string_enum)]
+/// - `Any` : Any kind of git object
+/// - `Commit` : An object which corresponds to a git commit
+/// - `Tree` : An object which corresponds to a git tree
+/// - `Blob` : An object which corresponds to a git blob
+/// - `Tag` : An object which corresponds to a git tag
 pub enum ObjectType {
-  /// Any kind of git object
   Any,
-  /// An object which corresponds to a git commit
   Commit,
-  /// An object which corresponds to a git tree
   Tree,
-  /// An object which corresponds to a git blob
   Blob,
-  /// An object which corresponds to a git tag
   Tag,
 }
 
@@ -62,7 +61,6 @@ impl Deref for ObjectInner {
 
 #[napi]
 /// A class to represent a git [object][1].
-/// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct GitObject {
@@ -73,6 +71,16 @@ pub struct GitObject {
 impl GitObject {
   #[napi]
   /// Get the id (SHA1) of a repository object.
+  ///
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   id(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns ID(SHA1) of a repository object.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
@@ -80,7 +88,15 @@ impl GitObject {
   #[napi(js_name = "type")]
   /// Get the object type of object.
   ///
-  /// If the type is unknown, then `null` is returned.
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   type(): ObjectType | null;
+  /// }
+  /// ```
+  ///
+  /// @returns If the type is unknown, then `null` is returned.
   pub fn kind(&self) -> Option<ObjectType> {
     self.inner.kind().map(|x| x.into())
   }
@@ -88,9 +104,19 @@ impl GitObject {
   #[napi]
   /// Recursively peel an object until an object of the specified type is met.
   ///
-  /// If you pass `Any` as the target type, then the object will be
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   peel(objType: ObjectType): GitObject;
+  /// }
+  /// ```
+  ///
+  /// @param {ObjectType} objType - If you pass `Any` as the target type, then the object will be
   /// peeled until the type changes (e.g. a tag will be chased until the
   /// referenced object is no longer a tag).
+  ///
+  /// @returns Git object which recursively peeled.
   pub fn peel(&self, obj_type: ObjectType) -> crate::Result<Self> {
     let git_object = self.inner.peel(obj_type.into())?;
     let object = Self {
@@ -101,6 +127,16 @@ impl GitObject {
 
   #[napi]
   /// Recursively peel an object until a commit is found.
+  ///
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   peelToCommit(): Commit;
+  /// }
+  /// ```
+  ///
+  /// @returns Git commit.
   pub fn peel_to_commit(&self) -> crate::Result<Commit> {
     let git_commit = self.inner.peel_to_commit()?;
     let commit = Commit {
@@ -111,6 +147,16 @@ impl GitObject {
 
   #[napi]
   /// Recursively peel an object until a blob is found.
+  ///
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   peelToBlob(): Blob;
+  /// }
+  /// ```
+  ///
+  /// @returns Git blob.
   pub fn peel_to_blob(&self, env: Env, this: Reference<GitObject>) -> crate::Result<Blob> {
     let blob = this.share_with(env, |obj| {
       obj
@@ -127,7 +173,15 @@ impl GitObject {
   #[napi]
   /// Attempt to view this object as a commit.
   ///
-  /// Returns `null` if the object is not actually a commit.
+  /// @category Object/Methods
+  /// @signature
+  /// ```ts
+  /// class GitObject {
+  ///   asCommit(): Commit | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if the object is not actually a commit.
   pub fn as_commit(&self) -> Option<Commit> {
     self.inner.as_commit().map(|x| Commit {
       inner: CommitInner::Owned(x.clone()),
@@ -140,7 +194,16 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Returns `null` if the object does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   findObject(oid: string): GitObject | null;
+  /// }
+  /// ```
+  ///
+  /// @param {string} oid - Git object ID(SHA1) to lookup.
+  /// @returns Git object. Returns `null` if the object does not exist.
   pub fn find_object(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<GitObject> {
     self.get_object(this, env, oid).ok()
   }
@@ -148,7 +211,17 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Throws error if the object does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getObject(oid: string): GitObject;
+  /// }
+  /// ```
+  ///
+  /// @param {string} oid - Git object ID(SHA1) to lookup.
+  /// @returns Git object.
+  /// @throws Throws error if the object does not exist.
   pub fn get_object(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<GitObject> {
     let object = this.share_with(env, |repo| {
       repo

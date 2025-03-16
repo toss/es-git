@@ -15,7 +15,7 @@ hero:
       link: /ko/usage/repository
     - theme: alt
       text: 레퍼런스
-      link: /ko/reference/globals
+      link: /ko/reference/Repository/openRepository
 
 features:
   - title: 쉬운 Git 통합

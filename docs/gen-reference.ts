@@ -1,16 +1,13 @@
 import assert from 'node:assert';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type {
-  CommentTag,
-  DeclarationReflection,
-  ParameterReflection,
-  ProjectReflection,
-  Reflection,
-  SignatureReflection,
-  SomeType,
-} from 'typedoc';
+import type { DeclarationReflection, ParameterReflection, Reflection, SignatureReflection, SomeType } from 'typedoc';
 import * as typedoc from 'typedoc';
+import fs from 'node:fs/promises';
+import { isNotNil } from 'es-toolkit';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.join(dirname, '..');
 
 const languages = ['en', 'ko'] as const;
 type Language = (typeof languages)[number];
@@ -36,11 +33,23 @@ const texts = {
   },
   returns: {
     en: 'Returns',
-    ko: '반환값',
+    ko: '반환 값',
   },
   example: {
     en: 'Examples',
-    ko: '예시',
+    ko: '예제',
+  },
+  required: {
+    en: 'required',
+    ko: '필수',
+  },
+  default: {
+    en: 'Default',
+    ko: '기본값',
+  },
+  errors: {
+    en: 'Errors',
+    ko: '에러',
   },
 } as const;
 
@@ -48,13 +57,73 @@ function t(name: keyof typeof texts): string {
   return texts[name][lang];
 }
 
-function ref(text: string, target: number): string {
-  const a = `\x02${text}:${target}\x02`;
-  return a;
+function indent(text: string, count = 1): string {
+  const space = '  '.repeat(count);
+  return text
+    .split('\n')
+    .map(line => `${space}${line}`)
+    .join('\n');
 }
 
-function code(text: string): string {
-  return `\`${text}\``;
+function htmlEscape(text = ''): string {
+  return text
+    .replaceAll(/&/g, '&amp;')
+    .replaceAll(/</g, '&lt;')
+    .replaceAll(/>/g, '&gt;')
+    .replaceAll(/"/g, '&quot;')
+    .replaceAll(/'/g, '&#39;')
+    .replaceAll(/\n/g, '<br>')
+    .replaceAll(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+function paramULHtml(children: string | string[]) {
+  const childrenHtml = (Array.isArray(children) ? children : [children]).join('\n');
+  return ['<ul class="param-ul">', indent(childrenHtml), '</ul>'].join('\n');
+}
+
+interface ParamLIHtmlOptions {
+  name?: string;
+  type: string;
+  /** @defaultValue false */
+  required?: boolean;
+  defaultValue?: string;
+  description?: string;
+  children?: string;
+  /** @defaultValue false */
+  root?: boolean;
+}
+
+function paramLIHtml({
+  name,
+  type,
+  required = false,
+  defaultValue,
+  description,
+  children,
+  root = false,
+}: ParamLIHtmlOptions) {
+  const separator = '&nbsp;·&nbsp;';
+  const labels = [
+    required ? `<span class="param-required">${t('required')}</span>` : null,
+    `<span class="param-type">${htmlEscape(type)}</span>`,
+    defaultValue != null ? `<span class="param-default">${htmlEscape(defaultValue)}</span>` : null,
+  ]
+    .filter(isNotNil)
+    .join(separator);
+  const title = [name != null ? `<span class="param-name">${htmlEscape(name)}</span>` : null, labels]
+    .filter(isNotNil)
+    .join('');
+
+  return [
+    `<li class="param-li${root ? ' param-li-root' : ''}">`,
+    indent(title),
+    indent('<br>'),
+    description != null ? indent(`<p class="param-description">${htmlEscape(description)}</p>`) : null,
+    children != null ? indent(children) : null,
+    '</li>',
+  ]
+    .filter(isNotNil)
+    .join('\n');
 }
 
 function genSummary(reflection: Reflection): string | undefined {
@@ -78,12 +147,8 @@ function genType(type?: SomeType): string {
     case 'literal':
       return String(type.value);
     case 'reference': {
-      const reflection = type.reflection;
-      if (reflection != null) {
-        return ref(type.name, reflection.id);
-      }
-      if (type.typeArguments == null || type.typeArguments.length === 0) {
-        return `${type.name}`;
+      if (type.reflection != null || type.typeArguments == null || type.typeArguments.length === 0) {
+        return type.name;
       }
       return `${type.name}<${type.typeArguments.map(genType).join(', ')}>`;
     }
@@ -116,10 +181,45 @@ function genType(type?: SomeType): string {
   }
 }
 
-function genParameter(reflection: ParameterReflection): string {
-  const name = reflection.name;
-  const type = genType(reflection.type);
-  return `- ${code(name)} (${code(type)}): ${genSummary(reflection)}`;
+function isDeclarationReflection(reflection: Reflection): reflection is DeclarationReflection {
+  return reflection.variant === 'declaration';
+}
+
+function getChildReflectionOfParameter(type?: SomeType): Reflection | undefined {
+  if (type == null) {
+    return undefined;
+  }
+  const child =
+    type.type === 'reference'
+      ? type.reflection
+      : type.type === 'union'
+        ? type.types.find(x => x.type === 'reference')?.reflection
+        : undefined;
+  const kinds = [typedoc.ReflectionKind.Enum, typedoc.ReflectionKind.Interface, typedoc.ReflectionKind.TypeAlias];
+  if (child != null && kinds.includes(child.kind)) {
+    return child;
+  }
+  return undefined;
+}
+
+function genParameter(reflection: ParameterReflection | DeclarationReflection, root = false): string {
+  const child = getChildReflectionOfParameter(reflection.type);
+  const children =
+    child != null && isDeclarationReflection(child) ? (child.children?.filter(isDeclarationReflection) ?? []) : [];
+  const html = paramLIHtml({
+    name: reflection.name,
+    type: genType(reflection.type),
+    required: !reflection.flags.isOptional,
+    description: genSummary(reflection)?.replaceAll('\n', ' '),
+    children:
+      child != null && child.kind === typedoc.ReflectionKind.TypeAlias
+        ? `<p class="param-description">${htmlEscape(genSummary(child))}</p>`
+        : children.length > 0
+          ? paramULHtml(children.map(x => genParameter(x)))
+          : undefined,
+    root,
+  });
+  return html;
 }
 
 function genParameters(reflection: SignatureReflection): string | undefined {
@@ -127,7 +227,7 @@ function genParameters(reflection: SignatureReflection): string | undefined {
   if (parameters == null || parameters.length === 0) {
     return undefined;
   }
-  return [`### ${t('parameters')}`, '', ...parameters.map(genParameter)].join('\n');
+  return [`### ${t('parameters')}`, '', paramULHtml(parameters.map(x => genParameter(x, true)))].join('\n');
 }
 
 function genReturns(reflection: SignatureReflection): string | undefined {
@@ -135,9 +235,48 @@ function genReturns(reflection: SignatureReflection): string | undefined {
   if (returnsTag == null) {
     return undefined;
   }
+  const child = getChildReflectionOfParameter(reflection.type);
+  const children =
+    child != null && isDeclarationReflection(child) ? (child.children?.filter(isDeclarationReflection) ?? []) : [];
   const returnsText = returnsTag.content.map(x => x.text).join(' ');
-  const type = genType(reflection.type);
-  return [`### ${t('returns')}`, '', type === 'void' ? returnsText : `(${code(type)}): ${returnsText}`].join('\n');
+  return [
+    `### ${t('returns')}`,
+    '',
+    paramULHtml(
+      paramLIHtml({
+        required: false,
+        type: genType(reflection.type),
+        description: returnsText,
+        children:
+          child != null && child.kind === typedoc.ReflectionKind.TypeAlias
+            ? `<p class="param-description">${htmlEscape(genSummary(child))}</p>`
+            : children.length > 0
+              ? paramULHtml(children.map(x => genParameter(x)))
+              : undefined,
+        root: true,
+      })
+    ),
+  ].join('\n');
+}
+
+function genErrors(reflection: SignatureReflection): string | undefined {
+  const throwsTag = reflection.comment?.blockTags?.find(x => x.tag === '@throws');
+  if (throwsTag == null) {
+    return undefined;
+  }
+  const errorsText = throwsTag.content.map(x => x.text).join(' ');
+  return [
+    `### ${t('errors')}`,
+    '',
+    paramULHtml(
+      paramLIHtml({
+        required: false,
+        type: 'Error',
+        description: errorsText,
+        root: true,
+      })
+    ),
+  ].join('\n');
 }
 
 function genExample(reflection: SignatureReflection): string | undefined {
@@ -149,12 +288,7 @@ function genExample(reflection: SignatureReflection): string | undefined {
   return [`## ${t('example')}`, '', exampleText].join('\n');
 }
 
-function genBorder(): string {
-  return '---';
-}
-
-function genFunctionDoc(reflection: DeclarationReflection): string {
-  assert(reflection.kind === typedoc.ReflectionKind.Function);
+function genDoc(reflection: DeclarationReflection): string {
   const sig = reflection.signatures?.[0];
   assert(sig != null);
 
@@ -162,58 +296,79 @@ function genFunctionDoc(reflection: DeclarationReflection): string {
   const signature = genSignature(sig);
   const parameters = genParameters(sig);
   const returns = genReturns(sig);
+  const errors = genErrors(sig);
   const example = genExample(sig);
 
-  return [
-    `# ${reflection.name}`,
-    summary,
-    genBorder(),
-    signature,
-    parameters,
-    returns,
-    example != null ? [genBorder(), example] : undefined,
-  ]
+  return [`# ${reflection.name}`, summary, signature, parameters, returns, errors, example]
     .flat()
-    .filter(x => x != null)
+    .filter(isNotNil)
     .join('\n\n');
 }
 
-function genInterfaceDoc(reflection: DeclarationReflection): string {
-  assert(reflection.kind === typedoc.ReflectionKind.Interface);
-  const summary = genSummary(reflection);
-}
-
-function resolveRef(_: ProjectReflection, doc: string): string {
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
-  const regexp = /\x02(.+)\x02/g;
-  return doc.replaceAll(regexp, substring => {
-    const replaced = substring.replaceAll('\x02', '');
-    console.log(replaced);
-    return replaced;
-  });
-}
-
-function findCategory(reflection: DeclarationReflection): string | undefined {
+function findCategory(reflection: DeclarationReflection): string[] | undefined {
   const categoryTag =
     reflection.comment?.blockTags.find(x => x.tag === '@category') ||
     reflection.signatures?.[0]?.comment?.blockTags?.find(x => x.tag === '@category');
-  return categoryTag?.content.map(x => x.text).join('');
+  return categoryTag?.content
+    .map(x => x.text.trim())
+    .join('')
+    .split('/');
 }
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.join(dirname, '..');
-
-const app = await typedoc.Application.bootstrap({
-  entryPoints: [path.join(rootDir, 'index.d.ts')],
-  blockTags: ['@signature'],
-  tsconfig: path.join(rootDir, 'tsconfig.json'),
-});
-const project = await app.convert();
-if (project == null) {
-  throw new Error('cannot get project');
+function traverseReflections(children: DeclarationReflection[], callback: (reflection: DeclarationReflection) => void) {
+  for (const child of children) {
+    if (child.variant !== 'declaration') {
+      continue;
+    }
+    callback(child);
+    if (child.children != null && child.children.length > 0) {
+      traverseReflections(child.children, callback);
+    }
+  }
 }
-await app.generateJson(project, path.join(dirname, 'typedoc-generated.json'));
 
-const types = project.children!.filter(x => x.kind === typedoc.ReflectionKind.Function && x.name === 'cloneRepository');
-const doc = genFunctionDoc(types[0]!);
-console.log(resolveRef(project, doc));
+async function run() {
+  const app = await typedoc.Application.bootstrap({
+    entryPoints: [path.join(rootDir, 'index.d.ts')],
+    blockTags: ['@signature'],
+    tsconfig: path.join(rootDir, 'tsconfig.json'),
+    exclude: ['docs/**/*.ts'],
+  });
+  const project = await app.convert();
+  if (project == null) {
+    throw new Error('cannot get project');
+  }
+  await app.generateJson(project, path.join(dirname, 'typedoc-generated.json'));
+
+  const references: Array<{
+    name: string;
+    category: string[];
+    doc: string;
+  }> = [];
+
+  traverseReflections(project.children!, reflection => {
+    const category = findCategory(reflection);
+    if (category == null) {
+      return;
+    }
+    references.push({
+      name: reflection.name,
+      category,
+      doc: genDoc(reflection),
+    });
+  });
+
+  for (let i = 0; i < references.length; i += 1) {
+    const reference = references[i]!;
+    const filename =
+      inputLang === 'en'
+        ? path.join('reference', ...reference.category, `${reference.name}.md`)
+        : path.join(inputLang, 'reference', ...reference.category, `${reference.name}.md`);
+    const filepath = path.join(dirname, filename);
+    await fs.mkdir(path.dirname(filepath), { recursive: true });
+    await fs.writeFile(filepath, reference.doc, 'utf8');
+    console.log(`[${i + 1}/${references.length}] ${filename} generated`);
+  }
+}
+
+await run();

@@ -21,46 +21,70 @@ export interface CommitOptions {
   committer?: SignaturePayload
   parents?: Array<string>
 }
+/**
+ * - `DiffFlags.Binary` : File(s) treated as binary data.
+ * - `DiffFlags.NotBinary` : File(s) treated as text data.
+ * - `DiffFlags.ValidId` : `id` value is known correct.
+ * - `DiffFlags.Exists` : File exists at this side of the delta.
+ */
 export enum DiffFlags {
-  /** File(s) treated as binary data. */
   Binary = 1,
-  /** File(s) treated as text data. */
   NotBinary = 2,
-  /** `id` value is known correct. */
   ValidId = 4,
-  /** File exists at this side of the delta. */
   Exists = 8
 }
-/** Check diff flags contains given flags. */
+/**
+ * Check diff flags contains given flags.
+ *
+ * @category Diff
+ * @signature
+ * ```ts
+ * function diffFlagsContains(source: number, target: number): boolean;
+ * ```
+ *
+ * @param {number} source - Source flags.
+ * @param {number} target - Target flags.
+ * @returns Returns `true` is source flags contains target flags.
+ *
+ * @example
+ * ```ts
+ * import { DiffDelta, DiffFlags, diffFlagsContains } from 'es-git';
+ *
+ * const delta: DiffDelta;
+ * console.assert(diffFlagsContains(delta.flags(), DiffFlags.Binary | DiffFlags.ValidId));
+ * ```
+ */
 export declare function diffFlagsContains(source: number, target: number): boolean
-/** What type of change is described by a `DiffDelta`? */
-export type DeltaType = /** No changes */
-'Unmodified' | /** Entry does not exist in an old version */
-'Added' | /** Entry does not exist in a new version */
-'Deleted' | /** Entry content changed between old and new */
-'Modified' | /** Entry was renamed between old and new */
-'Renamed' | /** Entry was copied from another old entry */
-'Copied' | /** Entry is ignored item in workdir */
-'Ignored' | /** Entry is untracked item in workdir */
-'Untracked' | /** Type of entry changed between old and new */
-'Typechange' | /** Entry is unreadable */
-'Unreadable' | /** Entry in the index is conflicted */
-'Conflicted';
-/** Possible output formats for diff data. */
-export type DiffFormat = /** full `git diff` (default) */
-'Patch' | /** just the headers of the patch */
-'PatchHeader' | /** like `git diff --raw` */
-'Raw' | /** like `git diff --name-only` */
-'NameOnly' | /** like `git diff --name-status` */
-'NameStatus' | /** `git diff` as used by `git patch-id` */
-'PatchId';
+/**
+ * - `Unmodified` : No changes.
+ * - `Added` : Entry does not exist in an old version.
+ * - `Deleted` : Entry does not exist in a new version.
+ * - `Modified` : Entry content changed between old and new.
+ * - `Renamed` : Entry was renamed between old and new.
+ * - `Copied` : Entry was copied from another old entry.
+ * - `Ignored` : Entry is ignored item in workdir.
+ * - `Untracked` : Entry is untracked item in workdir.
+ * - `Typechange` : Type of entry changed between old and new.
+ * - `Unreadable` : Entry is unreadable.
+ * - `Conflicted` : Entry in the index is conflicted.
+ */
+export type DeltaType = 'Unmodified' | 'Added' | 'Deleted' | 'Modified' | 'Renamed' | 'Copied' | 'Ignored' | 'Untracked' | 'Typechange' | 'Unreadable' | 'Conflicted';
+/**
+ * Possible output formats for diff data.
+ *
+ * - `DiffFormat.Patch`: Full `git diff` (default)
+ * - `DiffFormat.PatchHeader` : Just the headers of the patch
+ * - `DiffFormat.Raw` : Like `git diff --raw` the headers of the patch
+ * - `DiffFormat.NameOnly` : Like `git diff --name-only`
+ * - `DiffFormat.NameStatus` : Like `git diff --name-status`
+ * - `DiffFormat.PatchId` : `git diff` as used by `git patch-id`
+ */
+export type DiffFormat = 'Patch' | 'PatchHeader' | 'Raw' | 'NameOnly' | 'NameStatus' | 'PatchId';
 export interface DiffPrintOptions {
   format?: DiffFormat
 }
 /** Valid modes for index and tree entries. */
-export type FileMode = 'Unreadable' | 'Tree' | 'Blob' | /** Group writable blob. Obsolete mode kept for compatibility reasons */
-'BlobGroupWritable' | 'BlobExecutable' | 'Link' | 'Commit';
-/** Describing options about how the diff should be executed. */
+export type FileMode = 'Unreadable' | 'Tree' | 'Blob' | 'BlobGroupWritable' | 'BlobExecutable' | 'Link' | 'Commit';
 export interface DiffOptions {
   /** Flag indicating whether the sides of the diff will be reversed. */
   reverse?: boolean
@@ -82,7 +106,7 @@ export interface DiffOptions {
   /**
    * Event with `includeTypechange`, the tree returned generally shows a
    * deleted blob. This flag correctly labels the tree transitions as a
-   * typechange record with the `new_file`'s mode set to tree.
+   * typechange record with the `newFile`'s mode set to tree.
    *
    * Note that the tree SHA will not be available.
    */
@@ -226,10 +250,8 @@ export interface IndexEntry {
    * (`0x2F`). There are no terminating or internal NUL characters, and no
    * trailing slashes. Most of the time, paths will be valid utf-8 — but
    * not always. For more information on the path storage format, see
-   * [these git docs][git-index-docs]. Note that libgit2 will take care of
-   * handling the prefix compression mentioned there.
-   *
-   * [git-index-docs]: https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124
+   * [these git docs](https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124).
+   * Note that libgit2 will take care of handling the prefix compression mentioned there.
    */
   path: Buffer
 }
@@ -272,12 +294,14 @@ export interface IndexAddAllOptions {
    */
   onMatch?: (args: IndexOnMatchCallbackArgs) => number
 }
-export type IndexStage = /** Match any index stage. */
-'Any' | /** A normal staged file in the index. */
-'Normal' | /** The ancestor side of a conflict. */
-'Ancestor' | /** The "ours" side of a conflict. */
-'Ours' | /** The "theirs" side of a conflict. */
-'Theirs';
+/**
+ * - `Any` : Match any index stage.
+ * - `Normal` : A normal staged file in the index.
+ * - `Ancestor` : The ancestor side of a conflict.
+ * - `Ours` : The "ours" side of a conflict.
+ * - `Theirs` : The "theirs" side of a conflict.
+ */
+export type IndexStage = 'Any' | 'Normal' | 'Ancestor' | 'Ours' | 'Theirs';
 export interface IndexRemoveOptions {
   stage?: IndexStage
 }
@@ -298,52 +322,110 @@ export interface IndexUpdateAllOptions {
    */
   onMatch?: (args: IndexOnMatchCallbackArgs) => number
 }
-/** An enumeration all possible kinds objects may have. */
-export enum ObjectType {
-  /** Any kind of git object */
-  Any = 0,
-  /** An object which corresponds to a git commit */
-  Commit = 1,
-  /** An object which corresponds to a git tree */
-  Tree = 2,
-  /** An object which corresponds to a git blob */
-  Blob = 3,
-  /** An object which corresponds to a git tag */
-  Tag = 4
-}
+/**
+ * - `Any` : Any kind of git object
+ * - `Commit` : An object which corresponds to a git commit
+ * - `Tree` : An object which corresponds to a git tree
+ * - `Blob` : An object which corresponds to a git blob
+ * - `Tag` : An object which corresponds to a git tag
+ */
+export type ObjectType = 'Any' | 'Commit' | 'Tree' | 'Blob' | 'Tag';
 /**
  * Check if given string is valid Oid.
  *
- * Returns `false` if the string is empty, is longer than 40 hex
+ * @category Oid
+ * @signature
+ * ```ts
+ * function isValidOid(value: string): boolean;
+ * ```
+ *
+ * @param {string} value - String to check if is valid Oid.
+ * @returns Returns `false` if the string is empty, is longer than 40 hex
  * characters, or contains any non-hex characters.
  */
 export declare function isValidOid(value: string): boolean
-/** Test if this Oid is all zeros. */
+/**
+ * Test if this Oid is all zeros.
+ *
+ * @category Oid
+ * @signature
+ * ```ts
+ * function isZeroOid(value: string): boolean;
+ * ```
+ *
+ * @param {string} value - String to check if is zero Oid.
+ * @returns Returns `true` if the string is zero Oid.
+ * @example
+ * ```ts
+ * import { zeroOid, isZeroOid } from 'es-git';
+ *
+ * console.assert(isZeroOid(zeroOid());
+ * ```
+ */
 export declare function isZeroOid(value: string): boolean
-/** Creates an all zero Oid structure. */
+/**
+ * Creates an all zero Oid structure.
+ *
+ * @category Oid
+ * @signature
+ * ```ts
+ * function zeroOid(): string;
+ * ```
+ *
+ * @returns Zero Oid string.
+ */
 export declare function zeroOid(): string
 /**
  * Hashes the provided data as an object of the provided type, and returns
  * an Oid corresponding to the result. This does not store the object
  * inside any object database or repository.
+ *
+ * @category Oid
+ * @signature
+ * ```ts
+ * function hashObjectOid(objType: ObjectType, bytes: Buffer): string;
+ * ```
+ *
+ * @param {ObjectType} objType - Git object type.
+ * @param {Buffer} bytes - Data to hashed.
+ * @returns Hashed string.
  */
 export declare function hashObjectOid(objType: ObjectType, bytes: Buffer): string
 /**
  * Hashes the content of the provided file as an object of the provided type,
  * and returns an Oid corresponding to the result. This does not store the object
  * inside any object database or repository.
+ *
+ * @category Oid
+ * @signature
+ * ```ts
+ * function hashFileOid(objType: ObjectType, path: string): string;
+ * ```
+ *
+ * @param {ObjectType} objType - Git object type.
+ * @param {string} path - File path to make hash.
+ * @returns Hashed string.
  */
 export declare function hashFileOid(objType: ObjectType, path: string): string
-/** An enumeration of all possible kinds of references. */
-export type ReferenceType = /** A reference which points at an object id. */
-'Direct' | /** A reference which points at another reference. */
-'Symbolic';
+/**
+ * - `Direct` : A reference which points at an object id.
+ * - `Symbolic` : A reference which points at another reference.
+ */
+export type ReferenceType = 'Direct' | 'Symbolic';
 /**
  * Ensure the reference name is well-formed.
  *
  * Validation is performed as if `ReferenceFormat.AllowOnelevel`
- * was given to `normalizeReferenceName`
- * No normalization is performed, however.
+ * was given to `normalizeReferenceName`  No normalization is performed, however.
+ *
+ * @category Reference
+ * @signature
+ * ```ts
+ * function isValidReferenceName(refname: string): boolean;
+ * ```
+ *
+ * @param {string} refname - Reference name to check if it is valid.
+ * @returns Returns `true` if reference name is valid.
  *
  * @example
  * ```ts
@@ -359,29 +441,23 @@ export type ReferenceType = /** A reference which points at an object id. */
  * ```
  */
 export declare function isValidReferenceName(refname: string): boolean
-/** Options for normalize reference name. */
+/**
+ * - `ReferenceFormat.Normal` : No particular normalization.
+ * - `ReferenceFormat.AllowOnelevel` : Control whether one-level refname are accepted
+ * (i.e., refnames that do not contain multiple `/`-separated components). Those are
+ * expected to be written only using uppercase letters and underscore
+ * (e.g. `HEAD`, `FETCH_HEAD`).
+ * - `ReferenceFormat.RefspecPattern` : Interpret the provided name as a reference pattern
+ * for a refspec (as used with remote repositories). If this option is enabled, the name
+ * is allowed to contain a single `*` in place of a full pathname
+ * components (e.g., `foo/*\/bar` but not `foo/bar*`).
+ * - `ReferenceFormat.RefspecShorthand` : Interpret the name as part of a refspec in shorthand
+ * form so the `AllowOnelevel` naming rules aren't enforced and `main` becomes a valid name.
+ */
 export enum ReferenceFormat {
-  /** No particular normalization. */
   Normal = 0,
-  /**
-   * Control whether one-level refname are accepted (i.e., refnames that
-   * do not contain multiple `/`-separated components). Those are
-   * expected to be written only using uppercase letters and underscore
-   * (e.g. `HEAD`, `FETCH_HEAD`).
-   */
   AllowOnelevel = 1,
-  /**
-   * Interpret the provided name as a reference pattern for a refspec (as
-   * used with remote repositories). If this option is enabled, the name
-   * is allowed to contain a single `*` in place of a full pathname
-   * components (e.g., `foo/*\/bar` but not `foo/bar*`).
-   */
   RefspecPattern = 2,
-  /**
-   * Interpret the name as part of a refspec in shorthand form so the
-   * `AllowOnelevel` naming rules aren't enforced and `main` becomes a
-   * valid name.
-   */
   RefspecShorthand = 4
 }
 /**
@@ -406,7 +482,16 @@ export enum ReferenceFormat {
  *    the characters '~', '^', ':', '\\', '?', '[', and '*', and the
  *    sequences ".." and "@{" which have special meaning to revparse.
  *
- * If the reference passes validation, it is returned in normalized form,
+ * @category Reference
+ * @signature
+ * ```ts
+ * function normalizeReferenceName(refname: string, format?: number): string | null;
+ * ```
+ *
+ * @param {string} refname - Reference name to normalize.
+ * @param {number} [format] - Reference format flags which used for normalize.
+ *
+ * @returns If the reference passes validation, it is returned in normalized form,
  * otherwise an `null` is returned.
  *
  * @example
@@ -449,7 +534,10 @@ export interface RenameReferenceOptions {
   force?: boolean
   logMessage?: string
 }
-/** An enumeration of the possible directions for a remote. */
+/**
+ * - `Fetch` : Fetch direction.
+ * - `Push` : Push direction.
+ */
 export type Direction = 'Fetch' | 'Push';
 /**
  * A data object to represent a git [refspec][1].
@@ -460,11 +548,36 @@ export type Direction = 'Fetch' | 'Push';
  */
 export interface Refspec {
   direction: Direction
+  /** The source specifier. */
   src: string
+  /** The destination specifier. */
   dst: string
+  /** Force update setting. */
   force: boolean
 }
-/** Options which can be specified to various fetch operations. */
+/** A interface to represent git credentials in libgit2. */
+export type Credential = {
+ type: 'Default';
+} | {
+ type: 'SSHKeyFromAgent';
+ username?: string;
+} | {
+ type: 'SSHKeyFromPath';
+ username?: string;
+ publicKeyPath?: string;
+ privateKeyPath: string;
+ passphrase?: string;
+} | {
+ type: 'SSHKey';
+ username?: string;
+ publicKey?: string;
+ privateKey: string;
+ passphrase?: string;
+} | {
+ type: 'Plain';
+ username?: string;
+ password: string;
+};
 export interface ProxyOptions {
   /**
    * Try to auto-detect the proxy from the git configuration.
@@ -479,60 +592,25 @@ export interface ProxyOptions {
    */
   url?: string
 }
-/** Configuration for how pruning is done on a fetch. */
-export type FetchPrune = /** Use the setting from the configuration */
-'Unspecified' | /** Force pruning on */
-'On' | /** Force pruning off */
-'Off';
-export type Credential = /** Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication.*/
-{
- type: 'Default';
-} | /** Create a new ssh key credential object used for querying an ssh-agent.
-The username specified is the username to authenticate.*/
-{
- type: 'SSHKeyFromAgent';
- username?: string;
-} | /** Create a new passphrase-protected ssh key credential object.*/
-{
- type: 'SSHKeyFromPath';
- username?: string;
- publicKeyPath?: string;
- privateKeyPath: string;
- passphrase?: string;
-} | /** Create a new ssh key credential object reading the keys from memory.*/
-{
- type: 'SSHKey';
- username?: string;
- publicKey?: string;
- privateKey: string;
- passphrase?: string;
-} | /** Create a new plain-text username and password credential object.*/
-{
- type: 'Plain';
- username?: string;
- password: string;
-};
-/** Automatic tag following options. */
-export type AutotagOption = /** Use the setting from the remote's configuration */
-'Unspecified' | /** Ask the server for tags pointing to objects we're already downloading */
-'Auto' | /** Don't ask for any tags beyond the refspecs */
-'None' | /** Ask for all the tags */
-'All';
 /**
- * Remote redirection settings; whether redirects to another host are
- * permitted.
- *
- * By default, git will follow a redirect on the initial request
- * (`/info/refs`), but not subsequent requests.
+ * - `Unspecified` : Use the setting from the configuration.
+ * - `On` : Force pruning on.
+ * - `Off` : Force pruning off
  */
-export type RemoteRedirect = /** Do not follow any off-site redirects at any stage of the fetch or push. */
-'None' | /**
- * Allow off-site redirects only upon the initial request. This is the
- * default.
+export type FetchPrune = 'Unspecified' | 'On' | 'Off';
+/**
+ * - `Unspecified` : Use the setting from the remote's configuration
+ * - `Auto` : Ask the server for tags pointing to objects we're already downloading
+ * - `None` : Don't ask for any tags beyond the refspecs
+ * - `All` : Ask for all the tags
  */
-'Initial' | /** Allow redirects at any stage in the fetch or push. */
-'All';
-/** Options which can be specified to various fetch operations. */
+export type AutotagOption = 'Unspecified' | 'Auto' | 'None' | 'All';
+/**
+ * - `None` : Do not follow any off-site redirects at any stage of the fetch or push.
+ * - `Initial` : Allow off-site redirects only upon the initial request. This is the default.
+ * - `All` : Allow redirects at any stage in the fetch or push.
+ */
+export type RemoteRedirect = 'None' | 'Initial' | 'All';
 export interface FetchOptions {
   credential?: Credential
   /** Set the proxy options to use for the fetch operation. */
@@ -593,6 +671,7 @@ export interface CreateRemoteOptions {
   fetchRefspec?: string
 }
 export interface FetchRemoteOptions {
+  /** Options which can be specified to various fetch operations. */
   fetch?: FetchOptions
   reflogMsg?: string
 }
@@ -696,7 +775,6 @@ export interface RepositoryInitOptions {
    */
   originUrl?: string
 }
-/** Options which can be used to configure how a repository is initialized. */
 export interface RepositoryOpenOptions {
   /**
    * If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
@@ -758,18 +836,117 @@ export interface RepositoryCloneOptions {
    * This is similar to `git clone --recursive`.
    */
   recursive?: boolean
-  /** Options which control the fetch. */
+  /** Options which can be specified to various fetch operations. */
   fetch?: FetchOptions
 }
-/** Creates a new repository in the specified folder. */
+/**
+ * Creates a new repository in the specified folder.
+ *
+ * @category Repository
+ * @signature
+ * ```ts
+ * function initRepository(
+ *   path: string,
+ *   options?: RepositoryInitOptions,
+ *   signal?: AbortSignal,
+ * ): Promise<Repository>;
+ * ```
+ *
+ * @param {string} path - Directory path to create new repository.
+ * @param {RepositoryInitOptions} [options] - Options which can be used to configure
+ * how a repository is initialized.
+ * @param {AbortSignal} [signal] - Abort signal.
+ *
+ * @returns A new repository.
+ *
+ * @example
+ *
+ * Basic example.
+ *
+ * ```ts
+ * import { initRepository } from 'es-git';
+ *
+ * const repo = await iniRepository('/path/to/repo');
+ * ```
+ *
+ * Create bare repository.
+ *
+ * ```ts
+ * import { initRepository } from 'es-git';
+ *
+ * const repo = await iniRepository('/path/to/repo.git', {
+ *   bare: true,
+ * });
+ * ```
+ */
 export declare function initRepository(path: string, options?: RepositoryInitOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
-/** Attempt to open an already-existing repository at `path`. */
+/**
+ * Attempt to open an already-existing repository at `path`.
+ *
+ * @category Repository
+ * @signature
+ * ```ts
+ * function openRepository(
+ *   path: string,
+ *   options?: RepositoryOpenOptions,
+ *   signal?: AbortSignal,
+ * ): Promise<Repository>;
+ * ```
+ *
+ * @param {string} path - Directory path to repository already-existing.
+ * @param {RepositoryOpenOptions} [options] - Options which can be used to configure
+ * how a repository is initialized.
+ * @param {AbortSignal} [signal] - Abort signal.
+ *
+ * @returns Opened repository.
+ *
+ * @example
+ *
+ * Basic example.
+ *
+ * ```ts
+ * import { openRepository } from 'es-git';
+ *
+ * const repo = await openRepository('/path/to/repo');
+ * ```
+ *
+ * Open bare repository.
+ *
+ * ```ts
+ * import { openRepository } from 'es-git';
+ *
+ * const repo = await openRepository('/path/to/repo.git', {
+ *   bare: true,
+ * });
+ * ```
+ *
+ * Open in a subdirectory of the repository
+ *
+ * ```ts
+ * import { openRepository, RepositoryOpenFlags } from 'es-git';
+ *
+ * const repo = await openRepository('/path/to/repo/sub/dir', {
+ *   flags: RepositoryOpenFlags.CrossFS,
+ * });
+ * ```
+ */
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 /**
  * Attempt to open an already-existing repository at or above `path`.
  *
  * This starts at `path` and looks up the filesystem hierarchy
  * until it finds a repository.
+ *
+ * @category Repository
+ * @signature
+ * ```ts
+ * function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+ * ```
+ *
+ * @param {string} path - Directory path to discover repository.
+ * @param {AbortSignal} [signal] - Abort signal.
+ *
+ * @returns Git repository.
  */
 export declare function discoverRepository(path: string, signal?: AbortSignal | undefined | null): Promise<Repository>
 /**
@@ -778,11 +955,16 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
  * This will use the options configured so far to clone the specified URL
  * into the specified local path.
  *
- * @category repository
+ * @category Repository
  *
  * @signature
  * ```ts
- * function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | null, signal?: AbortSignal | null): Promise<Repository>;
+ * function cloneRepository(
+ *   url: string,
+ *   path: string,
+ *   options?: RepositoryCloneOptions | null,
+ *   signal?: AbortSignal | null
+ * ): Promise<Repository>;
  * ```
  *
  * @param {string} url - Remote URL for repository.
@@ -793,25 +975,78 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
  *
  * @example
  *
- * Example1
+ * Clone repository using `https://` protocol.
  *
  * ```ts
  * import { cloneRepository } from 'es-git';
  *
- * const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone');
+ * const repo = await cloneRepository(
+ *   'https://github.com/toss/es-git',
+ *   '/path/to/clone',
+ * );
+ * ```
+ *
+ * Clone repository using `git://` protocol.
+ *
+ * ```ts
+ * import { cloneRepository } from 'es-git';
+ *
+ * const repo = await cloneRepository(
+ *   'git@github.com:toss/es-git',
+ *   '/path/to/clone',
+ * );
+ * ```
+ *
+ * Clone repository with authentication.
+ *
+ * ```ts
+ * import { cloneRepository } from 'es-git';
+ *
+ * // Authenticate using ssh-agent
+ * const repo = await cloneRepository('git@github.com:toss/es-git', '.', {
+ *   fetch: {
+ *     credential: {
+ *       type: 'SSHKeyFromAgent',
+ *     },
+ *   },
+ * });
  * ```
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
-/** Flags for the revparse. */
+/**
+ * Flags for the revparse.
+ * - `Single` : The spec targeted a single object.
+ * - `Range` : The spec targeted a range of commits.
+ * - `MergeBase` : The spec used the `...` operator, which invokes special semantics.
+ */
 export enum RevparseMode {
-  /** The spec targeted a single object */
   Single = 1,
-  /** The spec targeted a range of commits */
   Range = 2,
-  /** The spec used the `...` operator, which invokes special semantics. */
   MergeBase = 4
 }
-/** Check revparse mode contains specific flags. */
+/**
+ * Check revparse mode contains specific flags.
+ *
+ * @category Revparse
+ * @signature
+ * ```ts
+ * function revparseModeContains(source: number, target: number): boolean;
+ * ```
+ *
+ * @param {number} source - Source flags.
+ * @param {number} target - Target flags.
+ * @returns Returns `true` is source flags contains target flags.
+ *
+ * @example
+ * ```ts
+ * import { openRepository, RevparseMode } from 'es-git';
+ *
+ * const repo = await openRepository('.');
+ * const spec = repo.revparse('main..other');
+ *
+ * console.assert(spec.mode, RevparseMode.Range);
+ * ```
+ */
 export declare function revparseModeContains(source: number, target: number): boolean
 /** A revspec represents a range of revisions within a repository. */
 export interface Revspec {
@@ -822,39 +1057,15 @@ export interface Revspec {
   /** Returns the intent of the revspec. */
   mode: number
 }
-/** Orderings that may be specified for Revwalk iteration. */
 export enum RevwalkSort {
-  /**
-   * Sort the repository contents in no particular ordering.
-   *
-   * This sorting is arbitrary, implementation-specific, and subject to
-   * change at any time. This is the default sorting for new walkers.
-   */
   None = 0,
-  /**
-   * Sort the repository contents in topological order (children before
-   * parents).
-   *
-   * This sorting mode can be combined with time sorting.
-   */
   Topological = 1,
-  /**
-   * Sort the repository contents by commit time.
-   *
-   * This sorting mode can be combined with topological sorting.
-   */
   Time = 2,
-  /**
-   * Iterate through the repository contents in reverse order.
-   *
-   * This sorting mode can be combined with any others.
-   */
   Reverse = 4
 }
 /**
  * A Signature is used to indicate authorship of various actions throughout the
  * library.
- *
  * Signatures contain a name, email, and timestamp.
  */
 export interface Signature {
@@ -871,7 +1082,35 @@ export interface SignatureTimeOptions {
   /** Timezone offset, in minutes */
   offset?: number
 }
-/** Create a new action signature. */
+/**
+ * Create a new action signature.
+ *
+ * @category Signature
+ * @signature
+ * ```ts
+ * function createSignature(
+ *   name: string,
+ *   email: string,
+ *   timeOptions?: SignatureTimeOptions,
+ * ): Signature;
+ * ```
+ *
+ * @param {string} name - Name on the signature.
+ * @param {string} email - Email on the signature.
+ * @param {SignatureTimeOptions} [timeOptions] - Time options for signature.
+ *
+ * @returns
+ *
+ * @example
+ * ```ts
+ * import { createSignature } from 'es-git';
+ *
+ * const author = createSignature(
+ *   'Seokju Na',
+ *   'seokju.me@toss.im',
+ * );
+ * ```
+ */
 export declare function createSignature(name: string, email: string, timeOptions?: SignatureTimeOptions | undefined | null): Signature
 export interface SignaturePayload {
   /** Name on the signature. */
@@ -884,6 +1123,15 @@ export interface SignaturePayload {
  * Determine whether a tag name is valid, meaning that (when prefixed with refs/tags/) that
  * it is a valid reference name, and that any additional tag name restrictions are imposed
  * (eg, it cannot start with a -).
+ *
+ * @category Tag
+ * @signature
+ * ```ts
+ * function isValidTagName(tagName: string): boolean;
+ * ```
+ *
+ * @param {string} tagName - Tag name to check if it is valid.
+ * @returns Returns `true` if tag name is valid.
  */
 export declare function isValidTagName(tagName: string): boolean
 export interface CreateTagOptions {
@@ -894,6 +1142,7 @@ export interface CreateTagOptions {
    * If there is no default signature set for the repository, an error will occur.
    */
   tagger?: SignaturePayload
+  /** If `force` is true and a reference already exists with the given name, it'll be replaced. */
   force?: boolean
 }
 export interface CreateAnnotationTagOptions {
@@ -906,38 +1155,126 @@ export interface CreateAnnotationTagOptions {
   tagger?: SignaturePayload
 }
 export interface CreateLightweightTagOptions {
+  /** If `force` is true and a reference already exists with the given name, it'll be replaced. */
   force?: boolean
 }
 /**
- * A binary indicator of whether a tree walk should be performed in pre-order
- * or post-order.
+ * - `PreOrder` : Runs the traversal in pre-order.
+ * - `PostOrder` : Runs the traversal in post-order.
  */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /**
  * A class to represent a git [blob][1].
- * @hideconstructor
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
 export declare class Blob {
-  /** Get the id (SHA1) of a repository blob. */
+  /**
+   * Get the id (SHA1) of a repository blob.
+   *
+   * @category Blob/Methods
+   *
+   * @signature
+   * ```ts
+   * class Blob {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of a repository blob.
+   */
   id(): string
-  /** Determine if the blob content is most certainly binary or not. */
+  /**
+   * Determine if the blob content is most certainly binary or not.
+   *
+   * @category Blob/Methods
+   *
+   * @signature
+   * ```ts
+   * class Blob {
+   *   isBinary(): boolean;
+   * }
+   * ```
+   *
+   * @returns `true` if blob content is binary.
+   */
   isBinary(): boolean
-  /** Get the content of this blob. */
+  /**
+   * Get the content of this blob.
+   *
+   * @category Blob/Methods
+   *
+   * @signature
+   * ```ts
+   * class Blob {
+   *   content(): Uint8Array;
+   * }
+   * ```
+   *
+   * @returns Content of this blob.
+   */
   content(): Uint8Array
-  /** Get the size in bytes of the contents of this blob. */
+  /**
+   * Get the size in bytes of the contents of this blob.
+   *
+   * @category Blob/Methods
+   *
+   * @signature
+   * ```ts
+   * class Blob {
+   *   size(): bigint;
+   * }
+   * ```
+   *
+   * @returns Size in bytes of the contents of this blob.
+   */
   size(): bigint
 }
-/**
- * A class to represent a git commit.
- * @hideconstructor
- */
+/** A class to represent a git commit. */
 export declare class Commit {
-  /** Get the id (SHA1) of a repository commit */
+  /**
+   * Get the id (SHA1) of a repository commit
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of a repository commit.
+   */
   id(): string
-  /** Get the author of this commit. */
+  /**
+   * Get the author of this commit.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   author(): Signature;
+   * }
+   * ```
+   *
+   * @returns Author signature of this commit.
+   */
   author(): Signature
-  /** Get the committer of this commit. */
+  /**
+   * Get the committer of this commit.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   committer(): Signature;
+   * }
+   * ```
+   *
+   * @returns Committer signature of this commit.
+   */
   committer(): Signature
   /**
    * Get the full message of a commit.
@@ -946,6 +1283,18 @@ export declare class Commit {
    * potential leading newlines.
    *
    * Throws error if the message is not valid utf-8.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   message(): string;
+   * }
+   * ```
+   *
+   * @returns Full message of this commit.
+   * @throws If the message is not valid utf-8.
    */
   message(): string
   /**
@@ -955,6 +1304,18 @@ export declare class Commit {
    * paragraph of the message with whitespace trimmed and squashed.
    *
    * Throws error if the summary is not valid utf-8.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   summary(): string;
+   * }
+   * ```
+   *
+   * @returns Short summary of this commit message.
+   * @throws If the summary is not valid utf-8.
    */
   summary(): string | null
   /**
@@ -965,13 +1326,64 @@ export declare class Commit {
    * are trimmed.
    *
    * Throws error if the summary is not valid utf-8.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   body(): string;
+   * }
+   * ```
+   *
+   * @returns Long body of this commit message.
+   * @throws If the body is not valid utf-8.
    */
   body(): string | null
-  /** Get the commit time (i.e. committer time) of a commit. */
+  /**
+   * Get the commit time (i.e. committer time) of a commit.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   time(): Date;
+   * }
+   * ```
+   *
+   * @returns Commit time of a commit.
+   */
   time(): Date
-  /** Get the tree pointed to by a commit. */
+  /**
+   * Get the tree pointed to by a commit.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   tree(): Tree;
+   * }
+   * ```
+   *
+   * @returns Tree pointed to by a commit.
+   */
   tree(): Tree
-  /** Casts this Commit to be usable as an `GitObject`. */
+  /**
+   * Casts this Commit to be usable as an `GitObject`.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   asObject(): GitObject;
+   * }
+   * ```
+   *
+   * @returns `GitObject` that casted from this commit.
+   */
   asObject(): GitObject
 }
 /**
@@ -980,8 +1392,6 @@ export declare class Commit {
  * This is an opaque structure which will be allocated by one of the diff
  * generator functions on the `Repository` class (e.g. `diffTreeToTree`
  * or other `diff*` functions).
- *
- * @hideconstructor
  */
 export declare class Diff {
   /**
@@ -993,59 +1403,192 @@ export declare class Diff {
    * as if the old version was from the "onto" list and the new version
    * is from the "from" list (with the exception that if the item has a
    * pending DELETE in the middle, then it will show as deleted).
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   merge(diff: Diff): void;
+   * }
+   * ```
+   *
+   * @param {Diff} diff - Another diff to merge.
    */
   merge(diff: Diff): void
-  /** Returns an iterator over the deltas in this diff. */
+  /**
+   * Returns an iterator over the deltas in this diff.
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   deltas(): Deltas;
+   * }
+   * ```
+   *
+   * @returns An iterator over the deltas in this diff.
+   */
   deltas(): Deltas
-  /** Check if deltas are sorted case sensitively or insensitively. */
+  /**
+   * Check if deltas are sorted case sensitively or insensitively.
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   isSortedIcase(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if deltas are sorted case insensitively.
+   */
   isSortedIcase(): boolean
-  /** Accumulate diff statistics for all patches. */
+  /**
+   * Accumulate diff statistics for all patches.
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   stats(): DiffStats;
+   * }
+   * ```
+   *
+   * @returns Diff statistics for all patches.
+   */
   stats(): DiffStats
-  /** Iterate over a diff generating formatted text output. */
+  /**
+   * Iterate over a diff generating formatted text output.
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   print(options?: DiffPrintOptions | null): string;
+   * }
+   * ```
+   *
+   * @param {DiffPrintOptions} [options] - Print options for diff.
+   * @returns Formatted text output.
+   */
   print(options?: DiffPrintOptions | undefined | null): string
 }
-/**
- * A class describing a hunk of a diff.
- *
- * @hideconstructor
- */
+/** A class describing a hunk of a diff. */
 export declare class DiffStats {
-  /** Get the total number of files changed in a diff. */
+  /**
+   * Get the total number of files changed in a diff.
+   *
+   * @category Diff/DiffStats
+   * @signature
+   * ```ts
+   * class DiffStats {
+   *   get filesChanged(): bigint;
+   * }
+   * ```
+   *
+   * @returns Total number of files changed in a diff.
+   */
   get filesChanged(): bigint
-  /** Get the total number of insertions in a diff */
+  /**
+   * Get the total number of insertions in a diff
+   *
+   * @category Diff/DiffStats
+   * @signature
+   * ```ts
+   * class DiffStats {
+   *   get insertions(): bigint;
+   * }
+   * ```
+   *
+   * @returns Total number of insertions in a diff.
+   */
   get insertions(): bigint
-  /** Get the total number of deletions in a diff */
+  /**
+   * Get the total number of deletions in a diff
+   *
+   * @category Diff/DiffStats
+   * @signature
+   * ```ts
+   * class DiffStats {
+   *   get deletions(): bigint;
+   * }
+   * ```
+   *
+   * @returns Total number of deletions in a diff.
+   */
   get deletions(): bigint
 }
-/**
- * An iterator over the diffs in a delta.
- *
- * @hideconstructor
- */
+/** An iterator over the diffs in a delta. */
 export declare class Deltas {
   [Symbol.iterator](): Iterator<DiffDelta, void, void>
 }
-/**
- * Description of changes to one entry.
- *
- * @hideconstructor
- */
+/** Description of changes to one entry. */
 export declare class DiffDelta {
   /**
    * Returns the flags on the delta.
    *
-   * For more information, see `DiffFlags`'s documentation.
+   * @category Diff/DiffDelta
+   * @signature
+   * ```ts
+   * class DiffDelta {
+   *   flags(): number;
+   * }
+   * ```
+   *
+   * @returns The flags on the delta.
+   *
+   * @example
+   * ```ts
+   * import { DiffDelta, DiffFlags, diffFlagsContains } from 'es-git';
+   *
+   * const delta: DiffDelta;
+   * console.assert(diffFlagsContains(delta.flags(), DiffFlags.Binary | DiffFlags.ValidId));
+   * ```
    */
   flags(): number
-  /** Returns the number of files in this delta. */
+  /**
+   * Returns the number of files in this delta.
+   *
+   * @category Diff/DiffDelta
+   * @signature
+   * ```ts
+   * class DiffDelta {
+   *   numFiles(): number;
+   * }
+   * ```
+   *
+   * @returns The number of files in this delta.
+   */
   numFiles(): number
-  /** Returns the status of this entry. */
+  /**
+   * Returns the status of this entry.
+   *
+   * @category Diff/DiffDelta
+   * @signature
+   * ```ts
+   * class DiffDelta {
+   *   status(): DeltaType;
+   * }
+   * ```
+   *
+   * @returns The status of this entry.
+   */
   status(): DeltaType
   /**
    * Return the file which represents the "from" side of the diff.
    *
    * What side this means depends on the function that was used to generate
    * the diff and will be documented on the function itself.
+   *
+   * @category Diff/DiffDelta
+   * @signature
+   * ```ts
+   * class DiffDelta {
+   *   oldFile(): DiffFile;
+   * }
+   * ```
+   *
+   * @returns The file which represents the "from" side of the diff.
    */
   oldFile(): DiffFile
   /**
@@ -1053,6 +1596,16 @@ export declare class DiffDelta {
    *
    * What side this means depends on the function that was used to generate
    * the diff and will be documented on the function itself.
+   *
+   * @category Diff/DiffDelta
+   * @signature
+   * ```ts
+   * class DiffDelta {
+   *   newFile(): DiffFile;
+   * }
+   * ```
+   *
+   * @returns The file which represents the "to" side of the diff.
    */
   newFile(): DiffFile
 }
@@ -1062,8 +1615,6 @@ export declare class DiffDelta {
  * Although this is called a "file" it could represent a file, a symbolic
  * link, a submodule commit id, or even a tree (although that only happens if
  * you are tracking type changes or ignored/untracked directories).
- *
- * @hideconstructor
  */
 export declare class DiffFile {
   /**
@@ -1071,27 +1622,106 @@ export declare class DiffFile {
    *
    * If this entry represents an absent side of a diff (e.g. the `oldFile`
    * of a `Added` delta), then the oid returned will be zeroes.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns The Oid of this item.
    */
   id(): string
   /**
    * Returns the path of the entry relative to the working directory of the
    * repository.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   path(): string | null;
+   * }
+   * ```
+   *
+   * @returns Ths path of the entry relative to the working directory of the repository.
    */
   path(): string | null
-  /** Returns the size of this entry, in bytes. */
+  /**
+   * Returns the size of this entry, in bytes.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   size(): bigint;
+   * }
+   * ```
+   *
+   * @returns The size of this entry, in bytes.
+   */
   size(): bigint
-  /** Returns `true` if file(s) are treated as binary data. */
+  /**
+   * Returns `true` if file(s) are treated as binary data.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   isBinary(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if file(s) are treated as binary data.
+   */
   isBinary(): boolean
-  /** Returns `true` if `id` value is known correct. */
+  /**
+   * Returns `true` if `id` value is known correct.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   isValidId(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if `id` value is known correct.
+   */
   isValidId(): boolean
-  /** Returns `true` if file exists at this side of the delta. */
+  /**
+   * Returns `true` if file exists at this side of the delta.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   exists(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if file exists at this side of the delta.
+   */
   exists(): boolean
-  /** Returns file mode. */
+  /**
+   * Returns file mode.
+   *
+   * @category Diff/DiffFile
+   * @signature
+   * ```ts
+   * class DiffFile {
+   *   mode(): FileMode;
+   * }
+   * ```
+   *
+   * @returns
+   */
   mode(): FileMode
 }
 /**
  * A class to represent a git [index][1].
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -1099,6 +1729,15 @@ export declare class Index {
   /**
    * Get index on-disk version.
    *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   version(): number;
+   * }
+   * ```
+   *
+   * @returns Index on-disk version.
    * Valid return values are 2, 3, or 4. If 3 is returned, an index
    * with version 2 may be written instead, if the extension data in
    * version 3 is not necessary.
@@ -1107,20 +1746,38 @@ export declare class Index {
   /**
    * Set index on-disk version.
    *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   setVersion(version: number): number;
+   * }
+   * ```
+   *
+   * @param {string} version - Version to set.
    * Valid values are 2, 3, or 4. If 2 is given, git_index_write may
    * write an index with version 3 instead, if necessary to accurately
    * represent the index.
    */
   setVersion(version: number): void
-  /** Get one of the entries in the index by its path. */
+  /**
+   * Get one of the entries in the index by its path.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+   * }
+   * ```
+   *
+   * @param {string} path - Path to lookup entry.
+   * @param {IndexStage} [stage] - Git index stage states.
+   * @returns Index entry for the path.
+   */
   getByPath(path: string, stage?: IndexStage | undefined | null): IndexEntry | null
   /**
    * Add or update an index entry from a file on disk.
-   *
-   * The file path must be relative to the repository's working folder and
-   * must be readable.
-   *
-   * This method will fail in bare index instances.
    *
    * This forces the file to be added to the index, not looking at gitignore
    * rules.
@@ -1128,17 +1785,38 @@ export declare class Index {
    * If this file currently is the result of a merge conflict, this file will
    * no longer be marked as conflicting. The data about the conflict will be
    * moved to the "resolve undo" (REUC) section.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   addPath(path: string): void;
+   * }
+   * ```
+   *
+   * @param {string} path - Relative file path to the repository's working directory and must be
+   * readable.
+   *
+   * @throws This method will fail in bare index instances.
    */
   addPath(path: string): void
   /**
    * Add or update index entries matching files in the working directory.
    *
-   * This method will fail in bare index instances.
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+   * }
+   * ```
    *
-   * The `pathspecs` are a list of file names or shell glob patterns that
-   * will matched against files in the repository's working directory. Each
-   * file that matches will be added to the index (either updating an
-   * existing entry or adding a new entry).
+   * @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+   * against files in the repository's working directory. Each file that matches will be added
+   * to the index (either updating an existing entry or adding a new entry).
+   * @param {IndexAddAllOptions} [options] - Options for add or update index entries.
+   *
+   * @throws This method will fail in bare index instances.
    *
    * @example
    *
@@ -1158,11 +1836,19 @@ export declare class Index {
    * Update the contents of an existing index object in memory by reading
    * from the hard disk.
    *
-   * If force is true, this performs a "hard" read that discards in-memory
-   * changes and always reloads the on-disk index data. If there is no
-   * on-disk version, the index will be cleared.
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   read(force?: boolean): void;
+   * }
+   * ```
    *
-   * If force is false, this does a "soft" read that reloads the index data
+   * @param {boolean} [force] - If force is `true`, this performs a "hard" read that discards
+   * in-memory changes and always reloads the on-disk index data. If there is no on-disk version,
+   * the index will be cleared.
+   *
+   * If force is `false`, this does a "soft" read that reloads the index data
    * from disk only if it has changed since the last time it was loaded.
    * Purely in-memory index data will be untouched. Be aware: if there are
    * changes on disk, unwritten in-memory changes are discarded.
@@ -1171,6 +1857,14 @@ export declare class Index {
   /**
    * Write an existing index object from memory back to disk using an atomic
    * file lock.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   write(): void;
+   * }
+   * ```
    */
   write(): void
   /**
@@ -1185,103 +1879,246 @@ export declare class Index {
    * existing repository.
    *
    * The index must not contain any file in conflict.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   writeTree(): void;
+   * }
+   * ```
    */
   writeTree(): string
   /**
    * Remove an index entry corresponding to a file on disk.
    *
-   * The file path must be relative to the repository's working folder. It
-   * may exist.
-   *
    * If this file currently is the result of a merge conflict, this file will
    * no longer be marked as conflicting. The data about the conflict will be
    * moved to the "resolve undo" (REUC) section.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   removePath(path: string, options?: IndexRemoveOptions): void;
+   * }
+   * ```
+   *
+   * @param {string} path - Relative file path to the repository's working directory.
+   * @param {IndexRemoveOptions} options - Options for remove an index entry.
    */
   removePath(path: string, options?: IndexRemoveOptions | undefined | null): void
-  /** Remove all matching index entries. */
+  /**
+   * Remove all matching index entries.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions): void;
+   * }
+   * ```
+   *
+   * @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+   * against files in the repository's working directory
+   * @param {IndexRemoveAllOptions} options - Options for remove all matching index entry.
+   */
   removeAll(pathspecs: Array<string>, options?: IndexRemoveAllOptions | undefined | null): void
   /**
    * Update all index entries to match the working directory.
-   *
-   * This method will fail in bare index instances.
    *
    * This scans the existing index entries and synchronizes them with the
    * working directory, deleting them if the corresponding working directory
    * file no longer exists otherwise updating the information (including
    * adding the latest version of file to the ODB if needed).
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+   * }
+   * ```
+   *
+   * @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+   * against files in the repository's working directory
+   * @param {IndexUpdateAllOptions} options - Options for update all matching index entry.
+   *
+   * @throws This method will fail in bare index instances.
    */
   updateAll(pathspecs: Array<string>, options?: IndexUpdateAllOptions | undefined | null): void
-  /** Get the count of entries currently in the index. */
+  /**
+   * Get the count of entries currently in the index.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   count(): number;
+   * }
+   * ```
+   *
+   * @returns The count of entries currently in the index.
+   */
   count(): number
-  /** Return `true` is there is no entry in the index. */
+  /**
+   * Return `true` is there is no entry in the index.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns Return `true` is there is no entry in the index.
+   */
   isEmpty(): boolean
   /**
    * Get the full path to the index file on disk.
    *
-   * Returns `null` if this is an in-memory index.
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   path(): string | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if this is an in-memory index.
    */
   path(): string | null
   /**
    * Does this index have conflicts?
    *
-   * Returns `true` if the index contains conflicts, `false` if it does not.
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   hasConflicts(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if the index contains conflicts, `false` if it does not.
    */
   hasConflicts(): boolean
-  /** Get an iterator over the entries in this index. */
+  /**
+   * Get an iterator over the entries in this index.
+   *
+   * @category Index/Methods
+   * @signature
+   * ```ts
+   * class Index {
+   *   entries(): IndexEntries;
+   * }
+   * ```
+   *
+   * @returns An iterator over the entries in this index.
+   */
   entries(): IndexEntries
 }
-/**
- * An iterator over the entries in an index.
- *
- * @hideconstructor
- */
+/** An iterator over the entries in an index. */
 export declare class IndexEntries {
   [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
 /**
  * A class to represent a git [object][1].
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
 export declare class GitObject {
-  /** Get the id (SHA1) of a repository object. */
+  /**
+   * Get the id (SHA1) of a repository object.
+   *
+   * @category Object/Methods
+   * @signature
+   * ```ts
+   * class GitObject {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of a repository object.
+   */
   id(): string
   /**
    * Get the object type of object.
    *
-   * If the type is unknown, then `null` is returned.
+   * @category Object/Methods
+   * @signature
+   * ```ts
+   * class GitObject {
+   *   type(): ObjectType | null;
+   * }
+   * ```
+   *
+   * @returns If the type is unknown, then `null` is returned.
    */
   type(): ObjectType | null
   /**
    * Recursively peel an object until an object of the specified type is met.
    *
-   * If you pass `Any` as the target type, then the object will be
+   * @category Object/Methods
+   * @signature
+   * ```ts
+   * class GitObject {
+   *   peel(objType: ObjectType): GitObject;
+   * }
+   * ```
+   *
+   * @param {ObjectType} objType - If you pass `Any` as the target type, then the object will be
    * peeled until the type changes (e.g. a tag will be chased until the
    * referenced object is no longer a tag).
+   *
+   * @returns Git object which recursively peeled.
    */
   peel(objType: ObjectType): GitObject
-  /** Recursively peel an object until a commit is found. */
+  /**
+   * Recursively peel an object until a commit is found.
+   *
+   * @category Object/Methods
+   * @signature
+   * ```ts
+   * class GitObject {
+   *   peelToCommit(): Commit;
+   * }
+   * ```
+   *
+   * @returns Git commit.
+   */
   peelToCommit(): Commit
   /**
    * Recursively peel an object until a blob is found.
    *
+   * @category Object/Methods
    * @signature
-   * test
+   * ```ts
+   * class GitObject {
+   *   peelToBlob(): Blob;
+   * }
+   * ```
    *
-   * @returns peeled blob
+   * @returns Git blob.
    */
   peelToBlob(): Blob
   /**
    * Attempt to view this object as a commit.
    *
-   * Returns `null` if the object is not actually a commit.
+   * @category Object/Methods
+   * @signature
+   * ```ts
+   * class GitObject {
+   *   asCommit(): Commit | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if the object is not actually a commit.
    */
   asCommit(): Commit | null
 }
 /**
  * A class to represent a git [reference][1].
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-References
  */
@@ -1292,28 +2129,101 @@ export declare class Reference {
    * This method works for both direct and symbolic references. The reference
    * will be immediately removed on disk.
    *
-   * This function will return an error if the reference has changed from the
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   delete(): void;
+   * }
+   * ```
+   *
+   * @throws This method will throws an error if the reference has changed from the
    * time it was looked up.
    */
   delete(): void
-  /** Check if a reference is a local branch. */
+  /**
+   * Check if a reference is a local branch.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   isBranch(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if a reference is a local branch.
+   */
   isBranch(): boolean
-  /** Check if a reference is a note. */
+  /**
+   * Check if a reference is a note.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   isNote(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if a reference is a note.
+   */
   isNote(): boolean
-  /** Check if a reference is a remote tracking branch. */
+  /**
+   * Check if a reference is a remote tracking branch.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   isRemote(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if a reference is a remote tracking branch.
+   */
   isRemote(): boolean
-  /** Check if a reference is a tag. */
+  /**
+   * Check if a reference is a tag.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   isTag(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if a reference is a tag.
+   */
   isTag(): boolean
   /**
    * Get the reference type of a reference.
    *
-   * If the type is unknown, then `null` is returned.
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   type(): ReferenceType | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if the type is unknown.
    */
   type(): ReferenceType | null
   /**
    * Get the full name of a reference.
    *
-   * Throws error if the name is not valid utf-8.
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   name(): string;
+   * }
+   * ```
+   *
+   * @returns Full name of a reference.
+   * @throws Throws error if the name is not valid utf-8.
    */
   name(): string
   /**
@@ -1322,7 +2232,16 @@ export declare class Reference {
    * This will transform the reference name into a name "human-readable"
    * version. If no shortname is appropriate, it will return the full name.
    *
-   * Throws error if the shorthand is not valid utf-8.
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   shorthand(): string;
+   * }
+   * ```
+   *
+   * @returns Full shorthand of a reference.
+   * @throws Throws error if the shorthand is not valid utf-8.
    */
   shorthand(): string
   /**
@@ -1330,12 +2249,32 @@ export declare class Reference {
    *
    * Only available if the reference is direct (i.e. an object id reference,
    * not a symbolic one).
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   target(): string | null;
+   * }
+   * ```
+   *
+   * @returns OID pointed to by a direct reference.
    */
   target(): string | null
   /**
    * Return the peeled OID target of this reference.
    *
    * This peeled OID only applies to direct references that point to a hard.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   targetPeel(): string | null;
+   * }
+   * ```
+   *
+   * @returns Peeled OID of this reference.
    */
   targetPeel(): string | null
   /**
@@ -1343,12 +2282,32 @@ export declare class Reference {
    *
    * This method recursively peels the reference until it reaches
    * a tree.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   peelToTree(): Tree;
+   * }
+   * ```
+   *
+   * @returns Peeled `Tree` of this reference.
    */
   peelToTree(): Tree
   /**
    * Get full name to the reference pointed to by a symbolic reference.
    *
    * Only available if the reference is symbolic.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   symbolicTarget(): string | null;
+   * }
+   * ```
+   *
+   * @returns Full name of the reference pointed to by a symbolic reference.
    */
   symbolicTarget(): string | null
   /**
@@ -1359,6 +2318,16 @@ export declare class Reference {
    *
    * If a direct reference is passed as an argument, a copy of that
    * reference is returned.
+   *
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   resolve(): Reference;
+   * }
+   * ```
+   *
+   * @returns Resolved reference.
    */
   resolve(): Reference
   /**
@@ -1366,14 +2335,22 @@ export declare class Reference {
    *
    * This method works for both direct and symbolic references.
    *
-   * If the force flag is not enabled, and there's already a reference with
-   * the given name, the renaming will fail.
+   * @category Reference/Methods
+   * @signature
+   * ```ts
+   * class Reference {
+   *   rename(newName: string, options?: RenameReferenceOptions): Reference;
+   * }
+   * ```
+   *
+   * @param {string} newName - Name to rename an existing reference.
+   * @param {RenameReferenceOptions} [options] - Options to rename an existing reference.
+   * @returns Renamed reference.
    */
   rename(newName: string, options?: RenameReferenceOptions | undefined | null): Reference
 }
 /**
  * A class representing a [remote][1] of a git repository.
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
  */
@@ -1381,33 +2358,116 @@ export declare class Remote {
   /**
    * Get the remote's name.
    *
-   * Returns `null` if this remote has not yet been named, and
-   * throws error if the name is not valid utf-8.
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   name(): string | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if this remote has not yet been named.
+   * @throws Throws error if the name is not valid utf-8.
    */
   name(): string | null
   /**
    * Get the remote's URL.
    *
-   * Throws error if the URL is not valid utf-8.
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   url(): string;
+   * }
+   * ```
+   *
+   * @throws Throws error if the URL is not valid utf-8.
    */
   url(): string
   /**
    * Get the remote's URL.
    *
-   * Returns `null` if push url not exists, and
-   * throws error if the URL is not valid utf-8.
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   pushurl(): string | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if push url not exists.
+   * @throws Throws error if the URL is not valid utf-8.
    */
   pushurl(): string | null
   /**
    * List all refspecs.
    *
    * Filter refspec if has not valid `src` or `dst` with utf-8.
+   *
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   refspecs(): Refspec[];
+   * }
+   * ```
+   *
+   * @returns List all refspecs.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('/path/to/repo');
+   * const remote = repo.getRemote('origin');
+   *
+   * // Retrieving the Refspecs configured for this remote
+   * const refspecs = remote.refspecs();
+   * console.log(refspecs[0]);
+   * // For the "+refs/heads/*:refs/remotes/origin/*" Refspec
+   * // {
+   * //   "direction": "Fetch",
+   * //   "src": "refs/heads/*",
+   * //   "dst": "refs/remotes/origin/*",
+   * //   "force": true
+   * // }
+   * ```
    */
   refspecs(): Array<Refspec>
   /**
    * Download new data and update tips.
    *
    * Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
+   *
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   fetch(
+   *     refspecs: string[],
+   *     options?: FetchRemoteOptions,
+   *     signal?: AbortSignal,
+   *   ): Promise<void>;
+   * }
+   * ```
+   *
+   * @param {string[]} refspecs - Refspecs to fetch from remote.
+   * @param {FetchRemoteOptions} [options] - Options for fetch remote.
+   * @param {AbortSignal} [signal] Abort signal.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('/path/to/repo');
+   * const remote = repo.getRemote('origin');
+   *
+   * // Fetching data from the "main" branch
+   * await remote.fetch(['main']);
+   *
+   * // Providing an empty array fetches data using the default Refspec configured for the remote
+   * await remote.fetch([]);
+   * ```
    */
   fetch(refspecs: Array<string>, options?: FetchRemoteOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
@@ -1415,14 +2475,84 @@ export declare class Remote {
    *
    * Perform all the steps for a push.
    * If no refspecs are passed, then the configured refspecs will be used.
+   *
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   push(
+   *     refspecs: string[],
+   *     options?: PushOptions,
+   *     signal?: AbortSignal,
+   *   ): Promise<void>;
+   * }
+   * ```
+   *
+   * @param {string[]} refspecs - Refspecs to push to remote.
+   * @param {FetchRemoteOptions} [options] - Options for push remote.
+   * @param {AbortSignal} [signal] Abort signal.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('/path/to/repo');
+   * const remote = repo.getRemote('origin');
+   *
+   * // Push the local "main" branch to the remote "other" branch
+   * await remote.push(['refs/heads/main:refs/heads/other']);
+   *
+   * // Push with credential.
+   * await remote.push(['refs/heads/main:refs/heads/other'], {
+   *   credential: {
+   *     type: 'Plain',
+   *     password: '<personal access token>',
+   *   },
+   * });
+   * ```
    */
   push(refspecs: Array<string>, options?: PushOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
-  /** Prune tracking refs that are no longer present on remote. */
+  /**
+   * Prune tracking refs that are no longer present on remote.
+   *
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   prune(options?: PruneOptions, signal?: AbortSignal): Promise<void>;
+   * }
+   * ```
+   *
+   * @param {PruneOptions} [options] - Options for prune remote.
+   * @param {AbortSignal} [signal] Abort signal.
+   */
   prune(options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
    * Get the remote’s default branch.
    *
    * The `fetch` operation from the remote is also performed.
+   *
+   * @category Remote/Methods
+   * @signature
+   * ```ts
+   * class Remote {
+   *   defaultBranch(signal?: AbortSignal): Promise<string>;
+   * }
+   * ```
+   *
+   * @param {AbortSignal} [signal] Abort signal.
+   * @returns Default branch name.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('/path/to/repo');
+   * const remote = repo.getRemote('origin');
+   *
+   * const branch = await remote.defaultBranch();
+   * console.log(branch); // "refs/heads/main"
+   * ```
    */
   defaultBranch(signal?: AbortSignal | undefined | null): Promise<string>
 }
@@ -1431,17 +2561,41 @@ export declare class Remote {
  * underlying filesystem.
  *
  * This class corresponds to a git repository in libgit2.
- *
- * @hideconstructor
  */
 export declare class Repository {
   /**
    * Lookup a reference to one of the commits in a repository.
    *
    * Returns `null` if the commit does not exist.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findCommit(oid: string): Commit | null;
+   * }
+   * ```
+   * @param {string} oid - Commit ID(SHA1) to lookup.
+   * @returns Commit instance found by oid. Returns `null` if the commit does not exist.
    */
   findCommit(oid: string): Commit | null
-  /** Lookup a reference to one of the commits in a repository. */
+  /**
+   * Lookup a reference to one of the commits in a repository.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getCommit(oid: string): Commit;
+   * }
+   * ```
+   *
+   * @param {string} oid - Commit ID(SHA1) to lookup.
+   * @returns Commit instance found by oid.
+   * @throws Throws error if the commit does not exist.
+   */
   getCommit(oid: string): Commit
   /**
    * Create new commit in the repository.
@@ -1452,6 +2606,17 @@ export declare class Repository {
    * current branch and make it point to this commit. If the reference
    * doesn't exist yet, it will be created. If it does exist, the first
    * parent must be the tip of this branch.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commit(tree: Tree, message: string, options?: CommitOptions | null): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of created commit.
    */
   commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
   /**
@@ -1459,17 +2624,48 @@ export declare class Repository {
    *
    * This is equivalent to `git diff <old-tree> <new-tree>`.
    *
-   * The first tree will be used for the "oldFile" side of the delta and the
-   * second tree will be used for the "newFile" side of the delta. You can
-   * pass `null` to indicate an empty tree, although it is an error to pass
-   * `null` for both the `oldTree` and `newTree`.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   diffTreeToTree(
+   *     oldTree?: Tree,
+   *     newTree?: Tree,
+   *     options?: DiffOptions,
+   *   ): Diff;
+   * }
+   * ```
+   *
+   * @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+   * then an empty tree is used.
+   * @param {Tree} [newTree] - Tree used for the "newFile" side of the delta. If you not pass,
+   * then an empty tree is used.
+   * @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+   *
+   * @returns {Diff} Diff between two tree objects.
+   * @throws Throws error if the `oldTree` and `newTree` is `null`.
    */
   diffTreeToTree(oldTree?: Tree | undefined | null, newTree?: Tree | undefined | null, options?: DiffOptions | undefined | null): Diff
   /**
    * Create a diff between two index objects.
    *
-   * The first index will be used for the "oldFile" side of the delta, and
-   * the second index will be used for the "newFile" side of the delta.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   diffIndexToIndex(
+   *     oldIndex: Index,
+   *     newIndex: Index,
+   *     options?: DiffOptions,
+   *   ): Diff;
+   * }
+   * ```
+   *
+   * @param {Index} [oldIndex] - Index used for the "oldFile" side of the delta.
+   * @param {Index} [newIndex] - Index used for the "newFile" side of the delta.
+   * @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+   *
+   * @returns {Diff} Diff between two index objects.
    */
   diffIndexToIndex(oldIndex: Index, newIndex: Index, options?: DiffOptions | undefined | null): Diff
   /**
@@ -1480,12 +2676,23 @@ export declare class Repository {
    * `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
    * using libgit2.
    *
-   * The index will be used for the "oldFile" side of the delta, and the
-   * working directory will be used for the "newFile" side of the delta.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   diffIndexToWorkdir(index?: Index, options?: DiffOptions): Diff;
+   * }
+   * ```
    *
-   * If you pass `null` for the index, then the existing index of the `repo`
-   * will be used. In this case, the index will be refreshed from disk
-   * (if it has changed) before the diff is generated.
+   * @param {Index} [index] - Index used for the "oldFile" side of the delta. The working directory
+   * will be used for the "newFile" side of the delta.
+   *
+   * If not you pass, then the existing index of the repository  will be used. In this case,
+   * the index will be refreshed from disk (if it has changed) before the diff is generated.
+   *
+   * @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+   *
+   * @returns {Diff} Diff between the repository index and the workdir directory.
    */
   diffIndexToWorkdir(index?: Index | undefined | null, options?: DiffOptions | undefined | null): Diff
   /**
@@ -1506,7 +2713,20 @@ export declare class Repository {
    * tree-to-workdir diff for that file is 'modified', but `git diff` would
    * show status 'deleted' since there is a staged delete.
    *
-   * If `null` is passed for `tree`, then an empty tree is used.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+   * }
+   * ```
+   *
+   * @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+   * then an empty tree is used.
+   *
+   * @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+   *
+   * @returns {Diff} Diff between a tree and the working directory.
    */
   diffTreeToWorkdir(oldTree?: Tree | undefined | null, options?: DiffOptions | undefined | null): Diff
   /**
@@ -1516,6 +2736,22 @@ export declare class Repository {
    * This emulates `git diff <tree>` by diffing the tree to the index and
    * the index to the working directory and blending the results into a
    * single diff that includes staged deleted, etc.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   diffTreeToWorkdirWithIndex(oldTree?: Tree, options?: DiffOptions): Diff;
+   * }
+   * ```
+   *
+   * @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+   * then an empty tree is used.
+   *
+   * @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+   *
+   * @returns {Diff} Diff between a tree and the working directory using index data to account for
+   * staged deletes, tracked files, etc.
    */
   diffTreeToWorkdirWithIndex(oldTree?: Tree | undefined | null, options?: DiffOptions | undefined | null): Diff
   /**
@@ -1523,47 +2759,169 @@ export declare class Repository {
    *
    * If a custom index has not been set, the default index for the repository
    * will be returned (the one located in `.git/index`).
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   index(): Index;
+   * }
+   * ```
+   *
+   * @returns The index file for this repository.
    */
   index(): Index
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Returns `null` if the object does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findObject(oid: string): GitObject | null;
+   * }
+   * ```
+   *
+   * @param {string} oid - Git object ID(SHA1) to lookup.
+   * @returns Git object. Returns `null` if the object does not exist.
    */
   findObject(oid: string): GitObject | null
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Throws error if the object does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getObject(oid: string): GitObject;
+   * }
+   * ```
+   *
+   * @param {string} oid - Git object ID(SHA1) to lookup.
+   * @returns Git object.
+   * @throws Throws error if the object does not exist.
    */
   getObject(oid: string): GitObject
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Returns `null` if the reference does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findReference(name: string): Reference | null;
+   * }
+   * ```
+   *
+   * @param {string} name - Reference name to lookup.
+   * @returns Returns `null` if the reference does not exist.
+   *
+   * @example
+   *
+   * Get `HEAD` reference from the repository.
+   *
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const reference = repo.findReference('HEAD');
+   * ```
    */
   findReference(name: string): Reference | null
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * Throws error if the reference does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getReference(name: string): Reference;
+   * }
+   * ```
+   *
+   * @param {string} name - Reference name to lookup.
+   * @returns Git reference.
+   * @throws Throws error if the reference does not exist.
+   *
+   * @example
+   *
+   * Get `HEAD` reference from the repository.
+   *
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const reference = repo.getReference('HEAD');
+   * ```
    */
   getReference(name: string): Reference
-  /** List all remotes for a given repository */
+  /**
+   * List all remotes for a given repository
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   remoteNames(): string[];
+   * }
+   * ```
+   *
+   * @returns All remote names for this repository.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('/path/to/repo');
+   * console.log(repo.remoteNames()); // ["origin"]
+   * ```
+   */
   remoteNames(): Array<string>
   /**
    * Get remote from repository.
    *
-   * Throws error if remote does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getRemote(name: string): Remote;
+   * }
+   * ```
+   *
+   * @returns Remote instance.
+   * @throws Throws error if remote does not exist.
    */
   getRemote(name: string): Remote
   /**
    * Find remote from repository.
    *
-   * Returns `null` if remote does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findRemote(name: string): Remote | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if remote does not exist.
    */
   findRemote(name: string): Remote | null
-  /** Add a remote with the default fetch refspec to the repository’s configuration. */
+  /**
+   * Add a remote with the default fetch refspec to the repository’s configuration.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of the remote.
+   * @param {string} url - Remote url.
+   * @param {CreateRemoteOptions} [options] - Options for creating remote.
+   * @returns Created remote.
+   */
   createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): Remote
   /** Tests whether this repository is a bare repository or not. */
   isBare(): boolean
@@ -1608,50 +2966,194 @@ export declare class Repository {
    *
    * The resulting revision specification is returned, or an error is
    * returned if one occurs.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   revparse(spec: string): Revspec;
+   * }
+   * ```
+   *
+   * @param {string} spec - Revision string.
+   * @returns
    */
   revparse(spec: string): Revspec
-  /** Find a single object, as specified by a revision string. */
+  /**
+   * Find a single object, as specified by a revision string.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   revparseSingle(spec: string): string;
+   * }
+   * ```
+   *
+   * @param {string} spec - Revision string.
+   * @returns OID of single object.
+   * @throws Throws error if the object does not exist.
+   */
   revparseSingle(spec: string): string
-  /** Create a revwalk that can be used to traverse the commit graph. */
+  /**
+   * Create a revwalk that can be used to traverse the commit graph.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   revwalk(): Revwalk;
+   * }
+   * ```
+   *
+   * @returns Revwalk to traverse the commit graph in this repository.
+   */
   revwalk(): Revwalk
   /**
    * Lookup a tag object by prefix hash from the repository.
    *
-   * Returns `null` if tag does not exist.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findTag(oid: string): Tag | null;
+   * }
+   * ```
+   *
+   * @param {string} oid - Prefix hash.
+   * @returns Returns `null` if tag does not exist.
    */
   findTag(oid: string): Tag | null
-  /** Lookup a tag object by prefix hash from the repository. */
+  /**
+   * Lookup a tag object by prefix hash from the repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getTag(oid: string): Tag;
+   * }
+   * ```
+   *
+   * @param {string} oid - Prefix hash.
+   * @throws Throws error if tag does not exist.
+   */
   getTag(oid: string): Tag
   /**
    * Get a list with all the tags in the repository.
    *
-   * An optional fnmatch pattern can also be specified.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   tagNames(pattern?: string): string[];
+   * }
+   * ```
+   *
+   * @param {string} [pattern] - An optional fnmatch pattern can also be specified.
    */
   tagNames(pattern?: string | undefined | null): Array<string>
   /**
    * Iterate over all tags calling `callback` on each.
    * The callback is provided the tag id and name.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   tagForeach(callback: (oid: string, name: string) => boolean): void;
+   * }
+   * ```
+   *
+   * @param {(oid: string, name: string) => boolean} callback - If you wish to stop iteration,
+   * return `false` in the callback.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const tags = [];
+   * repo.tagForeach((sha, name) => {
+   *   tags.push([name, sha]);
+   *   return true;
+   * });
+   *
+   * console.log(tags);
+   * // [['aa0040546ed22b8bb33f3bd621e8d10ed849b02c', 'refs/tags/v0'],
+   * //  ['674e3327707fcf32a348ecfc0cb6b93e57398b8c', 'refs/tags/v1'],
+   * //  ['567aa5c6b219312dc7758ab88ebb7a1e5d36d26b', 'refs/tags/v2']]
+   * ```
    */
   tagForeach(callback: (oid: string, name: string) => boolean): void
   /**
    * Delete an existing tag reference.
    *
-   * The tag name will be checked for validity, see `isValidTagName` for some rules
-   * about valid names.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   deleteTag(name: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The tag name will be checked for validity, see `isValidTagName`
+   * for some rules about valid names.
    */
   deleteTag(name: string): void
   /**
    * Create a new tag in the repository from an object.
    *
-   * A new reference will also be created pointing to this tag object. If
-   * `force` is true and a reference already exists with the given name,
-   * it'll be replaced.
+   * A new reference will also be created pointing to this tag object.
    *
    * The message will not be cleaned up.
    *
    * The tag name will be checked for validity. You must avoid the characters
    * '~', '^', ':', ' \ ', '?', '[', and '*', and the sequences ".." and " @
    * {" which have special meaning to revparse.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   createTag(
+   *     name: string,
+   *     target: GitObject,
+   *     message: string,
+   *     options?: CreateTagOptions,
+   *   ): string;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of tag.
+   * @param {GitObject} target - Git object to pointed by this tag.
+   * @param {string} message - The message of tag.
+   * @param {CreateTagOptions} [options] - Options for creating the tag.
+   *
+   * @returns Tag OID(SHA1) which created.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const commit = repo.getCommit('828954df9f08dc8e172447cdacf0ddea1adf9e63');
+   *
+   * const sha = repo.createTag(
+   *   'mytag',
+   *   commit.asObject(),
+   *   'this is my tag message',
+   *   {
+   *     tagger: {
+   *       name: 'Seokju Na',
+   *       email: 'seokju.me@toss.im',
+   *     },
+   *   },
+   * );
+   * const tag = repo.getTag(sha);
+   * console.log(tag.name()); // "mytag"
+   * console.log(tag.target().id()); // "828954df9f08dc8e172447cdacf0ddea1adf9e63"
+   * ```
    */
   createTag(name: string, target: GitObject, message: string, options?: CreateTagOptions | undefined | null): string
   /**
@@ -1662,30 +3164,87 @@ export declare class Repository {
    * The tag name will be checked for validity. You must avoid the characters
    * '~', '^', ':', ' \ ', '?', '[', and '*', and the sequences ".." and " @
    * {" which have special meaning to revparse.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   createAnnotationTag(
+   *     name: string,
+   *     target: GitObject,
+   *     message: string,
+   *     options?: CreateAnnotationTagOptions,
+   *   ): string;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of tag.
+   * @param {GitObject} target - Git object to pointed by this tag.
+   * @param {string} message - The message of tag.
+   * @param {CreateAnnotationTagOptions} [options] - Options for creating the tag.
+   *
+   * @returns Tag OID(SHA1) which created.
    */
   createAnnotationTag(name: string, target: GitObject, message: string, options?: CreateAnnotationTagOptions | undefined | null): string
   /**
    * Create a new lightweight tag pointing at a target object.
    *
    * A new direct reference will be created pointing to this target object.
-   * If force is true and a reference already exists with the given name,
-   * it'll be replaced.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   createLightweightTag(
+   *     name: string,
+   *     target: GitObject,
+   *     options?: CreateLightweightTagOptions,
+   *   ): string;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of tag.
+   * @param {GitObject} target - Git object to pointed by this tag.
+   * @param {CreateLightweightTagOptions} [options] - Options for creating the tag.
+   *
+   * @returns Tag OID(SHA1) which created.
    */
   createLightweightTag(name: string, target: GitObject, options?: CreateLightweightTagOptions | undefined | null): string
-  /** Lookup a reference to one of the objects in a repository. */
+  /**
+   * Lookup a reference to one of the objects in a repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getTree(oid: string): Tree;
+   * }
+   * ```
+   *
+   * @param {string} oid - ID(SHA1) to lookup.
+   * @returns Git tree.
+   * @throws Throws error if tree does not exist.
+   */
   getTree(oid: string): Tree
   /**
    * Lookup a reference to one of the objects in a repository.
    *
-   * If it does not exist, returns `null`.
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findTree(oid: string): Tree | null;
+   * }
+   * ```
+   *
+   * @param {string} oid - ID(SHA1) to lookup.
+   * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
 }
 /**
  * A revwalk allows traversal of the commit graph defined by including one or
  * more leaves and excluding one or more roots.
- *
- * @hideconstructor
  */
 export declare class Revwalk {
   [Symbol.iterator](): Iterator<string, void, void>
@@ -1694,14 +3253,62 @@ export declare class Revwalk {
    *
    * The revwalk is automatically reset when iteration of its commits
    * completes.
+   *
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   reset(): this;
+   * }
+   * ```
    */
   reset(): this
-  /** Set the order in which commits are visited. */
+  /**
+   * Set the order in which commits are visited.
+   *
+   * @category Revwalk/Methods
+   *
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   setSorting(sort: number): this;
+   * }
+   * ```
+   *
+   * @param {number} sort - Orderings that may be specified for Revwalk iteration.
+   * - `RevwalkSort.None` : Sort the repository contents in no particular ordering.
+   * This sorting is arbitrary, implementation-specific, and subject to
+   * change at any time. This is the default sorting for new walkers.
+   * - `RevwalkSort.Topological` : Sort the repository contents in topological order
+   * (children before parents).
+   * This sorting mode can be combined with time sorting.
+   * - `RevwalkSort.Time` : Sort the repository contents by commit time.
+   * This sorting mode can be combined with topological sorting.
+   * - `RevwalkSort.Reverse` : Iterate through the repository contents in reverse order.
+   * This sorting mode can be combined with any others.
+   *
+   * @example
+   * ```ts
+   * import { openRepository, RevwalkSort } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const revwalk = repo.revwalk();
+   * revwalk.setSorting(RevwalkSort.Time | RevwalkSort.Reverse);
+   * ```
+   */
   setSorting(sort: number): this
   /**
    * Simplify the history by first-parent.
    *
    * No parents other than the first for each commit will be enqueued.
+   *
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   simplifyFirstParent(): this;
+   * }
+   * ```
    */
   simplifyFirstParent(): this
   /**
@@ -1712,12 +3319,28 @@ export declare class Revwalk {
    * The given commit will be used as one of the roots when starting the
    * revision walk. At least one commit must be pushed onto the walker before
    * a walk can be started.
+   *
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   push(oid: string): this;
+   * }
+   * ```
+   *
+   * @param {string} oid - OID which belong to a commitish on the walked repository.
    */
   push(oid: string): this
   /**
    * Push the repository's HEAD.
    *
-   * For more information, see `push`.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   pushHead(): this;
+   * }
+   * ```
    */
   pushHead(): this
   /**
@@ -1726,9 +3349,16 @@ export declare class Revwalk {
    * The OIDs pointed to by the references that match the given glob pattern
    * will be pushed to the revision walker.
    *
-   * A leading 'refs/' is implied if not present as well as a trailing `/ \
-   * *` if the glob lacks '?', ' \ *' or '['.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   pushGlob(glob: string): this;
+   * }
+   * ```
    *
+   * @param {string} glob - A leading 'refs/' is implied if not present as well as a trailing `/ \
+   * *` if the glob lacks '?', ' \ *' or '['.
    * Any references matching this glob which do not point to a commitish
    * will be ignored.
    */
@@ -1736,7 +3366,15 @@ export declare class Revwalk {
   /**
    * Push and hide the respective endpoints of the given range.
    *
-   * The range should be of the form `<commit>..<commit>` where each
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   pushRange(range: string): this;
+   * }
+   * ```
+   *
+   * @param {string} range - The range should be of the form `<commit>..<commit>` where each
    * `<commit>` is in the form accepted by `revparseSingle`. The left-hand
    * commit will be hidden and the right-hand commit pushed.
    */
@@ -1744,15 +3382,41 @@ export declare class Revwalk {
   /**
    * Push the OID pointed to by a reference.
    *
-   * The reference must point to a commitish.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   pushRef(reference: string): this;
+   * }
+   * ```
+   *
+   * @param {string} reference - The reference must point to a commitish.
    */
   pushRef(reference: string): this
-  /** Mark a commit as not of interest to this revwalk. */
+  /**
+   * Mark a commit as not of interest to this revwalk.
+   *
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   hide(oid: string): this;
+   * }
+   * ```
+   *
+   * @param {string} oid - Marked commit OID as not of interest of this revwalk.
+   */
   hide(oid: string): this
   /**
    * Hide the repository's HEAD.
    *
-   * For more information, see `hide`.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   hideHead(): this;
+   * }
+   * ```
    */
   hideHead(): this
   /**
@@ -1761,9 +3425,16 @@ export declare class Revwalk {
    * The OIDs pointed to by the references that match the given glob pattern
    * and their ancestors will be hidden from the output on the revision walk.
    *
-   * A leading 'refs/' is implied if not present as well as a trailing `/ \
-   * *` if the glob lacks '?', ' \ *' or '['.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   hideGlob(glob: string): this;
+   * }
+   * ```
    *
+   * @param {string} glob - A leading 'refs/' is implied if not present as well as a trailing `/ \
+   * *` if the glob lacks '?', ' \ *' or '['.
    * Any references matching this glob which do not point to a commitish
    * will be ignored.
    */
@@ -1771,37 +3442,93 @@ export declare class Revwalk {
   /**
    * Hide the OID pointed to by a reference.
    *
-   * The reference must point to a commitish.
+   * @category Revwalk/Methods
+   * @signature
+   * ```ts
+   * class Revwalk {
+   *   hideRef(reference: string): this;
+   * }
+   * ```
+   *
+   * @param {string} reference - The reference must point to a commitish.
    */
   hideRef(reference: string): this
 }
 /**
  * A class to represent a git [tag][1].
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Basics-Tagging
  */
 export declare class Tag {
-  /** Get the id (SHA1) of a repository tag. */
+  /**
+   * Get the id (SHA1) of a repository tag.
+   *
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of this tag.
+   */
   id(): string
   /**
    * Get the message of a tag.
    *
-   * Returns `null` if there is no message or if it is not valid utf8.
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   message(): string | null;
+   * }
+   * ```
+   *
+   * @returns Returns `null` if there is no message or if it is not valid utf8.
    */
   message(): string | null
   /**
    * Get the name of a tag.
    *
-   * Throws error if it is not valid utf8.
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   name(): string;
+   * }
+   * ```
+   *
+   * @returns Name of tag.
+   * @throws Throws error if it is not valid utf8.
    */
   name(): string
-  /** Recursively peel a tag until a non tag git_object is found. */
+  /**
+   * Recursively peel a tag until a non tag Git object is found.
+   *
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   peel(): GitObject;
+   * }
+   * ```
+   *
+   * @returns Git object for this tag.
+   */
   peel(): GitObject
   /**
    * Get the tagger (author) of a tag.
    *
-   * If the author is unspecified, then `null` is returned.
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   tagger(): Signature | null;
+   * }
+   * ```
+   *
+   * @returns If the author is unspecified, then `null` is returned.
    */
   tagger(): Signature | null
   /**
@@ -1809,82 +3536,287 @@ export declare class Tag {
    *
    * This method performs a repository lookup for the given object and
    * returns it.
+   *
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   target(): GitObject;
+   * }
+   * ```
+   *
+   * @returns Tagged git object of a tag.
    */
   target(): GitObject
-  /** Get the OID of the tagged object of a tag. */
+  /**
+   * Get the OID of the tagged object of a tag.
+   *
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   targetId(): string;
+   * }
+   * ```
+   *
+   * @returns OID of the tagged object of a tag.
+   */
   targetId(): string
-  /** Get the ObjectType of the tagged object of a tag. */
+  /**
+   * Get the ObjectType of the tagged object of a tag.
+   *
+   * @category Tag/Methods
+   * @signature
+   * ```ts
+   * class Tag {
+   *   targetType(): ObjectType | null;
+   * }
+   * ```
+   *
+   * @returns ObjectType of the tagged object of a tag.
+   */
   targetType(): ObjectType | null
 }
 /**
  * A class to represent a git [tree][1].
- * @hideconstructor
  *
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
 export declare class Tree {
-  /** Get the id (SHA1) of a repository object. */
+  /**
+   * Get the id (SHA1) of a repository object.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of a repository object.
+   */
   id(): string
-  /** Get the number of entries listed in this tree. */
+  /**
+   * Get the number of entries listed in this tree.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   len(): bigint;
+   * }
+   * ```
+   *
+   * @returns The number of entries listed in this tree.
+   */
   len(): bigint
-  /** Return `true` if there is no entry. */
+  /**
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns Return `true` if there is no entry.
+   */
   isEmpty(): boolean
-  /** Returns an iterator over the entries in this tree. */
+  /**
+   * Returns an iterator over the entries in this tree.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   iter(): TreeIter;
+   * }
+   * ```
+   *
+   * @returns An iterator over the entries in this tree.
+   */
   iter(): TreeIter
   /**
    * Traverse the entries in a tree and its subtrees in post or pre-order.
-   * The callback function will be run on each node of the tree that's
-   * walked. The return code of this function will determine how the walk
-   * continues.
    *
-   * libgit2 requires that the callback be an integer, where 0 indicates a
-   * successful visit, 1 skips the node, and -1 aborts the traversal completely.
-   * See [libgit2 documentation][1] for more information.
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   walk(mode: TreeWalkMode, callback: (entry: TreeEntry) => number): void;
+   * }
+   * ```
    *
-   * [1]: https://libgit2.org/libgit2/#HEAD/group/tree/git_tree_walk
+   * @param {TreeWalkMode} mode - A indicator of whether a tree walk should be performed
+   * in pre-order or post-order.
+   *
+   * @param {(entry: TreeEntry) => number} callback - The callback function will be run on
+   * each node of the tree that's walked. The return code of this function will determine
+   * how the walk continues.
+   * `libgit2` requires that the callback be an integer, where 0 indicates a successful visit,
+   * 1 skips the node, and -1 aborts the traversal completely.
    */
   walk(mode: TreeWalkMode, callback: (entry: TreeEntry) => number): void
-  /** Lookup a tree entry by SHA value. */
+  /**
+   * Lookup a tree entry by SHA value.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   getId(id: string): TreeEntry | null;
+   * }
+   * ```
+   *
+   * @param {string} id - SHA value.
+   *
+   * @returns Tree entry with the given ID(SHA1).
+   */
   getId(id: string): TreeEntry | null
-  /** Lookup a tree entry by its position in the tree. */
+  /**
+   * Lookup a tree entry by its position in the tree.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   get(index: number): TreeEntry | null;
+   * }
+   * ```
+   *
+   * @param {number} id - Index of tree entry.
+   *
+   * @returns Tree entry.
+   */
   get(index: number): TreeEntry | null
-  /** Lookup a tree entry by its filename. */
+  /**
+   * Lookup a tree entry by its filename.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   getName(filename: string): TreeEntry | null;
+   * }
+   * ```
+   *
+   * @param {string} filename - Filename of tree entry.
+   *
+   * @returns Tree entry.
+   */
   getName(filename: string): TreeEntry | null
   /**
    * Retrieve a tree entry contained in a tree or in any of its subtrees,
    * given its relative path.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   getPath(path: string): TreeEntry | null;
+   * }
+   * ```
+   *
+   * @param {string} filename - Relative path to tree entry.
+   *
+   * @returns Tree entry.
    */
   getPath(path: string): TreeEntry | null
-  /** Casts this Tree to be usable as an `GitObject`. */
+  /**
+   * Casts this Tree to be usable as an `GitObject`.
+   *
+   * @category Tree/Methods
+   * @signature
+   * ```ts
+   * class Tree {
+   *   asObject(): GitObject;
+   * }
+   * ```
+   *
+   * @returns Git object.
+   */
   asObject(): GitObject
 }
-/**
- * An iterator over the entries in a tree.
- *
- * @hideconstructor
- */
+/** An iterator over the entries in a tree. */
 export declare class TreeIter {
   [Symbol.iterator](): Iterator<TreeEntry, void, void>
 }
 /**
  * A class representing an entry inside of a tree. An entry is borrowed
  * from a tree.
- *
- * @hideconstructor
  */
 export declare class TreeEntry {
-  /** Get the id of the object pointed by the entry. */
+  /**
+   * Get the id of the object pointed by the entry.
+   *
+   * @category Tree/TreeEntry
+   * @signature
+   * ```ts
+   * class TreeEntry {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns ID of the object pointed by the entry.
+   */
   id(): string
   /**
    * Get the filename of a tree entry.
    *
-   * Throws error if the name is not valid utf-8.
+   * @category Tree/TreeEntry
+   * @signature
+   * ```ts
+   * class TreeEntry {
+   *   name(): string;
+   * }
+   * ```
+   *
+   * @returns The filename of a tree entry.
+   * @throws Throws error if the name is not valid utf-8.
    */
   name(): string
-  /** Get the type of the object pointed by the entry. */
+  /**
+   * Get the type of the object pointed by the entry.
+   *
+   * @category Tree/TreeEntry
+   * @signature
+   * ```ts
+   * class TreeEntry {
+   *   type(): ObjectType | null;
+   * }
+   * ```
+   *
+   * @returns The type of the object pointed by the entry.
+   */
   type(): ObjectType | null
-  /** Get the UNIX file attributes of a tree entry. */
+  /**
+   * Get the UNIX file attributes of a tree entry.
+   *
+   * @category Tree/TreeEntry
+   * @signature
+   * ```ts
+   * class TreeEntry {
+   *   filemode(): number;
+   * }
+   * ```
+   *
+   * @returns UNIX file attributes of a tree entry.
+   */
   filemode(): number
-  /** Convert a tree entry to the object it points to. */
+  /**
+   * Convert a tree entry to the object it points to.
+   *
+   * @category Tree/TreeEntry
+   * @signature
+   * ```ts
+   * class TreeEntry {
+   *   toObject(repo: Repository): GitObject;
+   * }
+   * ```
+   *
+   * @param {Repository} repo - Repository which this tree entry belongs to.
+   * @returns Git object that pointed by the entry.
+   */
   toObject(repo: Repository): GitObject
 }

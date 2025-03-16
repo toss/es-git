@@ -41,7 +41,6 @@ impl Deref for CommitInner {
 
 #[napi]
 /// A class to represent a git commit.
-/// @hideconstructor
 pub struct Commit {
   pub(crate) inner: CommitInner,
 }
@@ -50,12 +49,34 @@ pub struct Commit {
 impl Commit {
   #[napi]
   /// Get the id (SHA1) of a repository commit
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   id(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns ID(SHA1) of a repository commit.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
 
   #[napi]
   /// Get the author of this commit.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   author(): Signature;
+  /// }
+  /// ```
+  ///
+  /// @returns Author signature of this commit.
   pub fn author(&self) -> crate::Result<Signature> {
     let signature = Signature::try_from(self.inner.author())?;
     Ok(signature)
@@ -63,6 +84,17 @@ impl Commit {
 
   #[napi]
   /// Get the committer of this commit.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   committer(): Signature;
+  /// }
+  /// ```
+  ///
+  /// @returns Committer signature of this commit.
   pub fn committer(&self) -> crate::Result<Signature> {
     let signature = Signature::try_from(self.inner.committer())?;
     Ok(signature)
@@ -75,6 +107,18 @@ impl Commit {
   /// potential leading newlines.
   ///
   /// Throws error if the message is not valid utf-8.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   message(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Full message of this commit.
+  /// @throws If the message is not valid utf-8.
   pub fn message(&self) -> crate::Result<String> {
     let message = std::str::from_utf8(self.inner.message_raw_bytes())?.to_string();
     Ok(message)
@@ -87,6 +131,18 @@ impl Commit {
   /// paragraph of the message with whitespace trimmed and squashed.
   ///
   /// Throws error if the summary is not valid utf-8.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   summary(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Short summary of this commit message.
+  /// @throws If the summary is not valid utf-8.
   pub fn summary(&self) -> crate::Result<Option<String>> {
     let summary = match self.inner.summary_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -103,6 +159,18 @@ impl Commit {
   /// are trimmed.
   ///
   /// Throws error if the summary is not valid utf-8.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   body(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Long body of this commit message.
+  /// @throws If the body is not valid utf-8.
   pub fn body(&self) -> crate::Result<Option<String>> {
     let body = match self.inner.body_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -113,6 +181,17 @@ impl Commit {
 
   #[napi]
   /// Get the commit time (i.e. committer time) of a commit.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   time(): Date;
+  /// }
+  /// ```
+  ///
+  /// @returns Commit time of a commit.
   pub fn time(&self) -> crate::Result<DateTime<Utc>> {
     let time = DateTime::from_timestamp(self.inner.time().seconds(), 0).ok_or(crate::Error::InvalidTime)?;
     Ok(time)
@@ -120,6 +199,17 @@ impl Commit {
 
   #[napi]
   /// Get the tree pointed to by a commit.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   tree(): Tree;
+  /// }
+  /// ```
+  ///
+  /// @returns Tree pointed to by a commit.
   pub fn tree(&self, this: Reference<Commit>, env: Env) -> crate::Result<Tree> {
     let tree = this.share_with(env, |commit| {
       commit.inner.tree().map_err(crate::Error::from).map_err(|e| e.into())
@@ -131,6 +221,17 @@ impl Commit {
 
   #[napi]
   /// Casts this Commit to be usable as an `GitObject`.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   asObject(): GitObject;
+  /// }
+  /// ```
+  ///
+  /// @returns `GitObject` that casted from this commit.
   pub fn as_object(&self) -> GitObject {
     let obj = self.inner.as_object().clone();
     GitObject {
@@ -145,12 +246,36 @@ impl Repository {
   /// Lookup a reference to one of the commits in a repository.
   ///
   /// Returns `null` if the commit does not exist.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   findCommit(oid: string): Commit | null;
+  /// }
+  /// ```
+  /// @param {string} oid - Commit ID(SHA1) to lookup.
+  /// @returns Commit instance found by oid. Returns `null` if the commit does not exist.
   pub fn find_commit(&self, this: Reference<Repository>, env: Env, oid: String) -> Option<Commit> {
     self.get_commit(this, env, oid).ok()
   }
 
   #[napi]
   /// Lookup a reference to one of the commits in a repository.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getCommit(oid: string): Commit;
+  /// }
+  /// ```
+  ///
+  /// @param {string} oid - Commit ID(SHA1) to lookup.
+  /// @returns Commit instance found by oid.
+  /// @throws Throws error if the commit does not exist.
   pub fn get_commit(&self, this: Reference<Repository>, env: Env, oid: String) -> crate::Result<Commit> {
     let commit = this.share_with(env, |repo| {
       repo
@@ -173,6 +298,17 @@ impl Repository {
   /// current branch and make it point to this commit. If the reference
   /// doesn't exist yet, it will be created. If it does exist, the first
   /// parent must be the tip of this branch.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   commit(tree: Tree, message: string, options?: CommitOptions | null): string;
+  /// }
+  /// ```
+  ///
+  /// @returns ID(SHA1) of created commit.
   pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
     let (update_ref, author, committer, parents) = match options {
       Some(opts) => {

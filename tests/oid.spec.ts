@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ObjectType, hashFileOid, hashObjectOid, isValidOid, isZeroOid, zeroOid } from '../index';
+import { hashFileOid, hashObjectOid, isValidOid, isZeroOid, zeroOid } from '../index';
 import { useFixture } from './fixtures';
 
 describe('oid', () => {
@@ -27,11 +27,11 @@ describe('oid', () => {
   });
 
   it('get hash object oid', () => {
-    expect(hashObjectOid(ObjectType.Blob, Buffer.from('hello world'))).toHaveLength(40);
+    expect(hashObjectOid('Blob', Buffer.from('hello world'))).toHaveLength(40);
   });
 
   it('get hash file oid', async () => {
     const p = await useFixture('commits');
-    expect(hashFileOid(ObjectType.Blob, path.join(p, 'first'))).toHaveLength(40);
+    expect(hashFileOid('Blob', path.join(p, 'first'))).toHaveLength(40);
   });
 });

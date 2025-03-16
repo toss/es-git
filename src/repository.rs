@@ -160,7 +160,6 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 }
 
 #[napi(object)]
-/// Options which can be used to configure how a repository is initialized.
 pub struct RepositoryOpenOptions {
   /// If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
   /// directly to a repository; otherwise, this may point to a subdirectory
@@ -217,7 +216,7 @@ pub struct RepositoryCloneOptions {
   ///
   /// This is similar to `git clone --recursive`.
   pub recursive: Option<bool>,
-  /// Options which control the fetch.
+  /// Options which can be specified to various fetch operations.
   pub fetch: Option<FetchOptions>,
 }
 
@@ -226,8 +225,6 @@ pub struct RepositoryCloneOptions {
 /// underlying filesystem.
 ///
 /// This class corresponds to a git repository in libgit2.
-///
-/// @hideconstructor
 pub struct Repository {
   pub(crate) inner: git2::Repository,
 }
@@ -355,6 +352,43 @@ impl Task for InitRepositoryTask {
 
 #[napi]
 /// Creates a new repository in the specified folder.
+///
+/// @category Repository
+/// @signature
+/// ```ts
+/// function initRepository(
+///   path: string,
+///   options?: RepositoryInitOptions,
+///   signal?: AbortSignal,
+/// ): Promise<Repository>;
+/// ```
+///
+/// @param {string} path - Directory path to create new repository.
+/// @param {RepositoryInitOptions} [options] - Options which can be used to configure
+/// how a repository is initialized.
+/// @param {AbortSignal} [signal] - Abort signal.
+///
+/// @returns A new repository.
+///
+/// @example
+///
+/// Basic example.
+///
+/// ```ts
+/// import { initRepository } from 'es-git';
+///
+/// const repo = await iniRepository('/path/to/repo');
+/// ```
+///
+/// Create bare repository.
+///
+/// ```ts
+/// import { initRepository } from 'es-git';
+///
+/// const repo = await iniRepository('/path/to/repo.git', {
+///   bare: true,
+/// });
+/// ```
 pub fn init_repository(
   path: String,
   options: Option<RepositoryInitOptions>,
@@ -392,6 +426,53 @@ impl Task for OpenRepositoryTask {
 
 #[napi]
 /// Attempt to open an already-existing repository at `path`.
+///
+/// @category Repository
+/// @signature
+/// ```ts
+/// function openRepository(
+///   path: string,
+///   options?: RepositoryOpenOptions,
+///   signal?: AbortSignal,
+/// ): Promise<Repository>;
+/// ```
+///
+/// @param {string} path - Directory path to repository already-existing.
+/// @param {RepositoryOpenOptions} [options] - Options which can be used to configure
+/// how a repository is initialized.
+/// @param {AbortSignal} [signal] - Abort signal.
+///
+/// @returns Opened repository.
+///
+/// @example
+///
+/// Basic example.
+///
+/// ```ts
+/// import { openRepository } from 'es-git';
+///
+/// const repo = await openRepository('/path/to/repo');
+/// ```
+///
+/// Open bare repository.
+///
+/// ```ts
+/// import { openRepository } from 'es-git';
+///
+/// const repo = await openRepository('/path/to/repo.git', {
+///   bare: true,
+/// });
+/// ```
+///
+/// Open in a subdirectory of the repository
+///
+/// ```ts
+/// import { openRepository, RepositoryOpenFlags } from 'es-git';
+///
+/// const repo = await openRepository('/path/to/repo/sub/dir', {
+///   flags: RepositoryOpenFlags.CrossFS,
+/// });
+/// ```
 pub fn open_repository(
   path: String,
   options: Option<RepositoryOpenOptions>,
@@ -424,6 +505,17 @@ impl Task for DiscoverRepositoryTask {
 ///
 /// This starts at `path` and looks up the filesystem hierarchy
 /// until it finds a repository.
+///
+/// @category Repository
+/// @signature
+/// ```ts
+/// function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+/// ```
+///
+/// @param {string} path - Directory path to discover repository.
+/// @param {AbortSignal} [signal] - Abort signal.
+///
+/// @returns Git repository.
 pub fn discover_repository(path: String, signal: Option<AbortSignal>) -> AsyncTask<DiscoverRepositoryTask> {
   AsyncTask::with_optional_signal(DiscoverRepositoryTask { path }, signal)
 }
@@ -476,6 +568,63 @@ impl Task for CloneRepositoryTask {
 ///
 /// This will use the options configured so far to clone the specified URL
 /// into the specified local path.
+///
+/// @category Repository
+///
+/// @signature
+/// ```ts
+/// function cloneRepository(
+///   url: string,
+///   path: string,
+///   options?: RepositoryCloneOptions | null,
+///   signal?: AbortSignal | null
+/// ): Promise<Repository>;
+/// ```
+///
+/// @param {string} url - Remote URL for repository.
+/// @param {string} path - Local path to clone repository.
+/// @param {RepositoryCloneOptions|undefined|null} [options] - Clone options for repository.
+/// @param {AbortSignal|undefined|null} [signal] - Abort signal.
+/// @returns Repository instance
+///
+/// @example
+///
+/// Clone repository using `https://` protocol.
+///
+/// ```ts
+/// import { cloneRepository } from 'es-git';
+///
+/// const repo = await cloneRepository(
+///   'https://github.com/toss/es-git',
+///   '/path/to/clone',
+/// );
+/// ```
+///
+/// Clone repository using `git://` protocol.
+///
+/// ```ts
+/// import { cloneRepository } from 'es-git';
+///
+/// const repo = await cloneRepository(
+///   'git@github.com:toss/es-git',
+///   '/path/to/clone',
+/// );
+/// ```
+///
+/// Clone repository with authentication.
+///
+/// ```ts
+/// import { cloneRepository } from 'es-git';
+///
+/// // Authenticate using ssh-agent
+/// const repo = await cloneRepository('git@github.com:toss/es-git', '.', {
+///   fetch: {
+///     credential: {
+///       type: 'SSHKeyFromAgent',
+///     },
+///   },
+/// });
+/// ```
 pub fn clone_repository(
   url: String,
   path: String,

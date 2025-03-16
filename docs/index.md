@@ -14,7 +14,7 @@ hero:
       link: /usage/repository
     - theme: alt
       text: Reference
-      link: /reference/globals
+      link: /reference/Repository/openRepository
 
 features:
   - title: Easy Git Integration

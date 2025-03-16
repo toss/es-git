@@ -61,7 +61,7 @@ describe('tag', () => {
       })
     );
     const obj = tag.target();
-    expect(obj.type()).toEqual(ObjectType.Commit);
+    expect(obj.type()).toEqual('Commit');
     const commit = obj.peelToCommit();
     expect(commit.message()).toEqual('A\n');
   });

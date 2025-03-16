@@ -4,11 +4,10 @@ use napi::Env;
 use napi_derive::napi;
 
 #[napi(string_enum)]
-/// An enumeration of all possible kinds of references.
+/// - `Direct` : A reference which points at an object id.
+/// - `Symbolic` : A reference which points at another reference.
 pub enum ReferenceType {
-  /// A reference which points at an object id.
   Direct,
-  /// A reference which points at another reference.
   Symbolic,
 }
 
@@ -32,7 +31,6 @@ impl From<git2::ReferenceType> for ReferenceType {
 
 #[napi]
 /// A class to represent a git [reference][1].
-/// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Internals-Git-References
 pub struct Reference {
@@ -43,8 +41,16 @@ pub struct Reference {
 /// Ensure the reference name is well-formed.
 ///
 /// Validation is performed as if `ReferenceFormat.AllowOnelevel`
-/// was given to `normalizeReferenceName`
-/// No normalization is performed, however.
+/// was given to `normalizeReferenceName`  No normalization is performed, however.
+///
+/// @category Reference
+/// @signature
+/// ```ts
+/// function isValidReferenceName(refname: string): boolean;
+/// ```
+///
+/// @param {string} refname - Reference name to check if it is valid.
+/// @returns Returns `true` if reference name is valid.
 ///
 /// @example
 /// ```ts
@@ -64,23 +70,21 @@ pub fn is_valid_reference_name(refname: String) -> bool {
 
 #[napi]
 #[repr(u32)]
-/// Options for normalize reference name.
+/// - `ReferenceFormat.Normal` : No particular normalization.
+/// - `ReferenceFormat.AllowOnelevel` : Control whether one-level refname are accepted
+/// (i.e., refnames that do not contain multiple `/`-separated components). Those are
+/// expected to be written only using uppercase letters and underscore
+/// (e.g. `HEAD`, `FETCH_HEAD`).
+/// - `ReferenceFormat.RefspecPattern` : Interpret the provided name as a reference pattern
+/// for a refspec (as used with remote repositories). If this option is enabled, the name
+/// is allowed to contain a single `*` in place of a full pathname
+/// components (e.g., `foo/*\/bar` but not `foo/bar*`).
+/// - `ReferenceFormat.RefspecShorthand` : Interpret the name as part of a refspec in shorthand
+/// form so the `AllowOnelevel` naming rules aren't enforced and `main` becomes a valid name.
 pub enum ReferenceFormat {
-  /// No particular normalization.
   Normal = 0,
-  /// Control whether one-level refname are accepted (i.e., refnames that
-  /// do not contain multiple `/`-separated components). Those are
-  /// expected to be written only using uppercase letters and underscore
-  /// (e.g. `HEAD`, `FETCH_HEAD`).
   AllowOnelevel = 1,
-  /// Interpret the provided name as a reference pattern for a refspec (as
-  /// used with remote repositories). If this option is enabled, the name
-  /// is allowed to contain a single `*` in place of a full pathname
-  /// components (e.g., `foo/*\/bar` but not `foo/bar*`).
   RefspecPattern = 2,
-  /// Interpret the name as part of a refspec in shorthand form so the
-  /// `AllowOnelevel` naming rules aren't enforced and `main` becomes a
-  /// valid name.
   RefspecShorthand = 4,
 }
 
@@ -112,7 +116,16 @@ impl Default for ReferenceFormat {
 ///    the characters '~', '^', ':', '\\', '?', '[', and '*', and the
 ///    sequences ".." and "@{" which have special meaning to revparse.
 ///
-/// If the reference passes validation, it is returned in normalized form,
+/// @category Reference
+/// @signature
+/// ```ts
+/// function normalizeReferenceName(refname: string, format?: number): string | null;
+/// ```
+///
+/// @param {string} refname - Reference name to normalize.
+/// @param {number} [format] - Reference format flags which used for normalize.
+///
+/// @returns If the reference passes validation, it is returned in normalized form,
 /// otherwise an `null` is returned.
 ///
 /// @example
@@ -166,7 +179,15 @@ impl Reference {
   /// This method works for both direct and symbolic references. The reference
   /// will be immediately removed on disk.
   ///
-  /// This function will return an error if the reference has changed from the
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   delete(): void;
+  /// }
+  /// ```
+  ///
+  /// @throws This method will throws an error if the reference has changed from the
   /// time it was looked up.
   pub fn delete(&mut self) -> crate::Result<()> {
     self.inner.delete()?;
@@ -175,24 +196,64 @@ impl Reference {
 
   #[napi]
   /// Check if a reference is a local branch.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   isBranch(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if a reference is a local branch.
   pub fn is_branch(&self) -> bool {
     self.inner.is_branch()
   }
 
   #[napi]
   /// Check if a reference is a note.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   isNote(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if a reference is a note.
   pub fn is_note(&self) -> bool {
     self.inner.is_note()
   }
 
   #[napi]
   /// Check if a reference is a remote tracking branch.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   isRemote(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if a reference is a remote tracking branch.
   pub fn is_remote(&self) -> bool {
     self.inner.is_remote()
   }
 
   #[napi]
   /// Check if a reference is a tag.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   isTag(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if a reference is a tag.
   pub fn is_tag(&self) -> bool {
     self.inner.is_tag()
   }
@@ -200,7 +261,15 @@ impl Reference {
   #[napi(js_name = "type")]
   /// Get the reference type of a reference.
   ///
-  /// If the type is unknown, then `null` is returned.
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   type(): ReferenceType | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if the type is unknown.
   pub fn kind(&self) -> Option<ReferenceType> {
     self.inner.kind().map(|x| x.into())
   }
@@ -208,7 +277,16 @@ impl Reference {
   #[napi]
   /// Get the full name of a reference.
   ///
-  /// Throws error if the name is not valid utf-8.
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   name(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Full name of a reference.
+  /// @throws Throws error if the name is not valid utf-8.
   pub fn name(&self) -> crate::Result<String> {
     let name = std::str::from_utf8(self.inner.name_bytes())?.to_string();
     Ok(name)
@@ -220,7 +298,16 @@ impl Reference {
   /// This will transform the reference name into a name "human-readable"
   /// version. If no shortname is appropriate, it will return the full name.
   ///
-  /// Throws error if the shorthand is not valid utf-8.
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   shorthand(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Full shorthand of a reference.
+  /// @throws Throws error if the shorthand is not valid utf-8.
   pub fn shorthand(&self) -> crate::Result<String> {
     let shorthand = std::str::from_utf8(self.inner.shorthand_bytes())?.to_string();
     Ok(shorthand)
@@ -231,6 +318,16 @@ impl Reference {
   ///
   /// Only available if the reference is direct (i.e. an object id reference,
   /// not a symbolic one).
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   target(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns OID pointed to by a direct reference.
   pub fn target(&self) -> Option<String> {
     self.inner.target().map(|x| x.to_string())
   }
@@ -239,6 +336,16 @@ impl Reference {
   /// Return the peeled OID target of this reference.
   ///
   /// This peeled OID only applies to direct references that point to a hard.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   targetPeel(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Peeled OID of this reference.
   pub fn target_peel(&self) -> Option<String> {
     self.inner.target_peel().map(|x| x.to_string())
   }
@@ -248,6 +355,16 @@ impl Reference {
   ///
   /// This method recursively peels the reference until it reaches
   /// a tree.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   peelToTree(): Tree;
+  /// }
+  /// ```
+  ///
+  /// @returns Peeled `Tree` of this reference.
   pub fn peel_to_tree(&self, this: napi::bindgen_prelude::Reference<Reference>, env: Env) -> crate::Result<Tree> {
     Ok(Tree {
       inner: TreeInner::Reference(this.share_with(env, |reference| {
@@ -264,6 +381,16 @@ impl Reference {
   /// Get full name to the reference pointed to by a symbolic reference.
   ///
   /// Only available if the reference is symbolic.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   symbolicTarget(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Full name of the reference pointed to by a symbolic reference.
   pub fn symbolic_target(&self) -> crate::Result<Option<String>> {
     match self.inner.symbolic_target_bytes() {
       Some(bytes) => Ok(Some(std::str::from_utf8(bytes)?.to_string())),
@@ -279,6 +406,16 @@ impl Reference {
   ///
   /// If a direct reference is passed as an argument, a copy of that
   /// reference is returned.
+  ///
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   resolve(): Reference;
+  /// }
+  /// ```
+  ///
+  /// @returns Resolved reference.
   pub fn resolve(&self, env: Env) -> crate::Result<Reference> {
     let inner = self.inner.clone(env)?.share_with(env, |reference| {
       reference.resolve().map_err(crate::Error::from).map_err(|e| e.into())
@@ -291,8 +428,17 @@ impl Reference {
   ///
   /// This method works for both direct and symbolic references.
   ///
-  /// If the force flag is not enabled, and there's already a reference with
-  /// the given name, the renaming will fail.
+  /// @category Reference/Methods
+  /// @signature
+  /// ```ts
+  /// class Reference {
+  ///   rename(newName: string, options?: RenameReferenceOptions): Reference;
+  /// }
+  /// ```
+  ///
+  /// @param {string} newName - Name to rename an existing reference.
+  /// @param {RenameReferenceOptions} [options] - Options to rename an existing reference.
+  /// @returns Renamed reference.
   pub fn rename(
     &mut self,
     env: Env,
@@ -319,7 +465,27 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Returns `null` if the reference does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   findReference(name: string): Reference | null;
+  /// }
+  /// ```
+  ///
+  /// @param {string} name - Reference name to lookup.
+  /// @returns Returns `null` if the reference does not exist.
+  ///
+  /// @example
+  ///
+  /// Get `HEAD` reference from the repository.
+  ///
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('.');
+  /// const reference = repo.findReference('HEAD');
+  /// ```
   pub fn find_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,
@@ -332,7 +498,28 @@ impl Repository {
   #[napi]
   /// Lookup a reference to one of the objects in a repository.
   ///
-  /// Throws error if the reference does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getReference(name: string): Reference;
+  /// }
+  /// ```
+  ///
+  /// @param {string} name - Reference name to lookup.
+  /// @returns Git reference.
+  /// @throws Throws error if the reference does not exist.
+  ///
+  /// @example
+  ///
+  /// Get `HEAD` reference from the repository.
+  ///
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('.');
+  /// const reference = repo.getReference('HEAD');
+  /// ```
   pub fn get_reference(
     &self,
     this: napi::bindgen_prelude::Reference<Repository>,

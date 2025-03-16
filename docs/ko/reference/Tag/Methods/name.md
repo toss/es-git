@@ -1,0 +1,31 @@
+# name
+
+Get the name of a tag.
+
+## 시그니처
+
+```ts
+class Tag {
+  name(): string;
+}
+```
+
+### 반환 값
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">string</span>
+    <br>
+    <p class="param-description">Name of tag.</p>
+  </li>
+</ul>
+
+### 에러
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description">Throws error if it is not valid utf8.</p>
+  </li>
+</ul>

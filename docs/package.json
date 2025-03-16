@@ -3,24 +3,20 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "gen-typedoc": "node gen-typedoc.js",
-    "gen-typedoc:ko": "node gen-typedoc.js ko",
+    "gen-reference": "tsx gen-reference.ts",
+    "gen-reference:ko": "tsx gen-reference.ts ko",
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "jsdoc-api": "^9.3.4",
+    "es-toolkit": "^1.32.0",
+    "fast-glob": "^3.3.3",
     "typedoc": "^0.27.6",
-    "typedoc-plugin-markdown": "^4.4.1",
-    "typedoc-vitepress-theme": "^1.1.2",
     "vitepress": "^1.6.3",
     "vitepress-jsdoc": "^1.0.4"
   },
   "devDependencies": {
-    "@types/markdown-it-container": "^2.0.10",
-    "es-toolkit": "^1.32.0",
-    "execa": "^9.5.2",
     "tsx": "^4.19.3",
     "typescript": "5.7.3"
   }

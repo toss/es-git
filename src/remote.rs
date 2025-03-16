@@ -6,7 +6,8 @@ use std::path::Path;
 use std::sync::RwLock;
 
 #[napi(string_enum)]
-/// An enumeration of the possible directions for a remote.
+/// - `Fetch` : Fetch direction.
+/// - `Push` : Push direction.
 pub enum Direction {
   Fetch,
   Push,
@@ -29,8 +30,11 @@ impl From<git2::Direction> for Direction {
 /// [1]: https://git-scm.com/book/en/Git-Internals-The-Refspec
 pub struct Refspec {
   pub direction: Direction,
+  /// The source specifier.
   pub src: String,
+  /// The destination specifier.
   pub dst: String,
+  /// Force update setting.
   pub force: bool,
 }
 
@@ -60,7 +64,7 @@ pub enum CredentialType {
 
 #[napi(object)]
 #[derive(Clone)]
-/// A data object to represent git credentials in libgit2.
+/// A interface to represent git credentials in libgit2.
 pub struct Credential {
   pub r#type: CredentialType,
   pub username: Option<String>,
@@ -102,7 +106,6 @@ impl Credential {
 }
 
 #[napi(object)]
-/// Options which can be specified to various fetch operations.
 pub struct ProxyOptions {
   /// Try to auto-detect the proxy from the git configuration.
   ///
@@ -128,13 +131,12 @@ impl ProxyOptions {
 }
 
 #[napi(string_enum)]
-/// Configuration for how pruning is done on a fetch.
+/// - `Unspecified` : Use the setting from the configuration.
+/// - `On` : Force pruning on.
+/// - `Off` : Force pruning off
 pub enum FetchPrune {
-  /// Use the setting from the configuration
   Unspecified,
-  /// Force pruning on
   On,
-  /// Force pruning off
   Off,
 }
 
@@ -149,15 +151,14 @@ impl From<FetchPrune> for git2::FetchPrune {
 }
 
 #[napi(string_enum)]
-/// Automatic tag following options.
+/// - `Unspecified` : Use the setting from the remote's configuration
+/// - `Auto` : Ask the server for tags pointing to objects we're already downloading
+/// - `None` : Don't ask for any tags beyond the refspecs
+/// - `All` : Ask for all the tags
 pub enum AutotagOption {
-  /// Use the setting from the remote's configuration
   Unspecified,
-  /// Ask the server for tags pointing to objects we're already downloading
   Auto,
-  /// Don't ask for any tags beyond the refspecs
   None,
-  /// Ask for all the tags
   All,
 }
 
@@ -173,18 +174,12 @@ impl From<AutotagOption> for git2::AutotagOption {
 }
 
 #[napi(string_enum)]
-/// Remote redirection settings; whether redirects to another host are
-/// permitted.
-///
-/// By default, git will follow a redirect on the initial request
-/// (`/info/refs`), but not subsequent requests.
+/// - `None` : Do not follow any off-site redirects at any stage of the fetch or push.
+/// - `Initial` : Allow off-site redirects only upon the initial request. This is the default.
+/// - `All` : Allow redirects at any stage in the fetch or push.
 pub enum RemoteRedirect {
-  /// Do not follow any off-site redirects at any stage of the fetch or push.
   None,
-  /// Allow off-site redirects only upon the initial request. This is the
-  /// default.
   Initial,
-  /// Allow redirects at any stage in the fetch or push.
   All,
 }
 
@@ -199,7 +194,6 @@ impl From<RemoteRedirect> for git2::RemoteRedirect {
 }
 
 #[napi(object)]
-/// Options which can be specified to various fetch operations.
 pub struct FetchOptions {
   pub credential: Option<Credential>,
   /// Set the proxy options to use for the fetch operation.
@@ -313,6 +307,7 @@ pub struct CreateRemoteOptions {
 
 #[napi(object)]
 pub struct FetchRemoteOptions {
+  /// Options which can be specified to various fetch operations.
   pub fetch: Option<FetchOptions>,
   pub reflog_msg: Option<String>,
 }
@@ -463,7 +458,6 @@ impl Task for GetRemoteDefaultBranchTask {
 
 #[napi]
 /// A class representing a [remote][1] of a git repository.
-/// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Basics-Working-with-Remotes
 pub struct Remote {
@@ -475,8 +469,16 @@ impl Remote {
   #[napi]
   /// Get the remote's name.
   ///
-  /// Returns `null` if this remote has not yet been named, and
-  /// throws error if the name is not valid utf-8.
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   name(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if this remote has not yet been named.
+  /// @throws Throws error if the name is not valid utf-8.
   pub fn name(&self) -> crate::Result<Option<String>> {
     let name = match self.inner.name_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -488,7 +490,15 @@ impl Remote {
   #[napi]
   /// Get the remote's URL.
   ///
-  /// Throws error if the URL is not valid utf-8.
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   url(): string;
+  /// }
+  /// ```
+  ///
+  /// @throws Throws error if the URL is not valid utf-8.
   pub fn url(&self) -> crate::Result<String> {
     let url = std::str::from_utf8(self.inner.url_bytes())?.to_string();
     Ok(url)
@@ -497,8 +507,16 @@ impl Remote {
   #[napi]
   /// Get the remote's URL.
   ///
-  /// Returns `null` if push url not exists, and
-  /// throws error if the URL is not valid utf-8.
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   pushurl(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if push url not exists.
+  /// @throws Throws error if the URL is not valid utf-8.
   pub fn pushurl(&self) -> crate::Result<Option<String>> {
     let pushurl = match self.inner.pushurl_bytes() {
       Some(bytes) => Some(std::str::from_utf8(bytes)?.to_string()),
@@ -511,6 +529,35 @@ impl Remote {
   /// List all refspecs.
   ///
   /// Filter refspec if has not valid `src` or `dst` with utf-8.
+  ///
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   refspecs(): Refspec[];
+  /// }
+  /// ```
+  ///
+  /// @returns List all refspecs.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('/path/to/repo');
+  /// const remote = repo.getRemote('origin');
+  ///
+  /// // Retrieving the Refspecs configured for this remote
+  /// const refspecs = remote.refspecs();
+  /// console.log(refspecs[0]);
+  /// // For the "+refs/heads/*:refs/remotes/origin/*" Refspec
+  /// // {
+  /// //   "direction": "Fetch",
+  /// //   "src": "refs/heads/*",
+  /// //   "dst": "refs/remotes/origin/*",
+  /// //   "force": true
+  /// // }
+  /// ```
   pub fn refspecs(&self) -> Vec<Refspec> {
     self
       .inner
@@ -523,6 +570,36 @@ impl Remote {
   /// Download new data and update tips.
   ///
   /// Convenience function to connect to a remote, download the data, disconnect and update the remote-tracking branches.
+  ///
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   fetch(
+  ///     refspecs: string[],
+  ///     options?: FetchRemoteOptions,
+  ///     signal?: AbortSignal,
+  ///   ): Promise<void>;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} refspecs - Refspecs to fetch from remote.
+  /// @param {FetchRemoteOptions} [options] - Options for fetch remote.
+  /// @param {AbortSignal} [signal] Abort signal.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('/path/to/repo');
+  /// const remote = repo.getRemote('origin');
+  ///
+  /// // Fetching data from the "main" branch
+  /// await remote.fetch(['main']);
+  ///
+  /// // Providing an empty array fetches data using the default Refspec configured for the remote
+  /// await remote.fetch([]);
+  /// ```
   pub fn fetch(
     &self,
     self_ref: Reference<Remote>,
@@ -545,6 +622,41 @@ impl Remote {
   ///
   /// Perform all the steps for a push.
   /// If no refspecs are passed, then the configured refspecs will be used.
+  ///
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   push(
+  ///     refspecs: string[],
+  ///     options?: PushOptions,
+  ///     signal?: AbortSignal,
+  ///   ): Promise<void>;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} refspecs - Refspecs to push to remote.
+  /// @param {FetchRemoteOptions} [options] - Options for push remote.
+  /// @param {AbortSignal} [signal] Abort signal.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('/path/to/repo');
+  /// const remote = repo.getRemote('origin');
+  ///
+  /// // Push the local "main" branch to the remote "other" branch
+  /// await remote.push(['refs/heads/main:refs/heads/other']);
+  ///
+  /// // Push with credential.
+  /// await remote.push(['refs/heads/main:refs/heads/other'], {
+  ///   credential: {
+  ///     type: 'Plain',
+  ///     password: '<personal access token>',
+  ///   },
+  /// });
+  /// ```
   pub fn push(
     &self,
     self_ref: Reference<Remote>,
@@ -564,6 +676,17 @@ impl Remote {
 
   #[napi]
   /// Prune tracking refs that are no longer present on remote.
+  ///
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   prune(options?: PruneOptions, signal?: AbortSignal): Promise<void>;
+  /// }
+  /// ```
+  ///
+  /// @param {PruneOptions} [options] - Options for prune remote.
+  /// @param {AbortSignal} [signal] Abort signal.
   pub fn prune(
     &self,
     self_ref: Reference<Remote>,
@@ -583,6 +706,28 @@ impl Remote {
   /// Get the remote’s default branch.
   ///
   /// The `fetch` operation from the remote is also performed.
+  ///
+  /// @category Remote/Methods
+  /// @signature
+  /// ```ts
+  /// class Remote {
+  ///   defaultBranch(signal?: AbortSignal): Promise<string>;
+  /// }
+  /// ```
+  ///
+  /// @param {AbortSignal} [signal] Abort signal.
+  /// @returns Default branch name.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('/path/to/repo');
+  /// const remote = repo.getRemote('origin');
+  ///
+  /// const branch = await remote.defaultBranch();
+  /// console.log(branch); // "refs/heads/main"
+  /// ```
   pub fn default_branch(
     &self,
     self_ref: Reference<Remote>,
@@ -601,6 +746,24 @@ impl Remote {
 impl Repository {
   #[napi]
   /// List all remotes for a given repository
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   remoteNames(): string[];
+  /// }
+  /// ```
+  ///
+  /// @returns All remote names for this repository.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('/path/to/repo');
+  /// console.log(repo.remoteNames()); // ["origin"]
+  /// ```
   pub fn remote_names(&self) -> crate::Result<Vec<String>> {
     let remotes = self
       .inner
@@ -612,7 +775,16 @@ impl Repository {
   #[napi]
   /// Get remote from repository.
   ///
-  /// Throws error if remote does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getRemote(name: string): Remote;
+  /// }
+  /// ```
+  ///
+  /// @returns Remote instance.
+  /// @throws Throws error if remote does not exist.
   pub fn get_remote(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Remote> {
     let remote = Remote {
       inner: this.share_with(env, move |repo| {
@@ -629,13 +801,34 @@ impl Repository {
   #[napi]
   /// Find remote from repository.
   ///
-  /// Returns `null` if remote does not exist.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   findRemote(name: string): Remote | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if remote does not exist.
   pub fn find_remote(&self, this: Reference<Repository>, env: Env, name: String) -> Option<Remote> {
     self.get_remote(this, env, name).ok()
   }
 
   #[napi]
   /// Add a remote with the default fetch refspec to the repository’s configuration.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+  /// }
+  /// ```
+  ///
+  /// @param {string} name - The name of the remote.
+  /// @param {string} url - Remote url.
+  /// @param {CreateRemoteOptions} [options] - Options for creating remote.
+  /// @returns Created remote.
   pub fn create_remote(
     &self,
     this: Reference<Repository>,

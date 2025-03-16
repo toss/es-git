@@ -26,28 +26,33 @@ function nav(): DefaultTheme.NavItem[] {
     { text: 'Home', link: '/' },
     { text: 'Getting Started', link: '/getting-started' },
     { text: 'Usage', link: '/usage/repository' },
+    { text: 'Reference', link: '/reference/Repository/openRepository' },
   ];
 }
 
 function sidebar(): DefaultTheme.Sidebar {
   return [
     {
-      text: 'Getting Started',
-      link: '/getting-started',
-    },
-    {
-      text: 'Usage',
+      text: 'Guides',
       items: [
-        { text: 'Repository', link: '/usage/repository' },
-        { text: 'Remotes', link: '/usage/remote' },
-        { text: 'Commit History', link: '/usage/history' },
-        { text: 'Commit Changes', link: '/usage/commit' },
-        { text: 'Tags', link: '/usage/tag' },
+        {
+          text: 'Getting Started',
+          link: '/getting-started',
+        },
+        {
+          text: 'Usage',
+          items: [
+            { text: 'Repository', link: '/usage/repository' },
+            { text: 'Remotes', link: '/usage/remote' },
+            { text: 'Commit History', link: '/usage/history' },
+            { text: 'Commit Changes', link: '/usage/commit' },
+            { text: 'Tags', link: '/usage/tag' },
+          ],
+        },
       ],
     },
     {
       text: 'Reference',
-      link: '/reference/globals',
       items: getReferenceSidebarItems(docsRoot),
     },
   ];

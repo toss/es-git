@@ -4,7 +4,6 @@ use napi_derive::napi;
 #[derive(Clone)]
 /// A Signature is used to indicate authorship of various actions throughout the
 /// library.
-///
 /// Signatures contain a name, email, and timestamp.
 pub struct Signature {
   /// Name on the signature.
@@ -45,6 +44,32 @@ pub struct SignatureTimeOptions {
 
 #[napi]
 /// Create a new action signature.
+///
+/// @category Signature
+/// @signature
+/// ```ts
+/// function createSignature(
+///   name: string,
+///   email: string,
+///   timeOptions?: SignatureTimeOptions,
+/// ): Signature;
+/// ```
+///
+/// @param {string} name - Name on the signature.
+/// @param {string} email - Email on the signature.
+/// @param {SignatureTimeOptions} [timeOptions] - Time options for signature.
+///
+/// @returns
+///
+/// @example
+/// ```ts
+/// import { createSignature } from 'es-git';
+///
+/// const author = createSignature(
+///   'Seokju Na',
+///   'seokju.me@toss.im',
+/// );
+/// ```
 pub fn create_signature(
   name: String,
   email: String,

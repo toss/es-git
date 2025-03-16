@@ -2,7 +2,7 @@
 
 ## 리포지토리 열기
 
-로컬에 저장된 리포지토리를 열기 위해 [`openRepository()`](../reference/functions/openRepository.md)를 사용해요.
+로컬에 저장된 리포지토리를 열기 위해 [`openRepository()`](../reference/Repository/openRepository.md)를 사용해요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -12,7 +12,7 @@ const repo = await openRepository('/path/to/repo');
 
 ## 리포지토리 클론하기
 
-기존 리포지토리를 클론하기 위해 [`cloneRepository()`](../reference/functions/cloneRepository.md)를 사용할 수 있어요. 리모트에서 클론하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
+기존 리포지토리를 클론하기 위해 [`cloneRepository()`](../reference/Repository/cloneRepository.md)를 사용할 수 있어요. 리모트에서 클론하기 위해 `https://`, `git://` 혹은 `user@server:path/to/repo.git` 처럼
 SSH 프로토콜을 사용할 수 있어요.
 
 ```ts

@@ -9,19 +9,37 @@ use std::ops::Deref;
 
 #[napi]
 #[repr(u32)]
+/// - `DiffFlags.Binary` : File(s) treated as binary data.
+/// - `DiffFlags.NotBinary` : File(s) treated as text data.
+/// - `DiffFlags.ValidId` : `id` value is known correct.
+/// - `DiffFlags.Exists` : File exists at this side of the delta.
 pub enum DiffFlags {
-  /// File(s) treated as binary data.
   Binary = 1,
-  /// File(s) treated as text data.
   NotBinary = 2,
-  /// `id` value is known correct.
   ValidId = 4,
-  /// File exists at this side of the delta.
   Exists = 8,
 }
 
 #[napi]
 /// Check diff flags contains given flags.
+///
+/// @category Diff
+/// @signature
+/// ```ts
+/// function diffFlagsContains(source: number, target: number): boolean;
+/// ```
+///
+/// @param {number} source - Source flags.
+/// @param {number} target - Target flags.
+/// @returns Returns `true` is source flags contains target flags.
+///
+/// @example
+/// ```ts
+/// import { DiffDelta, DiffFlags, diffFlagsContains } from 'es-git';
+///
+/// const delta: DiffDelta;
+/// console.assert(diffFlagsContains(delta.flags(), DiffFlags.Binary | DiffFlags.ValidId));
+/// ```
 pub fn diff_flags_contains(source: u32, target: u32) -> bool {
   bitflags_contain(
     git2::DiffFlags::from_bits_retain(source),
@@ -30,29 +48,28 @@ pub fn diff_flags_contains(source: u32, target: u32) -> bool {
 }
 
 #[napi(string_enum)]
-/// What type of change is described by a `DiffDelta`?
+/// - `Unmodified` : No changes.
+/// - `Added` : Entry does not exist in an old version.
+/// - `Deleted` : Entry does not exist in a new version.
+/// - `Modified` : Entry content changed between old and new.
+/// - `Renamed` : Entry was renamed between old and new.
+/// - `Copied` : Entry was copied from another old entry.
+/// - `Ignored` : Entry is ignored item in workdir.
+/// - `Untracked` : Entry is untracked item in workdir.
+/// - `Typechange` : Type of entry changed between old and new.
+/// - `Unreadable` : Entry is unreadable.
+/// - `Conflicted` : Entry in the index is conflicted.
 pub enum DeltaType {
-  /// No changes
   Unmodified,
-  /// Entry does not exist in an old version
   Added,
-  /// Entry does not exist in a new version
   Deleted,
-  /// Entry content changed between old and new
   Modified,
-  /// Entry was renamed between old and new
   Renamed,
-  /// Entry was copied from another old entry
   Copied,
-  /// Entry is ignored item in workdir
   Ignored,
-  /// Entry is untracked item in workdir
   Untracked,
-  /// Type of entry changed between old and new
   Typechange,
-  /// Entry is unreadable
   Unreadable,
-  /// Entry in the index is conflicted
   Conflicted,
 }
 
@@ -94,18 +111,19 @@ impl From<DeltaType> for git2::Delta {
 
 #[napi(string_enum)]
 /// Possible output formats for diff data.
+///
+/// - `Patch`: Full `git diff` (default)
+/// - `PatchHeader` : Just the headers of the patch
+/// - `Raw` : Like `git diff --raw` the headers of the patch
+/// - `NameOnly` : Like `git diff --name-only`
+/// - `NameStatus` : Like `git diff --name-status`
+/// - `PatchId` : `git diff` as used by `git patch-id`
 pub enum DiffFormat {
-  /// full `git diff` (default)
   Patch,
-  /// just the headers of the patch
   PatchHeader,
-  /// like `git diff --raw`
   Raw,
-  /// like `git diff --name-only`
   NameOnly,
-  /// like `git diff --name-status`
   NameStatus,
-  /// `git diff` as used by `git patch-id`
   PatchId,
 }
 
@@ -139,8 +157,6 @@ pub struct DiffPrintOptions {
 /// This is an opaque structure which will be allocated by one of the diff
 /// generator functions on the `Repository` class (e.g. `diffTreeToTree`
 /// or other `diff*` functions).
-///
-/// @hideconstructor
 pub struct Diff {
   pub(crate) inner: SharedReference<Repository, git2::Diff<'static>>,
 }
@@ -156,6 +172,16 @@ impl Diff {
   /// as if the old version was from the "onto" list and the new version
   /// is from the "from" list (with the exception that if the item has a
   /// pending DELETE in the middle, then it will show as deleted).
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   merge(diff: Diff): void;
+  /// }
+  /// ```
+  ///
+  /// @param {Diff} diff - Another diff to merge.
   pub fn merge(&mut self, diff: &Diff) -> crate::Result<()> {
     self.inner.merge(diff.inner.deref())?;
     Ok(())
@@ -163,6 +189,16 @@ impl Diff {
 
   #[napi]
   /// Returns an iterator over the deltas in this diff.
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   deltas(): Deltas;
+  /// }
+  /// ```
+  ///
+  /// @returns An iterator over the deltas in this diff.
   pub fn deltas(&self, env: Env, this: Reference<Diff>) -> crate::Result<Deltas> {
     Ok(Deltas {
       inner: this.share_with(env, |diff| Ok(diff.inner.deltas()))?,
@@ -171,12 +207,32 @@ impl Diff {
 
   #[napi]
   /// Check if deltas are sorted case sensitively or insensitively.
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   isSortedIcase(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if deltas are sorted case insensitively.
   pub fn is_sorted_icase(&self) -> bool {
     self.inner.is_sorted_icase()
   }
 
   #[napi]
   /// Accumulate diff statistics for all patches.
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   stats(): DiffStats;
+  /// }
+  /// ```
+  ///
+  /// @returns Diff statistics for all patches.
   pub fn stats(&self) -> crate::Result<DiffStats> {
     Ok(DiffStats {
       inner: self.inner.stats()?,
@@ -185,6 +241,17 @@ impl Diff {
 
   #[napi]
   /// Iterate over a diff generating formatted text output.
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   print(options?: DiffPrintOptions | null): string;
+  /// }
+  /// ```
+  ///
+  /// @param {DiffPrintOptions} [options] - Print options for diff.
+  /// @returns Formatted text output.
   pub fn print(&self, options: Option<DiffPrintOptions>) -> String {
     let format = options.and_then(|x| x.format).unwrap_or_default();
     let mut lines: Vec<String> = vec![];
@@ -200,8 +267,6 @@ impl Diff {
 
 #[napi]
 /// A class describing a hunk of a diff.
-///
-/// @hideconstructor
 pub struct DiffStats {
   pub(crate) inner: git2::DiffStats,
 }
@@ -210,18 +275,48 @@ pub struct DiffStats {
 impl DiffStats {
   #[napi(getter)]
   /// Get the total number of files changed in a diff.
+  ///
+  /// @category Diff/DiffStats
+  /// @signature
+  /// ```ts
+  /// class DiffStats {
+  ///   get filesChanged(): bigint;
+  /// }
+  /// ```
+  ///
+  /// @returns Total number of files changed in a diff.
   pub fn files_changed(&self) -> usize {
     self.inner.files_changed()
   }
 
   #[napi(getter)]
   /// Get the total number of insertions in a diff
+  ///
+  /// @category Diff/DiffStats
+  /// @signature
+  /// ```ts
+  /// class DiffStats {
+  ///   get insertions(): bigint;
+  /// }
+  /// ```
+  ///
+  /// @returns Total number of insertions in a diff.
   pub fn insertions(&self) -> usize {
     self.inner.insertions()
   }
 
   #[napi(getter)]
   /// Get the total number of deletions in a diff
+  ///
+  /// @category Diff/DiffStats
+  /// @signature
+  /// ```ts
+  /// class DiffStats {
+  ///   get deletions(): bigint;
+  /// }
+  /// ```
+  ///
+  /// @returns Total number of deletions in a diff.
   pub fn deletions(&self) -> usize {
     self.inner.deletions()
   }
@@ -229,8 +324,6 @@ impl DiffStats {
 
 #[napi(iterator)]
 /// An iterator over the diffs in a delta.
-///
-/// @hideconstructor
 pub struct Deltas {
   pub(crate) inner: SharedReference<Diff, git2::Deltas<'static>>,
 }
@@ -248,8 +341,6 @@ impl Generator for Deltas {
 
 #[napi]
 /// Description of changes to one entry.
-///
-/// @hideconstructor
 pub struct DiffDelta {
   pub(crate) inner: git2::DiffDelta<'static>,
 }
@@ -259,19 +350,55 @@ impl DiffDelta {
   #[napi]
   /// Returns the flags on the delta.
   ///
-  /// For more information, see `DiffFlags`'s documentation.
+  /// @category Diff/DiffDelta
+  /// @signature
+  /// ```ts
+  /// class DiffDelta {
+  ///   flags(): number;
+  /// }
+  /// ```
+  ///
+  /// @returns The flags on the delta.
+  ///
+  /// @example
+  /// ```ts
+  /// import { DiffDelta, DiffFlags, diffFlagsContains } from 'es-git';
+  ///
+  /// const delta: DiffDelta;
+  /// console.assert(diffFlagsContains(delta.flags(), DiffFlags.Binary | DiffFlags.ValidId));
+  /// ```
   pub fn flags(&self) -> u32 {
     self.inner.flags().bits()
   }
 
   #[napi]
   /// Returns the number of files in this delta.
+  ///
+  /// @category Diff/DiffDelta
+  /// @signature
+  /// ```ts
+  /// class DiffDelta {
+  ///   numFiles(): number;
+  /// }
+  /// ```
+  ///
+  /// @returns The number of files in this delta.
   pub fn num_files(&self) -> u32 {
     self.inner.nfiles() as u32
   }
 
   #[napi]
   /// Returns the status of this entry.
+  ///
+  /// @category Diff/DiffDelta
+  /// @signature
+  /// ```ts
+  /// class DiffDelta {
+  ///   status(): DeltaType;
+  /// }
+  /// ```
+  ///
+  /// @returns The status of this entry.
   pub fn status(&self) -> DeltaType {
     self.inner.status().into()
   }
@@ -281,6 +408,16 @@ impl DiffDelta {
   ///
   /// What side this means depends on the function that was used to generate
   /// the diff and will be documented on the function itself.
+  ///
+  /// @category Diff/DiffDelta
+  /// @signature
+  /// ```ts
+  /// class DiffDelta {
+  ///   oldFile(): DiffFile;
+  /// }
+  /// ```
+  ///
+  /// @returns The file which represents the "from" side of the diff.
   pub fn old_file(&self) -> DiffFile {
     DiffFile {
       inner: self.inner.old_file(),
@@ -292,6 +429,16 @@ impl DiffDelta {
   ///
   /// What side this means depends on the function that was used to generate
   /// the diff and will be documented on the function itself.
+  ///
+  /// @category Diff/DiffDelta
+  /// @signature
+  /// ```ts
+  /// class DiffDelta {
+  ///   newFile(): DiffFile;
+  /// }
+  /// ```
+  ///
+  /// @returns The file which represents the "to" side of the diff.
   pub fn new_file(&self) -> DiffFile {
     DiffFile {
       inner: self.inner.new_file(),
@@ -305,7 +452,6 @@ pub enum FileMode {
   Unreadable,
   Tree,
   Blob,
-  /// Group writable blob. Obsolete mode kept for compatibility reasons
   BlobGroupWritable,
   BlobExecutable,
   Link,
@@ -346,8 +492,6 @@ impl From<FileMode> for git2::FileMode {
 /// Although this is called a "file" it could represent a file, a symbolic
 /// link, a submodule commit id, or even a tree (although that only happens if
 /// you are tracking type changes or ignored/untracked directories).
-///
-/// @hideconstructor
 pub struct DiffFile {
   pub(crate) inner: git2::DiffFile<'static>,
 }
@@ -359,6 +503,16 @@ impl DiffFile {
   ///
   /// If this entry represents an absent side of a diff (e.g. the `oldFile`
   /// of a `Added` delta), then the oid returned will be zeroes.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   id(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns The Oid of this item.
   pub fn id(&self) -> String {
     self.inner.id().to_string()
   }
@@ -366,43 +520,102 @@ impl DiffFile {
   #[napi]
   /// Returns the path of the entry relative to the working directory of the
   /// repository.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   path(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Ths path of the entry relative to the working directory of the repository.
   pub fn path(&self, env: Env) -> Option<JsString> {
     self.inner.path().and_then(|p| path_to_js_string(&env, p).ok())
   }
 
   #[napi]
   /// Returns the size of this entry, in bytes.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   size(): bigint;
+  /// }
+  /// ```
+  ///
+  /// @returns The size of this entry, in bytes.
   pub fn size(&self) -> u64 {
     self.inner.size()
   }
 
   #[napi]
   /// Returns `true` if file(s) are treated as binary data.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   isBinary(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if file(s) are treated as binary data.
   pub fn is_binary(&self) -> bool {
     self.inner.is_binary()
   }
 
   #[napi]
   /// Returns `true` if `id` value is known correct.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   isValidId(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if `id` value is known correct.
   pub fn is_valid_id(&self) -> bool {
     self.inner.is_valid_id()
   }
 
   #[napi]
   /// Returns `true` if file exists at this side of the delta.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   exists(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if file exists at this side of the delta.
   pub fn exists(&self) -> bool {
     self.inner.exists()
   }
 
   #[napi]
   /// Returns file mode.
+  ///
+  /// @category Diff/DiffFile
+  /// @signature
+  /// ```ts
+  /// class DiffFile {
+  ///   mode(): FileMode;
+  /// }
+  /// ```
+  ///
+  /// @returns
   pub fn mode(&self) -> FileMode {
     self.inner.mode().into()
   }
 }
 
 #[napi(object)]
-/// Describing options about how the diff should be executed.
 pub struct DiffOptions {
   /// Flag indicating whether the sides of the diff will be reversed.
   pub reverse: Option<bool>,
@@ -421,7 +634,7 @@ pub struct DiffOptions {
   pub include_typechange: Option<bool>,
   /// Event with `includeTypechange`, the tree returned generally shows a
   /// deleted blob. This flag correctly labels the tree transitions as a
-  /// typechange record with the `new_file`'s mode set to tree.
+  /// typechange record with the `newFile`'s mode set to tree.
   ///
   /// Note that the tree SHA will not be available.
   pub include_typechange_trees: Option<bool>,
@@ -645,10 +858,26 @@ impl Repository {
   ///
   /// This is equivalent to `git diff <old-tree> <new-tree>`.
   ///
-  /// The first tree will be used for the "oldFile" side of the delta and the
-  /// second tree will be used for the "newFile" side of the delta. You can
-  /// pass `null` to indicate an empty tree, although it is an error to pass
-  /// `null` for both the `oldTree` and `newTree`.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   diffTreeToTree(
+  ///     oldTree?: Tree,
+  ///     newTree?: Tree,
+  ///     options?: DiffOptions,
+  ///   ): Diff;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+  /// then an empty tree is used.
+  /// @param {Tree} [newTree] - Tree used for the "newFile" side of the delta. If you not pass,
+  /// then an empty tree is used.
+  /// @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+  ///
+  /// @returns {Diff} Diff between two tree objects.
+  /// @throws Throws error if the `oldTree` and `newTree` is `null`.
   pub fn diff_tree_to_tree(
     &self,
     this: Reference<Repository>,
@@ -675,8 +904,23 @@ impl Repository {
   #[napi]
   /// Create a diff between two index objects.
   ///
-  /// The first index will be used for the "oldFile" side of the delta, and
-  /// the second index will be used for the "newFile" side of the delta.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   diffIndexToIndex(
+  ///     oldIndex: Index,
+  ///     newIndex: Index,
+  ///     options?: DiffOptions,
+  ///   ): Diff;
+  /// }
+  /// ```
+  ///
+  /// @param {Index} [oldIndex] - Index used for the "oldFile" side of the delta.
+  /// @param {Index} [newIndex] - Index used for the "newFile" side of the delta.
+  /// @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+  ///
+  /// @returns {Diff} Diff between two index objects.
   pub fn diff_index_to_index(
     &self,
     env: Env,
@@ -704,12 +948,23 @@ impl Repository {
   /// `git diff` and `git diff HEAD` and how to emulate a `git diff <treeish>`
   /// using libgit2.
   ///
-  /// The index will be used for the "oldFile" side of the delta, and the
-  /// working directory will be used for the "newFile" side of the delta.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   diffIndexToWorkdir(index?: Index, options?: DiffOptions): Diff;
+  /// }
+  /// ```
   ///
-  /// If you pass `null` for the index, then the existing index of the `repo`
-  /// will be used. In this case, the index will be refreshed from disk
-  /// (if it has changed) before the diff is generated.
+  /// @param {Index} [index] - Index used for the "oldFile" side of the delta. The working directory
+  /// will be used for the "newFile" side of the delta.
+  ///
+  /// If not you pass, then the existing index of the repository  will be used. In this case,
+  /// the index will be refreshed from disk (if it has changed) before the diff is generated.
+  ///
+  /// @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+  ///
+  /// @returns {Diff} Diff between the repository index and the workdir directory.
   pub fn diff_index_to_workdir(
     &self,
     env: Env,
@@ -746,7 +1001,20 @@ impl Repository {
   /// tree-to-workdir diff for that file is 'modified', but `git diff` would
   /// show status 'deleted' since there is a staged delete.
   ///
-  /// If `null` is passed for `tree`, then an empty tree is used.
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+  /// then an empty tree is used.
+  ///
+  /// @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+  ///
+  /// @returns {Diff} Diff between a tree and the working directory.
   pub fn diff_tree_to_workdir(
     &self,
     this: Reference<Repository>,
@@ -772,6 +1040,22 @@ impl Repository {
   /// This emulates `git diff <tree>` by diffing the tree to the index and
   /// the index to the working directory and blending the results into a
   /// single diff that includes staged deleted, etc.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   diffTreeToWorkdirWithIndex(oldTree?: Tree, options?: DiffOptions): Diff;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} [oldTree] - Tree used for the "oldFile" side of the delta. If you not pass,
+  /// then an empty tree is used.
+  ///
+  /// @param {DiffOptions} [options] - Describing options about how the diff should be executed.
+  ///
+  /// @returns {Diff} Diff between a tree and the working directory using index data to account for
+  /// staged deletes, tracked files, etc.
   pub fn diff_tree_to_workdir_with_index(
     &self,
     this: Reference<Repository>,

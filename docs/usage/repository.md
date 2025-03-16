@@ -2,7 +2,7 @@
 
 ## Opening a Repository
 
-To open a locally stored repository, use [`openRepository()`](../reference/functions/openRepository.md).
+To open a locally stored repository, use [`openRepository()`](../reference/Repository/openRepository.md).
 
 ```ts
 import { openRepository } from 'es-git';
@@ -12,7 +12,7 @@ const repo = await openRepository('/path/to/repo');
 
 ## Cloning a Repository
 
-Use [`cloneRepository()`](../reference/functions/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
+Use [`cloneRepository()`](../reference/Repository/cloneRepository.md) to copy an existing repository. To clone repository from a remote, you can use protocols such as `https://`, `git://`, or SSH (e.g.,
 `user@server:path/to/repo.git`).
 
 ```ts

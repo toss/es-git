@@ -26,28 +26,33 @@ function nav(): DefaultTheme.NavItem[] {
     { text: '홈', link: '/ko' },
     { text: '시작하기', link: '/ko/getting-started' },
     { text: '사용법', link: '/ko/usage/repository' },
+    { text: '레퍼런스', link: '/ko/reference/Repository/openRepository' },
   ];
 }
 
 function sidebar(): DefaultTheme.Sidebar {
   return [
     {
-      text: '시작하기',
-      link: '/ko/getting-started',
-    },
-    {
-      text: '사용법',
+      text: '가이드',
       items: [
-        { text: '리포지토리', link: '/ko/usage/repository' },
-        { text: '리모트', link: '/ko/usage/remote' },
-        { text: '커밋 히스토리', link: '/ko/usage/history' },
-        { text: '커밋하기', link: '/ko/usage/commit' },
-        { text: '태그', link: '/ko/usage/tag' },
+        {
+          text: '시작하기',
+          link: '/ko/getting-started',
+        },
+        {
+          text: '사용법',
+          items: [
+            { text: '리포지토리', link: '/ko/usage/repository' },
+            { text: '리모트', link: '/ko/usage/remote' },
+            { text: '커밋 히스토리', link: '/ko/usage/history' },
+            { text: '커밋하기', link: '/ko/usage/commit' },
+            { text: '태그', link: '/ko/usage/tag' },
+          ],
+        },
       ],
     },
     {
       text: '레퍼런스',
-      link: '/ko/reference/globals',
       items: getReferenceSidebarItems(docsRoot, 'ko'),
     },
   ];

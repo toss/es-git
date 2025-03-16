@@ -25,7 +25,7 @@ const commit = repo.getCommit(sha);
 console.log(commit.summary()); // "added new file"
 ```
 
-`git add *` 명령어처럼 Staging Area에 전체 파일을 Stage하고 싶다면, [`addAll()`](../reference/classes/Index.md#addall)를 사용할 수 있어요.
+`git add *` 명령어처럼 Staging Area에 전체 파일을 Stage하고 싶다면, [`addAll()`](../reference/Index/Methods/addAll.md)를 사용할 수 있어요.
 
 ```ts
 const index = repo.index();

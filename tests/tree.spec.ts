@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ObjectType, openRepository } from '../index';
+import { openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('tree', () => {
@@ -14,8 +14,8 @@ describe('tree', () => {
       return 0;
     });
     expect(walk.mock.calls).toEqual([
-      ['first', '9c59e24b8393179a5d712de4f990178df5734d99', ObjectType.Blob],
-      ['second', 'e019be006cf33489e2d0177a3837a2384eddebc5', ObjectType.Blob],
+      ['first', '9c59e24b8393179a5d712de4f990178df5734d99', 'Blob'],
+      ['second', 'e019be006cf33489e2d0177a3837a2384eddebc5', 'Blob'],
     ]);
   });
 });

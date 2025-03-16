@@ -54,15 +54,6 @@ function transformStringEnums(source, j, ignore) {
 }
 
 /**
- * @param {import('jscodeshift').API.j} j
- * @param {string} comment
- * @returns {namedTypes.CommentBlock}
- */
-function comment(j, comment) {
-  return j.commentBlock(comment, true, false);
-}
-
-/**
  * Transform `Credential` as union type
  * @param {string} source
  * @param {import('jscodeshift').API.j} j
@@ -85,20 +76,14 @@ function transformCredentialUnion(source, j) {
         (node.declaration.type === 'TSInterfaceDeclaration' || node.declaration.type === 'TSTypeAliasDeclaration')
       );
     })
-    .remove()
-    .insertAfter(
-      j.exportNamedDeclaration(
-        j.tsTypeAliasDeclaration.from({
+    .replaceWith(path => {
+      const node = j.exportNamedDeclaration.from({
+        comments: path.node.comments ?? null,
+        declaration: j.tsTypeAliasDeclaration.from({
           id: j.identifier('Credential'),
           typeAnnotation: j.tsUnionType([
             // Default
             j.tsTypeLiteral.from({
-              comments: [
-                comment(
-                  j,
-                  '* Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication.'
-                ),
-              ],
               members: [
                 j.tsPropertySignature(
                   j.identifier('type'),
@@ -108,13 +93,6 @@ function transformCredentialUnion(source, j) {
             }),
             // SSHKeyFromAgent
             j.tsTypeLiteral.from({
-              comments: [
-                comment(
-                  j,
-                  '* Create a new ssh key credential object used for querying an ssh-agent.\n' +
-                    'The username specified is the username to authenticate.'
-                ),
-              ],
               members: [
                 j.tsPropertySignature(
                   j.identifier('type'),
@@ -125,7 +103,6 @@ function transformCredentialUnion(source, j) {
             }),
             // SSHKeyFromPath
             j.tsTypeLiteral.from({
-              comments: [comment(j, '* Create a new passphrase-protected ssh key credential object.')],
               members: [
                 j.tsPropertySignature(
                   j.identifier('type'),
@@ -139,7 +116,6 @@ function transformCredentialUnion(source, j) {
             }),
             // SSHKey
             j.tsTypeLiteral.from({
-              comments: [comment(j, '* Create a new ssh key credential object reading the keys from memory.')],
               members: [
                 j.tsPropertySignature(
                   j.identifier('type'),
@@ -153,7 +129,6 @@ function transformCredentialUnion(source, j) {
             }),
             // Plain
             j.tsTypeLiteral.from({
-              comments: [comment(j, '* Create a new plain-text username and password credential object.')],
               members: [
                 j.tsPropertySignature(
                   j.identifier('type'),
@@ -164,9 +139,10 @@ function transformCredentialUnion(source, j) {
               ],
             }),
           ]),
-        })
-      )
-    )
+        }),
+      });
+      return node;
+    })
     .toSource(options);
 
   return modified;

@@ -24,10 +24,8 @@ pub struct IndexEntry {
   /// (`0x2F`). There are no terminating or internal NUL characters, and no
   /// trailing slashes. Most of the time, paths will be valid utf-8 — but
   /// not always. For more information on the path storage format, see
-  /// [these git docs][git-index-docs]. Note that libgit2 will take care of
-  /// handling the prefix compression mentioned there.
-  ///
-  /// [git-index-docs]: https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124
+  /// [these git docs](https://github.com/git/git/blob/a08a83db2bf27f015bec9a435f6d73e223c21c5e/Documentation/technical/index-format.txt#L107-L124).
+  /// Note that libgit2 will take care of handling the prefix compression mentioned there.
   pub path: Buffer,
 }
 
@@ -130,16 +128,16 @@ impl IndexAddAllOptions {
 }
 
 #[napi(string_enum)]
+/// - `Any` : Match any index stage.
+/// - `Normal` : A normal staged file in the index.
+/// - `Ancestor` : The ancestor side of a conflict.
+/// - `Ours` : The "ours" side of a conflict.
+/// - `Theirs` : The "theirs" side of a conflict.
 pub enum IndexStage {
-  /// Match any index stage.
   Any,
-  /// A normal staged file in the index.
   Normal,
-  /// The ancestor side of a conflict.
   Ancestor,
-  /// The "ours" side of a conflict.
   Ours,
-  /// The "theirs" side of a conflict.
   Theirs,
 }
 
@@ -187,7 +185,6 @@ pub struct IndexUpdateAllOptions {
 
 #[napi]
 /// A class to represent a git [index][1].
-/// @hideconstructor
 ///
 /// [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
 pub struct Index {
@@ -199,6 +196,15 @@ impl Index {
   #[napi]
   /// Get index on-disk version.
   ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   version(): number;
+  /// }
+  /// ```
+  ///
+  /// @returns Index on-disk version.
   /// Valid return values are 2, 3, or 4. If 3 is returned, an index
   /// with version 2 may be written instead, if the extension data in
   /// version 3 is not necessary.
@@ -209,6 +215,15 @@ impl Index {
   #[napi]
   /// Set index on-disk version.
   ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   setVersion(version: number): number;
+  /// }
+  /// ```
+  ///
+  /// @param {string} version - Version to set.
   /// Valid values are 2, 3, or 4. If 2 is given, git_index_write may
   /// write an index with version 3 instead, if necessary to accurately
   /// represent the index.
@@ -219,6 +234,18 @@ impl Index {
 
   #[napi]
   /// Get one of the entries in the index by its path.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+  /// }
+  /// ```
+  ///
+  /// @param {string} path - Path to lookup entry.
+  /// @param {IndexStage} [stage] - Git index stage states.
+  /// @returns Index entry for the path.
   pub fn get_by_path(&self, path: String, stage: Option<IndexStage>) -> Option<IndexEntry> {
     self
       .inner
@@ -229,17 +256,25 @@ impl Index {
   #[napi]
   /// Add or update an index entry from a file on disk.
   ///
-  /// The file path must be relative to the repository's working folder and
-  /// must be readable.
-  ///
-  /// This method will fail in bare index instances.
-  ///
   /// This forces the file to be added to the index, not looking at gitignore
   /// rules.
   ///
   /// If this file currently is the result of a merge conflict, this file will
   /// no longer be marked as conflicting. The data about the conflict will be
   /// moved to the "resolve undo" (REUC) section.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   addPath(path: string): void;
+  /// }
+  /// ```
+  ///
+  /// @param {string} path - Relative file path to the repository's working directory and must be
+  /// readable.
+  ///
+  /// @throws This method will fail in bare index instances.
   pub fn add_path(&mut self, path: String) -> crate::Result<()> {
     self.inner.add_path(Path::new(&path))?;
     Ok(())
@@ -248,12 +283,20 @@ impl Index {
   #[napi]
   /// Add or update index entries matching files in the working directory.
   ///
-  /// This method will fail in bare index instances.
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+  /// }
+  /// ```
   ///
-  /// The `pathspecs` are a list of file names or shell glob patterns that
-  /// will matched against files in the repository's working directory. Each
-  /// file that matches will be added to the index (either updating an
-  /// existing entry or adding a new entry).
+  /// @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+  /// against files in the repository's working directory. Each file that matches will be added
+  /// to the index (either updating an existing entry or adding a new entry).
+  /// @param {IndexAddAllOptions} [options] - Options for add or update index entries.
+  ///
+  /// @throws This method will fail in bare index instances.
   ///
   /// @example
   ///
@@ -305,11 +348,19 @@ impl Index {
   /// Update the contents of an existing index object in memory by reading
   /// from the hard disk.
   ///
-  /// If force is true, this performs a "hard" read that discards in-memory
-  /// changes and always reloads the on-disk index data. If there is no
-  /// on-disk version, the index will be cleared.
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   read(force?: boolean): void;
+  /// }
+  /// ```
   ///
-  /// If force is false, this does a "soft" read that reloads the index data
+  /// @param {boolean} [force] - If force is `true`, this performs a "hard" read that discards
+  /// in-memory changes and always reloads the on-disk index data. If there is no on-disk version,
+  /// the index will be cleared.
+  ///
+  /// If force is `false`, this does a "soft" read that reloads the index data
   /// from disk only if it has changed since the last time it was loaded.
   /// Purely in-memory index data will be untouched. Be aware: if there are
   /// changes on disk, unwritten in-memory changes are discarded.
@@ -321,6 +372,14 @@ impl Index {
   #[napi]
   /// Write an existing index object from memory back to disk using an atomic
   /// file lock.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   write(): void;
+  /// }
+  /// ```
   pub fn write(&mut self) -> crate::Result<()> {
     self.inner.write()?;
     Ok(())
@@ -338,6 +397,14 @@ impl Index {
   /// existing repository.
   ///
   /// The index must not contain any file in conflict.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   writeTree(): void;
+  /// }
+  /// ```
   pub fn write_tree(&mut self) -> crate::Result<String> {
     let id = self.inner.write_tree().map(|x| x.to_string())?;
     Ok(id)
@@ -346,12 +413,20 @@ impl Index {
   #[napi]
   /// Remove an index entry corresponding to a file on disk.
   ///
-  /// The file path must be relative to the repository's working folder. It
-  /// may exist.
-  ///
   /// If this file currently is the result of a merge conflict, this file will
   /// no longer be marked as conflicting. The data about the conflict will be
   /// moved to the "resolve undo" (REUC) section.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   removePath(path: string, options?: IndexRemoveOptions): void;
+  /// }
+  /// ```
+  ///
+  /// @param {string} path - Relative file path to the repository's working directory.
+  /// @param {IndexRemoveOptions} options - Options for remove an index entry.
   pub fn remove_path(&mut self, path: String, options: Option<IndexRemoveOptions>) -> crate::Result<()> {
     if let Some(IndexRemoveOptions { stage: Some(stage) }) = options {
       self.inner.remove(Path::new(&path), i32::from(stage))?;
@@ -363,6 +438,18 @@ impl Index {
 
   #[napi]
   /// Remove all matching index entries.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions): void;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+  /// against files in the repository's working directory
+  /// @param {IndexRemoveAllOptions} options - Options for remove all matching index entry.
   pub fn remove_all(
     &mut self,
     env: Env,
@@ -396,12 +483,24 @@ impl Index {
   #[napi]
   /// Update all index entries to match the working directory.
   ///
-  /// This method will fail in bare index instances.
-  ///
   /// This scans the existing index entries and synchronizes them with the
   /// working directory, deleting them if the corresponding working directory
   /// file no longer exists otherwise updating the information (including
   /// adding the latest version of file to the ODB if needed).
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} pathspecs - A List of file names of shell glob patterns that will matched
+  /// against files in the repository's working directory
+  /// @param {IndexUpdateAllOptions} options - Options for update all matching index entry.
+  ///
+  /// @throws This method will fail in bare index instances.
   pub fn update_all(
     &mut self,
     env: Env,
@@ -434,12 +533,32 @@ impl Index {
 
   #[napi]
   /// Get the count of entries currently in the index.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   count(): number;
+  /// }
+  /// ```
+  ///
+  /// @returns The count of entries currently in the index.
   pub fn count(&self) -> u32 {
     self.inner.len() as u32
   }
 
   #[napi]
   /// Return `true` is there is no entry in the index.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   isEmpty(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Return `true` is there is no entry in the index.
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
@@ -447,7 +566,15 @@ impl Index {
   #[napi]
   /// Get the full path to the index file on disk.
   ///
-  /// Returns `null` if this is an in-memory index.
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   path(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `null` if this is an in-memory index.
   pub fn path(&self, env: Env) -> Option<JsString> {
     self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
   }
@@ -455,13 +582,31 @@ impl Index {
   #[napi]
   /// Does this index have conflicts?
   ///
-  /// Returns `true` if the index contains conflicts, `false` if it does not.
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   hasConflicts(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if the index contains conflicts, `false` if it does not.
   pub fn has_conflicts(&self) -> bool {
     self.inner.has_conflicts()
   }
 
   #[napi]
   /// Get an iterator over the entries in this index.
+  ///
+  /// @category Index/Methods
+  /// @signature
+  /// ```ts
+  /// class Index {
+  ///   entries(): IndexEntries;
+  /// }
+  /// ```
+  ///
+  /// @returns An iterator over the entries in this index.
   pub fn entries(&self, this: Reference<Index>, env: Env) -> crate::Result<IndexEntries> {
     let inner = this.share_with(env, |index| Ok(index.inner.iter()))?;
     Ok(IndexEntries { inner })
@@ -470,8 +615,6 @@ impl Index {
 
 #[napi(iterator)]
 /// An iterator over the entries in an index.
-///
-/// @hideconstructor
 pub struct IndexEntries {
   pub(crate) inner: SharedReference<Index, git2::IndexEntries<'static>>,
 }
@@ -494,6 +637,16 @@ impl Repository {
   ///
   /// If a custom index has not been set, the default index for the repository
   /// will be returned (the one located in `.git/index`).
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   index(): Index;
+  /// }
+  /// ```
+  ///
+  /// @returns The index file for this repository.
   pub fn index(&self) -> crate::Result<Index> {
     Ok(Index {
       inner: self.inner.index()?,

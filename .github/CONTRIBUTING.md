@@ -75,3 +75,25 @@ feat(repository): add options for initialize repository
 docs: fix link to website page
 chore: upgrade vitest to v3
 ```
+
+## Documentation
+
+This project aims to maintain high documentation quality.
+
+Please refer to the following guide to create robust references using JSDoc.
+
+- `@category` : Specifies the category in which the reference documentation will be placed. You can use `/` to specify depth (e.g. `Repository/Methods`).
+- `@signature` : Describes what type of signature a function or method has. Please write a type declaration in the TypeScript language.
+- `@param` : Write all parameters.
+- `@returns` : Specifies what value is returned.
+- `@throws` : Write documentation for errors that should be noted.
+- `@example` : Examples are not required, but are recommended as they make the behavior easier to understand.
+
+To automatically generate reference documentation after writing a JSDoc, please run the command below.
+
+```shell
+yarn build
+
+cd docs/
+yarn gen-reference
+```
