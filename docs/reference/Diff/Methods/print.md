@@ -21,7 +21,7 @@ class Diff {
       <li class="param-li">
         <span class="param-name">format</span><span class="param-type">DiffFormat</span>
         <br>
-        <p class="param-description">Possible output formats for diff data.<br><br>- <code>DiffFormat.Patch</code>: Full <code>git diff</code> (default)<br>- <code>DiffFormat.PatchHeader</code> : Just the headers of the patch<br>- <code>DiffFormat.Raw</code> : Like <code>git diff --raw</code> the headers of the patch<br>- <code>DiffFormat.NameOnly</code> : Like <code>git diff --name-only</code><br>- <code>DiffFormat.NameStatus</code> : Like <code>git diff --name-status</code><br>- <code>DiffFormat.PatchId</code> : <code>git diff</code> as used by <code>git patch-id</code></p>
+        <p class="param-description">Possible output formats for diff data.<br><br>- <code>Patch</code>: Full <code>git diff</code> (default)<br>- <code>PatchHeader</code> : Just the headers of the patch<br>- <code>Raw</code> : Like <code>git diff --raw</code> the headers of the patch<br>- <code>NameOnly</code> : Like <code>git diff --name-only</code><br>- <code>NameStatus</code> : Like <code>git diff --name-status</code><br>- <code>PatchId</code> : <code>git diff</code> as used by <code>git patch-id</code></p>
       </li>
     </ul>
   </li>
