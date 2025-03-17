@@ -5,7 +5,6 @@ use napi_derive::napi;
 use std::path::Path;
 
 #[napi(string_enum)]
-/// A listing of the possible states that a repository can be in.
 /// Available states are `Clean`, `Merge`, `Revert`, `RevertSequence`, `CherryPick`,
 /// `CherryPickSequence`, `Bisect`, `Rebase`, `RebaseInteractive`, `RebaseMerge`,
 /// `ApplyMailbox`, `ApplyMailboxOrRebase`.
