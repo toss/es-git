@@ -6,6 +6,9 @@ use std::path::Path;
 
 #[napi(string_enum)]
 /// A listing of the possible states that a repository can be in.
+/// Available states are `Clean`, `Merge`, `Revert`, `RevertSequence`, `CherryPick`,
+/// `CherryPickSequence`, `Bisect`, `Rebase`, `RebaseInteractive`, `RebaseMerge`,
+/// `ApplyMailbox`, `ApplyMailboxOrRebase`.
 pub enum RepositoryState {
   Clean,
   Merge,
@@ -233,24 +236,64 @@ pub struct Repository {
 impl Repository {
   #[napi]
   /// Tests whether this repository is a bare repository or not.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   isBare(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if repository is a bare.
   pub fn is_bare(&self) -> bool {
     self.inner.is_bare()
   }
 
   #[napi]
   /// Tests whether this repository is a shallow clone.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   isShallow(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if repository is a shallow clone.
   pub fn is_shallow(&self) -> bool {
     self.inner.is_shallow()
   }
 
   #[napi]
   /// Tests whether this repository is a worktree.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   isWorktree(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if repository is a worktree.
   pub fn is_worktree(&self) -> bool {
     self.inner.is_worktree()
   }
 
   #[napi]
   /// Tests whether this repository is empty.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   isEmpty(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if repository is empty.
   pub fn is_empty(&self) -> crate::Result<bool> {
     Ok(self.inner.is_empty()?)
   }
@@ -258,6 +301,17 @@ impl Repository {
   #[napi]
   /// Returns the path to the `.git` folder for normal repositories or the
   /// repository itself for bare repositories.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   path(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns The path to the `.git` folder for normal repositories or the repository itself
+  /// for bare repositories.
   pub fn path(&self, env: Env) -> crate::Result<JsString> {
     let path = util::path_to_js_string(&env, self.inner.path())?;
     Ok(path)
@@ -265,6 +319,16 @@ impl Repository {
 
   #[napi]
   /// Returns the current state of this repository.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   state(): RepositoryState;
+  /// }
+  /// ```
+  ///
+  /// @returns The current state of this repository.
   pub fn state(&self) -> RepositoryState {
     self.inner.state().into()
   }
@@ -272,7 +336,17 @@ impl Repository {
   #[napi]
   /// Get the path of the working directory for this repository.
   ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   workdir(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns The path of the working directory for this repository.
   /// If this repository is bare, then `null` is returned.
+  /// ```
   pub fn workdir(&self, env: Env) -> Option<JsString> {
     self
       .inner
@@ -281,7 +355,17 @@ impl Repository {
   }
 
   #[napi]
-  /// Retrieve and resolve the reference pointed at by HEAD.
+  /// Retrieve and resolve the reference pointed at by `HEAD`.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   head(): Reference;
+  /// }
+  /// ```
+  ///
+  /// @returns Reference pointed at by `HEAD`.
   pub fn head(&self, this: Reference<Repository>, env: Env) -> crate::Result<crate::reference::Reference> {
     Ok(crate::reference::Reference {
       inner: this.share_with(env, |repo| {
@@ -291,18 +375,28 @@ impl Repository {
   }
 
   #[napi]
-  /// Make the repository HEAD point to the specified reference.
+  /// Make the repository `HEAD` point to the specified reference.
   ///
-  /// If the provided reference points to a tree or a blob, the HEAD is
+  /// If the provided reference points to a tree or a blob, the `HEAD` is
   /// unaltered and an error is returned.
   ///
-  /// If the provided reference points to a branch, the HEAD will point to
+  /// If the provided reference points to a branch, the `HEAD` will point to
   /// that branch, staying attached, or become attached if it isn't yet. If
-  /// the branch doesn't exist yet, no error will be returned. The HEAD will
+  /// the branch doesn't exist yet, no error will be returned. The `HEAD` will
   /// then be attached to an unborn branch.
   ///
-  /// Otherwise, the HEAD will be detached and will directly point to the
+  /// Otherwise, the `HEAD` will be detached and will directly point to the
   /// commit.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   setHead(refname: string): void;
+  /// }
+  /// ```
+  ///
+  /// @param {string} refname - Specified reference to point into `HEAD`.
   pub fn set_head(&self, refname: String) -> crate::Result<()> {
     self.inner.set_head(&refname)?;
     Ok(())

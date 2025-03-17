@@ -678,7 +678,12 @@ export interface FetchRemoteOptions {
 export interface PruneOptions {
   credential?: Credential
 }
-/** A listing of the possible states that a repository can be in. */
+/**
+ * A listing of the possible states that a repository can be in.
+ * Available states are `Clean`, `Merge`, `Revert`, `RevertSequence`, `CherryPick`,
+ * `CherryPickSequence`, `Bisect`, `Rebase`, `RebaseInteractive`, `RebaseMerge`,
+ * `ApplyMailbox`, `ApplyMailboxOrRebase`.
+ */
 export type RepositoryState = 'Clean' | 'Merge' | 'Revert' | 'RevertSequence' | 'CherryPick' | 'CherryPickSequence' | 'Bisect' | 'Rebase' | 'RebaseInteractive' | 'RebaseMerge' | 'ApplyMailbox' | 'ApplyMailboxOrRebase';
 /** Mode options for `RepositoryInitOptions`. */
 export enum RepositoryInitMode {
@@ -2923,42 +2928,145 @@ export declare class Repository {
    * @returns Created remote.
    */
   createRemote(name: string, url: string, options?: CreateRemoteOptions | undefined | null): Remote
-  /** Tests whether this repository is a bare repository or not. */
+  /**
+   * Tests whether this repository is a bare repository or not.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   isBare(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if repository is a bare.
+   */
   isBare(): boolean
-  /** Tests whether this repository is a shallow clone. */
+  /**
+   * Tests whether this repository is a shallow clone.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   isShallow(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if repository is a shallow clone.
+   */
   isShallow(): boolean
-  /** Tests whether this repository is a worktree. */
+  /**
+   * Tests whether this repository is a worktree.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   isWorktree(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if repository is a worktree.
+   */
   isWorktree(): boolean
-  /** Tests whether this repository is empty. */
+  /**
+   * Tests whether this repository is empty.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if repository is empty.
+   */
   isEmpty(): boolean
   /**
    * Returns the path to the `.git` folder for normal repositories or the
    * repository itself for bare repositories.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   path(): string;
+   * }
+   * ```
+   *
+   * @returns The path to the `.git` folder for normal repositories or the repository itself
+   * for bare repositories.
    */
   path(): string
-  /** Returns the current state of this repository. */
+  /**
+   * Returns the current state of this repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   state(): RepositoryState;
+   * }
+   * ```
+   *
+   * @returns The current state of this repository.
+   */
   state(): RepositoryState
   /**
    * Get the path of the working directory for this repository.
    *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   workdir(): string | null;
+   * }
+   * ```
+   *
+   * @returns The path of the working directory for this repository.
    * If this repository is bare, then `null` is returned.
+   * ```
    */
   workdir(): string | null
-  /** Retrieve and resolve the reference pointed at by HEAD. */
+  /**
+   * Retrieve and resolve the reference pointed at by `HEAD`.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   head(): Reference;
+   * }
+   * ```
+   *
+   * @returns Reference pointed at by `HEAD`.
+   */
   head(): Reference
   /**
-   * Make the repository HEAD point to the specified reference.
+   * Make the repository `HEAD` point to the specified reference.
    *
-   * If the provided reference points to a tree or a blob, the HEAD is
+   * If the provided reference points to a tree or a blob, the `HEAD` is
    * unaltered and an error is returned.
    *
-   * If the provided reference points to a branch, the HEAD will point to
+   * If the provided reference points to a branch, the `HEAD` will point to
    * that branch, staying attached, or become attached if it isn't yet. If
-   * the branch doesn't exist yet, no error will be returned. The HEAD will
+   * the branch doesn't exist yet, no error will be returned. The `HEAD` will
    * then be attached to an unborn branch.
    *
-   * Otherwise, the HEAD will be detached and will directly point to the
+   * Otherwise, the `HEAD` will be detached and will directly point to the
    * commit.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   setHead(refname: string): void;
+   * }
+   * ```
+   *
+   * @param {string} refname - Specified reference to point into `HEAD`.
    */
   setHead(refname: string): void
   /**
