@@ -3,20 +3,23 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "gen-reference": "tsx gen-reference.ts",
-    "gen-reference:ko": "tsx gen-reference.ts ko",
+    "gen": "tsx gen/cli.ts",
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"
   },
   "dependencies": {
+    "clipanion": "^4.0.0-rc.4",
     "es-toolkit": "^1.32.0",
     "fast-glob": "^3.3.3",
-    "typedoc": "^0.27.6",
+    "micromatch": "^4.0.8",
+    "typanion": "^3.14.0",
+    "typedoc": "0.28.0",
     "vitepress": "^1.6.3",
     "vitepress-jsdoc": "^1.0.4"
   },
   "devDependencies": {
+    "@types/micromatch": "^4",
     "tsx": "^4.19.3",
     "typescript": "5.7.3"
   }

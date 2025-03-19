@@ -17,6 +17,7 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-name">path</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
+    <p class="param-description">Relative path to tree entry.</p>
   </li>
 </ul>
 

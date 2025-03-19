@@ -46,7 +46,7 @@ function normalizeReferenceName(refname: string, format?: number): string | null
 
 <ul class="param-ul">
   <li class="param-li param-li-root">
-    <span class="param-type">string | null</span>
+    <span class="param-type">null | string</span>
     <br>
     <p class="param-description">If the reference passes validation, it is returned in normalized form,<br>otherwise an  <code>null</code>  is returned.</p>
   </li>

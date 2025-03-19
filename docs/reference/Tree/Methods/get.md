@@ -16,6 +16,7 @@ class Tree {
   <li class="param-li param-li-root">
     <span class="param-name">index</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">number</span>
     <br>
+    <p class="param-description">Index of tree entry.</p>
   </li>
 </ul>
 
