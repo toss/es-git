@@ -190,7 +190,7 @@ impl Tree {
   /// }
   /// ```
   ///
-  /// @param {number} id - Index of tree entry.
+  /// @param {number} index - Index of tree entry.
   ///
   /// @returns Tree entry.
   pub fn get(&self, this: Reference<Tree>, env: Env, index: u32) -> crate::Result<Option<TreeEntry>> {
@@ -249,7 +249,7 @@ impl Tree {
   /// }
   /// ```
   ///
-  /// @param {string} filename - Relative path to tree entry.
+  /// @param {string} path - Relative path to tree entry.
   ///
   /// @returns Tree entry.
   pub fn get_path(&self, this: Reference<Tree>, env: Env, path: String) -> crate::Result<Option<TreeEntry>> {

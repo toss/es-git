@@ -3792,7 +3792,7 @@ export declare class Tree {
    * }
    * ```
    *
-   * @param {number} id - Index of tree entry.
+   * @param {number} index - Index of tree entry.
    *
    * @returns Tree entry.
    */
@@ -3825,7 +3825,7 @@ export declare class Tree {
    * }
    * ```
    *
-   * @param {string} filename - Relative path to tree entry.
+   * @param {string} path - Relative path to tree entry.
    *
    * @returns Tree entry.
    */

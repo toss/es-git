@@ -16,6 +16,10 @@ setup:
     corepack prepare --activate
     yarn
 
+# Build project
+build:
+    yarn build
+
 # Format all files
 format: format-toml format-rust format-js
 
@@ -61,3 +65,7 @@ typecheck:
 # Start docs development server
 docs:
     yarn workspace docs run dev
+
+# Run documentation generator
+docs-gen *ARGS:
+    yarn workspace docs run gen {{ARGS}}
