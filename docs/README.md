@@ -11,7 +11,7 @@ Use following tags to create robust references using JSDoc.
 - `@throws` : Write documentation for errors that should be noted.
 - `@example` : Examples are not required, but are recommended as they make the behavior easier to understand.
 
-## Generate Reference
+## Generating Reference
 
 To automatically generate reference documentations after writing a JSDoc, please run the command below.
 
