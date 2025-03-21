@@ -1,19 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { cloneRepository, openRepository } from '../index';
-import { TARGET } from './env';
+import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
 describe('remote', () => {
-  const isLinuxGnu = TARGET[0] === 'linux' && TARGET[2] === 'gnu';
-
-  it('get remote names', { skip: isLinuxGnu }, async () => {
+  it('get remote names', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.remoteNames()).toContain('origin');
   });
 
-  it('get remote', { skip: isLinuxGnu }, async () => {
+  it('get remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     const remote = repo.getRemote('origin');
@@ -38,14 +36,14 @@ describe('remote', () => {
     expect(remote.name()).toEqual('origin');
   });
 
-  it('fetch remote', { skip: isLinuxGnu }, async () => {
+  it('fetch remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     const remote = repo.getRemote('origin');
     await remote.fetch(['main']);
   });
 
-  it('get remote default branch', { skip: isLinuxGnu }, async () => {
+  it('get remote default branch', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     const remote = repo.getRemote('origin');

@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
-import { CI, TARGET } from './env';
+import { isCI, isTarget } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -23,6 +23,22 @@ describe('Repository', () => {
     await openRepository(p);
   });
 
+  it('open git bare repository', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(path.join(p, '.git'), { bare: true });
+    expect(repo.isBare()).toBe(true);
+  });
+
+  it('open git repository in sub directory', async () => {
+    const p = await useFixture('empty');
+    const subdir = path.join(p, 'a', 'b', 'c');
+    await fs.mkdir(subdir, { recursive: true });
+    await openRepository(subdir);
+    await expect(() => openRepository(subdir, { noSearch: true })).rejects.toThrowError(
+      /libgit2 error: could not find repository/
+    );
+  });
+
   it('error if given path is not git repository', async () => {
     const p = await useFixture('notgit');
     await expect(openRepository(p)).rejects.toThrowError(/libgit2 error: could not find repository/);
@@ -35,13 +51,13 @@ describe('Repository', () => {
     await expect(fs.readFile(path.join(p, 'first'), 'utf8')).resolves.toEqual(expect.stringContaining('first'));
   });
 
-  it('clone from remote', { skip: TARGET[0] === 'linux' && TARGET[2] === 'gnu' }, async () => {
+  it('clone from remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.state()).toBe('Clean');
   });
 
-  it('clone from remote with credential', { skip: !CI }, async () => {
+  it('clone from remote with credential', { skip: !isCI }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo-private', p, {
       fetch: {
