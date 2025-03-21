@@ -781,45 +781,34 @@ export interface RepositoryInitOptions {
 }
 export interface RepositoryOpenOptions {
   /**
-   * If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
-   * directly to a repository; otherwise, this may point to a subdirectory
-   * of a repository, and `open` will search up through parent
+   * If this option is `true`, the path must point directly to a repository; otherwise,
+   * this may point to a subdirectory of a repository, and `open` will search up through parent
    * directories.
-   *
-   * If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
-   * directories will not cross a filesystem boundary (detected when the
-   * stat st_dev field changes).
-   *
-   * If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
-   * bare even if it isn't, ignoring any working directory, and defer
-   * loading the repository configuration for performance.
-   *
-   * If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
-   * `/.git` to `path`.
-   *
-   * If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
-   * other flags and `ceilingDirs`, and respect the same environment
-   * variables git does. Note, however, that `path` overrides `$GIT_DIR`.
    */
-  flags: number
+  noSearch?: boolean
+  /**
+   * If this option is `true`, the search through parent directories will not cross
+   * a filesystem boundary (detected when the stat st_dev field changes).
+   */
+  crossFs?: boolean
+  /**
+   * If this option is `true`, force opening the repository as bare event if it isn't, ignoring
+   * any working directory, and defer loading the repository configuration for performance.
+   */
+  bare?: boolean
+  /** If this options is `true`, don't try appending `/.git` to `path`. */
+  noDotgit?: boolean
+  /**
+   * If this option is `true`, `open` will ignore other options and `ceilingDirs`, and respect
+   * the same environment variables git does.
+   * Note, however, that `path` overrides `$GIT_DIR`.
+   */
+  fromEnv?: boolean
   /**
    * ceiling_dirs specifies a list of paths that the search through parent
    * directories will stop before entering.
    */
   ceilingDirs?: Array<string>
-}
-/** Flags for opening repository. */
-export enum RepositoryOpenFlags {
-  /** Only open the specified path; don't walk upward searching. */
-  NoSearch = 1,
-  /** Search across filesystem boundaries. */
-  CrossFS = 2,
-  /** Force opening as a bare repository, and defer loading its config. */
-  Bare = 4,
-  /** Don't try appending `/.git` to the specified repository path. */
-  NoDotGit = 8,
-  /** Respect environment variables like `$GIT_DIR`. */
-  FromEnv = 16
 }
 export interface RepositoryCloneOptions {
   /**
@@ -921,16 +910,6 @@ export declare function initRepository(path: string, options?: RepositoryInitOpt
  *
  * const repo = await openRepository('/path/to/repo.git', {
  *   bare: true,
- * });
- * ```
- *
- * Open in a subdirectory of the repository
- *
- * ```ts
- * import { openRepository, RepositoryOpenFlags } from 'es-git';
- *
- * const repo = await openRepository('/path/to/repo/sub/dir', {
- *   flags: RepositoryOpenFlags.CrossFS,
  * });
  * ```
  */
