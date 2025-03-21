@@ -6,6 +6,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const en = defineConfig({
   lang: 'en',
+  title: 'es-git',
   description: 'Modern git library built for Node.js',
   themeConfig: {
     nav: nav(),

@@ -6,6 +6,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 
 export const ko = defineConfig({
   lang: 'ko',
+  title: 'es-git',
   description: 'Node.js를 위한 현대적인 git 라이브러리',
   themeConfig: {
     nav: nav(),

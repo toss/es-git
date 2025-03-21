@@ -13,24 +13,40 @@ export const shared = defineConfig({
     [
       'link',
       {
+        rel: 'preconnect',
+        href: 'https://static.toss.im',
+        crossorigin: 'anonymous',
+      },
+    ],
+    [
+      'link',
+      {
         rel: 'icon',
         type: 'image/png',
-        sizes: '100x100',
-        href: '/favicon-100x100.png',
+        sizes: '96x96',
+        href: '/favicon-96x96.png',
       },
     ],
     [
       'link',
       {
         rel: 'stylesheet',
+        fetchpriority: 'low',
         href: 'https://static.toss.im/tps/main.css',
+        media: 'none',
+        onload: "this.onload=null; this.media='all'",
+        crossorigin: 'anonymous',
       },
     ],
     [
       'link',
       {
         rel: 'stylesheet',
+        fetchpriority: 'low',
         href: 'https://static.toss.im/tps/others.css',
+        media: 'none',
+        onload: "this.onload=null; this.media='all'",
+        crossorigin: 'anonymous',
       },
     ],
     ['script', {}, 'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };'],
@@ -48,15 +64,26 @@ export const shared = defineConfig({
         content: '/og.png',
       },
     ],
+    [
+      'meta',
+      {
+        name: 'twitter:image',
+        content: '/og.png',
+      },
+    ],
+    [
+      'meta',
+      {
+        name: 'twitter:card',
+        content: 'summary',
+      },
+    ],
   ],
   themeConfig: {
     logo: {
-      dark: '/logo_white.png',
-      light: '/logo_black.png',
+      dark: '/logo.png',
+      light: '/logo.png',
     },
-
-    siteTitle: false,
-
     search: {
       provider: 'local',
       options: {
@@ -65,7 +92,6 @@ export const shared = defineConfig({
         },
       },
     },
-
     socialLinks: [
       { icon: 'github', link: 'https://github.com/toss/es-git' },
       {
