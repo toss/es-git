@@ -1,3 +1,5 @@
+![wallpaper](./docs/public/og.png)
+
 # es-git &middot; [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/toss/es-git/blob/main/LICENSE) [![NPM badge](https://img.shields.io/npm/v/es-git?logo=npm)](https://www.npmjs.com/package/es-git) 
 
 English | [한국어](https://github.com/toss/es-git/blob/main/README-ko_kr.md)
