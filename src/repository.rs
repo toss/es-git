@@ -162,46 +162,49 @@ impl From<&RepositoryInitOptions> for git2::RepositoryInitOptions {
 }
 
 #[napi(object)]
+#[derive(Clone, Default)]
 pub struct RepositoryOpenOptions {
-  /// If flags contains `RepositoryOpenFlags.NoSearch`, the path must point
-  /// directly to a repository; otherwise, this may point to a subdirectory
-  /// of a repository, and `open` will search up through parent
+  /// If this option is `true`, the path must point directly to a repository; otherwise,
+  /// this may point to a subdirectory of a repository, and `open` will search up through parent
   /// directories.
-  ///
-  /// If flags contains `RepositoryOpenFlags.CrossFS`, the search through parent
-  /// directories will not cross a filesystem boundary (detected when the
-  /// stat st_dev field changes).
-  ///
-  /// If flags contains `RepositoryOpenFlags.Bare`, force opening the repository as
-  /// bare even if it isn't, ignoring any working directory, and defer
-  /// loading the repository configuration for performance.
-  ///
-  /// If flags contains `RepositoryOpenFlags.NoDotgit`, don't try appending
-  /// `/.git` to `path`.
-  ///
-  /// If flags contains `RepositoryOpenFlags.FromEnv`, `open` will ignore
-  /// other flags and `ceilingDirs`, and respect the same environment
-  /// variables git does. Note, however, that `path` overrides `$GIT_DIR`.
-  pub flags: u32,
+  pub no_search: Option<bool>,
+  /// If this option is `true`, the search through parent directories will not cross
+  /// a filesystem boundary (detected when the stat st_dev field changes).
+  pub cross_fs: Option<bool>,
+  /// If this option is `true`, force opening the repository as bare event if it isn't, ignoring
+  /// any working directory, and defer loading the repository configuration for performance.
+  pub bare: Option<bool>,
+  /// If this options is `true`, don't try appending `/.git` to `path`.
+  pub no_dotgit: Option<bool>,
+  /// If this option is `true`, `open` will ignore other options and `ceilingDirs`, and respect
+  /// the same environment variables git does.
+  /// Note, however, that `path` overrides `$GIT_DIR`.
+  pub from_env: Option<bool>,
   /// ceiling_dirs specifies a list of paths that the search through parent
   /// directories will stop before entering.
   pub ceiling_dirs: Option<Vec<String>>,
 }
 
-#[napi]
-#[repr(u32)]
-/// Flags for opening repository.
-pub enum RepositoryOpenFlags {
-  /// Only open the specified path; don't walk upward searching.
-  NoSearch = 1,
-  /// Search across filesystem boundaries.
-  CrossFS = 2,
-  /// Force opening as a bare repository, and defer loading its config.
-  Bare = 4,
-  /// Don't try appending `/.git` to the specified repository path.
-  NoDotGit = 8,
-  /// Respect environment variables like `$GIT_DIR`.
-  FromEnv = 16,
+impl RepositoryOpenOptions {
+  pub fn flags(&self) -> git2::RepositoryOpenFlags {
+    let mut flags = git2::RepositoryOpenFlags::empty();
+    if let Some(true) = self.no_search {
+      flags.insert(git2::RepositoryOpenFlags::NO_SEARCH);
+    }
+    if let Some(true) = self.cross_fs {
+      flags.insert(git2::RepositoryOpenFlags::CROSS_FS);
+    }
+    if let Some(true) = self.bare {
+      flags.insert(git2::RepositoryOpenFlags::BARE);
+    }
+    if let Some(true) = self.no_dotgit {
+      flags.insert(git2::RepositoryOpenFlags::NO_DOTGIT);
+    }
+    if let Some(true) = self.from_env {
+      flags.insert(git2::RepositoryOpenFlags::FROM_ENV);
+    }
+    flags
+  }
 }
 
 #[napi(object)]
@@ -501,14 +504,10 @@ impl Task for OpenRepositoryTask {
   type JsValue = Repository;
 
   fn compute(&mut self) -> Result<Self::Output> {
-    let inner = if let Some(opts) = &self.options {
-      let flags = git2::RepositoryOpenFlags::from_bits_truncate(opts.flags);
-      let ceiling_dirs = opts.ceiling_dirs.to_owned().unwrap_or_default();
-      git2::Repository::open_ext(&self.path, flags, ceiling_dirs)
-    } else {
-      git2::Repository::open(&self.path)
-    }
-    .map_err(crate::Error::from)?;
+    let options = self.options.to_owned().unwrap_or_default();
+    let flags = options.flags();
+    let ceiling_dirs = options.ceiling_dirs.to_owned().unwrap_or_default();
+    let inner = git2::Repository::open_ext(&self.path, flags, ceiling_dirs).map_err(crate::Error::from)?;
     Ok(Repository { inner })
   }
 
@@ -554,16 +553,6 @@ impl Task for OpenRepositoryTask {
 ///
 /// const repo = await openRepository('/path/to/repo.git', {
 ///   bare: true,
-/// });
-/// ```
-///
-/// Open in a subdirectory of the repository
-///
-/// ```ts
-/// import { openRepository, RepositoryOpenFlags } from 'es-git';
-///
-/// const repo = await openRepository('/path/to/repo/sub/dir', {
-///   flags: RepositoryOpenFlags.CrossFS,
 /// });
 /// ```
 pub fn open_repository(
