@@ -34,7 +34,11 @@ describe('diff', () => {
     const repo = await openRepository(p);
     await fs.writeFile(path.join(p, 'first'), 'first modified');
     await fs.rm(path.join(p, 'second'));
-    const diff = repo.diffIndexToWorkdir();
+    await fs.writeFile(path.join(p, 'new'), 'new created');
+    const index = repo.index();
+    index.addPath('new');
+    index.write();
+    const diff = repo.diffTreeToWorkdirWithIndex(repo.head().peelToTree());
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -56,6 +60,29 @@ describe('diff', () => {
           size: 14n,
           isBinary: false,
           isValidId: false,
+          exists: true,
+          mode: 'Blob',
+        },
+      },
+      {
+        flags: 0,
+        numFiles: 1,
+        status: 'Added',
+        oldFile: {
+          id: '0000000000000000000000000000000000000000',
+          path: 'new',
+          size: 0n,
+          isBinary: false,
+          isValidId: true,
+          exists: false,
+          mode: 'Unreadable',
+        },
+        newFile: {
+          id: '706aecd4acb830a38b099ede1d9f4010bc9a0312',
+          path: 'new',
+          size: 11n,
+          isBinary: false,
+          isValidId: true,
           exists: true,
           mode: 'Blob',
         },
@@ -123,7 +150,7 @@ describe('diff', () => {
         },
       },
     ];
-    expect(deltas.length).toBe(1);
+    expect(deltas.length).toBe(expected.length);
     expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
   });
 
@@ -167,7 +194,7 @@ second
 `);
   });
 
-  it('find renamed diff delta', async () => {
+  it('find renamed diff delta', { skip: isTarget('win32') }, async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
     const headTree = repo.head().peelToTree();
@@ -203,6 +230,7 @@ second
         },
       },
     ];
+    expect(deltas.length).toBe(expected.length);
     expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
   });
 });
