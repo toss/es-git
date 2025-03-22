@@ -9,7 +9,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["./.yarn/**", "*.json", "./index.js", "./index.d.ts", "./docs/.vitepress/cache/**"]
+    "ignore": ["./.yarn/**", "*.json", "./index.js", "./index.d.ts", "./docs/.vitepress/cache/**", "./docs/public/**"]
   },
   "formatter": {
     "enabled": true,
