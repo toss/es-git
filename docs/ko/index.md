@@ -5,7 +5,12 @@ layout: home
 hero:
   name: 'es-git'
   text: 'Node.js를 위한 현대적인 Git 라이브러리'
-  # tagline:
+  image:
+    loading: eager
+    fetchpriority: high
+    decoding: async
+    src: /hero.webp
+    alt:
   actions:
     - theme: brand
       text: es-git 시작하기

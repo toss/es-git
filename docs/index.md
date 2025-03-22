@@ -5,6 +5,12 @@ layout: home
 hero:
   name: 'es-git'
   text: 'Modern Git library built for Node.js'
+  image:
+    loading: eager
+    fetchpriority: high
+    decoding: async
+    src: /hero.webp
+    alt:
   actions:
     - theme: brand
       text: Get Started
