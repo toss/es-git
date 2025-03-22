@@ -117,4 +117,5 @@ export const shared = defineConfig({
       },
     },
   },
+  srcExclude: ['**/README.md']
 });

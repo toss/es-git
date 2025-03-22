@@ -45,6 +45,7 @@ function sidebar(): DefaultTheme.Sidebar {
           items: [
             { text: 'Repository', link: '/usage/repository' },
             { text: 'Remotes', link: '/usage/remote' },
+            { text: 'Diff', link: '/usage/diff' },
             { text: 'Commit History', link: '/usage/history' },
             { text: 'Commit Changes', link: '/usage/commit' },
             { text: 'Tags', link: '/usage/tag' },

@@ -45,6 +45,7 @@ function sidebar(): DefaultTheme.Sidebar {
           items: [
             { text: '리포지토리', link: '/ko/usage/repository' },
             { text: '리모트', link: '/ko/usage/remote' },
+            { text: '비교', link: '/ko/usage/diff' },
             { text: '커밋 히스토리', link: '/ko/usage/history' },
             { text: '커밋하기', link: '/ko/usage/commit' },
             { text: '태그', link: '/ko/usage/tag' },

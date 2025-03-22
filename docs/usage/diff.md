@@ -10,7 +10,7 @@ es-git supports a variety of methods for comparing diff. You can refer to each m
 
 ---
 
-Below is an example demonstrating how to combine the diff between the `HEAD` tree and the index, and the diff between the index and the working directory using the [`diffTreeToWorkdirWithIndex()`](../reference/repository/Methods/diffTreeToWorkdirWithIndex.md) method.
+Below is an example demonstrating how to combine the diff between the `HEAD` tree and the index, and the diff between the index and the working directory using the [`diffTreeToWorkdirWithIndex()`](../reference/Repository/Methods/diffTreeToWorkdirWithIndex.md) method.
 
 ```ts
 import { openRepository } from 'es-git';
