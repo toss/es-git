@@ -166,4 +166,43 @@ second
 :100644 000000 e019be0... 0000000... D\tsecond
 `);
   });
+
+  it('find renamed diff delta', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const headTree = repo.head().peelToTree();
+    await fs.rename(path.join(p, 'first'), path.join(p, 'first-renamed'));
+    const index = repo.index();
+    index.addPath('first-renamed');
+    index.write();
+    const diff = repo.diffTreeToWorkdirWithIndex(headTree);
+    diff.findSimilar({ renames: true });
+    const deltas = [...diff.deltas()];
+    const expected: FlattenMethods<DiffDelta>[] = [
+      {
+        flags: 0,
+        numFiles: 2,
+        status: 'Renamed',
+        oldFile: {
+          id: '9c59e24b8393179a5d712de4f990178df5734d99',
+          path: 'first',
+          size: 6n,
+          isBinary: false,
+          isValidId: true,
+          exists: true,
+          mode: 'Blob',
+        },
+        newFile: {
+          id: '9c59e24b8393179a5d712de4f990178df5734d99',
+          path: 'first-renamed',
+          size: 6n,
+          isBinary: false,
+          isValidId: true,
+          exists: true,
+          mode: 'Blob',
+        },
+      },
+    ];
+    expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
+  });
 });

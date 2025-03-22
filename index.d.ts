@@ -83,6 +83,79 @@ export type DiffFormat = 'Patch' | 'PatchHeader' | 'Raw' | 'NameOnly' | 'NameSta
 export interface DiffPrintOptions {
   format?: DiffFormat
 }
+export interface DiffFindOptions {
+  /** Look for renames? */
+  renames?: boolean
+  /** Consider old side of modified for renames? */
+  renamesFromRewrites?: boolean
+  /** Look for copies? */
+  copies?: boolean
+  /**
+   * Consider unmodified as copy sources?
+   *
+   * For this to work correctly, use `includeUnmodified` when the initial
+   * diff is being generated.
+   */
+  copiesFromUnmodified?: boolean
+  /** Mark significant rewrites for split. */
+  rewrites?: boolean
+  /** Actually split large rewrites into delete/add pairs */
+  breakRewrites?: boolean
+  /**
+   * Find renames/copies for untracked items in working directory.
+   *
+   * For this to work correctly use the `includeUntracked` option when the
+   * initial diff is being generated.
+   */
+  forUntracked?: boolean
+  /** Turn on all finding features. */
+  all?: boolean
+  /** Measure similarity ignoring leading whitespace (default) */
+  ignoreLeadingWhitespace?: boolean
+  /** Measure similarity ignoring all whitespace */
+  ignoreWhitespace?: boolean
+  /** Measure similarity including all data */
+  dontIgnoreWhitespace?: boolean
+  /** Measure similarity only by comparing SHAs (fast and cheap) */
+  exactMatchOnly?: boolean
+  /**
+   * Do not break rewrites unless they contribute to a rename.
+   *
+   * Normally, `breakRewrites` and `rewrites` will measure the
+   * self-similarity of modified files and split the ones that have changed a
+   * lot into a delete/add pair. Then the sides of that pair will be
+   * considered candidates for rename and copy detection
+   *
+   * If you add this flag in and the split pair is not used for an actual
+   * rename or copy, then the modified record will be restored to a regular
+   * modified record instead of being split.
+   */
+  breakRewritesForRenamesOnly?: boolean
+  /**
+   * Remove any unmodified deltas after find_similar is done.
+   *
+   * Using `copiesFromUnmodified` to emulate the `--find-copies-harder`
+   * behavior requires building a diff with the `includeUnmodified` flag. If
+   * you do not want unmodified records in the final result, pas this flag to
+   * have them removed.
+   */
+  removeUnmodified?: boolean
+  /** Similarity to consider a file renamed (default 50) */
+  renameThreshold?: number
+  /** Similarity of modified to be eligible rename source (default 50) */
+  renameFromRewriteThreshold?: number
+  /** Similarity to consider a file copy (default 50) */
+  copyThreshold?: number
+  /** Similarity to split modify into delete/add pair (default 60) */
+  breakRewriteThreshold?: number
+  /**
+   * Maximum similarity sources to examine for a file (somewhat like
+   * git-diff's `-l` option or `diff.renameLimit` config)
+   *
+   * Defaults to 200
+   */
+  renameLimit?: number
+}
 /** Valid modes for index and tree entries. */
 export type FileMode = 'Unreadable' | 'Tree' | 'Blob' | 'BlobGroupWritable' | 'BlobExecutable' | 'Link' | 'Commit';
 export interface DiffOptions {
@@ -1455,6 +1528,25 @@ export declare class Diff {
    * @returns Formatted text output.
    */
   print(options?: DiffPrintOptions | undefined | null): string
+  /**
+   * Transform a diff marking file renames, copies, etc.
+   *
+   * This modifies a diff in place, replacing old entries that look like
+   * renames or copies with new entries reflecting those changes. This also
+   * will, if requested, break modified files into add/remove pairs if the
+   * amount of change is above a threshold.
+   *
+   * @category Diff/Methods
+   * @signature
+   * ```ts
+   * class Diff {
+   *   findSimilar(options?: DiffFindOptions): void;
+   * }
+   * ```
+   *
+   * @param {DiffFindOptions} [options] - Options for finding diff.
+   */
+  findSimilar(options?: DiffFindOptions | undefined | null): void
 }
 /** A class describing a hunk of a diff. */
 export declare class DiffStats {

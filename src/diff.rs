@@ -151,6 +151,135 @@ pub struct DiffPrintOptions {
   pub format: Option<DiffFormat>,
 }
 
+#[napi(object)]
+pub struct DiffFindOptions {
+  /// Look for renames?
+  pub renames: Option<bool>,
+  /// Consider old side of modified for renames?
+  pub renames_from_rewrites: Option<bool>,
+  /// Look for copies?
+  pub copies: Option<bool>,
+  /// Consider unmodified as copy sources?
+  ///
+  /// For this to work correctly, use `includeUnmodified` when the initial
+  /// diff is being generated.
+  pub copies_from_unmodified: Option<bool>,
+  /// Mark significant rewrites for split.
+  pub rewrites: Option<bool>,
+  /// Actually split large rewrites into delete/add pairs
+  pub break_rewrites: Option<bool>,
+  /// Find renames/copies for untracked items in working directory.
+  ///
+  /// For this to work correctly use the `includeUntracked` option when the
+  /// initial diff is being generated.
+  pub for_untracked: Option<bool>,
+  /// Turn on all finding features.
+  pub all: Option<bool>,
+  /// Measure similarity ignoring leading whitespace (default)
+  pub ignore_leading_whitespace: Option<bool>,
+  /// Measure similarity ignoring all whitespace
+  pub ignore_whitespace: Option<bool>,
+  /// Measure similarity including all data
+  pub dont_ignore_whitespace: Option<bool>,
+  /// Measure similarity only by comparing SHAs (fast and cheap)
+  pub exact_match_only: Option<bool>,
+  /// Do not break rewrites unless they contribute to a rename.
+  ///
+  /// Normally, `breakRewrites` and `rewrites` will measure the
+  /// self-similarity of modified files and split the ones that have changed a
+  /// lot into a delete/add pair. Then the sides of that pair will be
+  /// considered candidates for rename and copy detection
+  ///
+  /// If you add this flag in and the split pair is not used for an actual
+  /// rename or copy, then the modified record will be restored to a regular
+  /// modified record instead of being split.
+  pub break_rewrites_for_renames_only: Option<bool>,
+  /// Remove any unmodified deltas after find_similar is done.
+  ///
+  /// Using `copiesFromUnmodified` to emulate the `--find-copies-harder`
+  /// behavior requires building a diff with the `includeUnmodified` flag. If
+  /// you do not want unmodified records in the final result, pas this flag to
+  /// have them removed.
+  pub remove_unmodified: Option<bool>,
+  /// Similarity to consider a file renamed (default 50)
+  pub rename_threshold: Option<u16>,
+  /// Similarity of modified to be eligible rename source (default 50)
+  pub rename_from_rewrite_threshold: Option<u16>,
+  /// Similarity to consider a file copy (default 50)
+  pub copy_threshold: Option<u16>,
+  /// Similarity to split modify into delete/add pair (default 60)
+  pub break_rewrite_threshold: Option<u16>,
+  /// Maximum similarity sources to examine for a file (somewhat like
+  /// git-diff's `-l` option or `diff.renameLimit` config)
+  ///
+  /// Defaults to 200
+  pub rename_limit: Option<u32>,
+}
+
+impl From<DiffFindOptions> for git2::DiffFindOptions {
+  fn from(value: DiffFindOptions) -> Self {
+    let mut opts = git2::DiffFindOptions::default();
+    if let Some(flag) = value.renames {
+      opts.renames(flag);
+    }
+    if let Some(flag) = value.renames_from_rewrites {
+      opts.renames(flag);
+    }
+    if let Some(flag) = value.copies {
+      opts.copies(flag);
+    }
+    if let Some(flag) = value.copies_from_unmodified {
+      opts.copies_from_unmodified(flag);
+    }
+    if let Some(flag) = value.rewrites {
+      opts.rewrites(flag);
+    }
+    if let Some(flag) = value.break_rewrites {
+      opts.break_rewrites(flag);
+    }
+    if let Some(flag) = value.for_untracked {
+      opts.for_untracked(flag);
+    }
+    if let Some(flag) = value.all {
+      opts.all(flag);
+    }
+    if let Some(flag) = value.ignore_leading_whitespace {
+      opts.ignore_leading_whitespace(flag);
+    }
+    if let Some(flag) = value.ignore_whitespace {
+      opts.ignore_whitespace(flag);
+    }
+    if let Some(flag) = value.dont_ignore_whitespace {
+      opts.dont_ignore_whitespace(flag);
+    }
+    if let Some(flag) = value.exact_match_only {
+      opts.exact_match_only(flag);
+    }
+    if let Some(flag) = value.break_rewrites_for_renames_only {
+      opts.break_rewrites_for_renames_only(flag);
+    }
+    if let Some(flag) = value.remove_unmodified {
+      opts.remove_unmodified(flag);
+    }
+    if let Some(val) = value.rename_threshold {
+      opts.rename_threshold(val);
+    }
+    if let Some(val) = value.rename_from_rewrite_threshold {
+      opts.rename_from_rewrite_threshold(val);
+    }
+    if let Some(val) = value.copy_threshold {
+      opts.copy_threshold(val);
+    }
+    if let Some(val) = value.break_rewrite_threshold {
+      opts.break_rewrite_threshold(val);
+    }
+    if let Some(val) = value.rename_limit {
+      opts.rename_limit(val as usize);
+    }
+    opts
+  }
+}
+
 #[napi]
 /// The diff object that contains all individual file deltas.
 ///
@@ -262,6 +391,30 @@ impl Diff {
       true
     });
     lines.join("")
+  }
+
+  #[napi]
+  /// Transform a diff marking file renames, copies, etc.
+  ///
+  /// This modifies a diff in place, replacing old entries that look like
+  /// renames or copies with new entries reflecting those changes. This also
+  /// will, if requested, break modified files into add/remove pairs if the
+  /// amount of change is above a threshold.
+  ///
+  /// @category Diff/Methods
+  /// @signature
+  /// ```ts
+  /// class Diff {
+  ///   findSimilar(options?: DiffFindOptions): void;
+  /// }
+  /// ```
+  ///
+  /// @param {DiffFindOptions} [options] - Options for finding diff.
+  pub fn find_similar(&mut self, options: Option<DiffFindOptions>) -> crate::Result<()> {
+    self
+      .inner
+      .find_similar(options.map(git2::DiffFindOptions::from).as_mut())?;
+    Ok(())
   }
 }
 
