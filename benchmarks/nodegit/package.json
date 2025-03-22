@@ -1,0 +1,11 @@
+{
+  "name": "nodegit",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "dependencies": {
+    "@figma/nodegit": "0.28.0-figma.8"
+  },
+  "devDependencies": {
+    "@types/nodegit": "^0.28.7"
+  }
+}

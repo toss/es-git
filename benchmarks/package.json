@@ -5,11 +5,10 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
-    "@figma/nodegit": "0.28.0-figma.8",
-    "es-git": "workspace:^"
+    "es-git": "workspace:^",
+    "nodegit": "link:./nodegit"
   },
   "devDependencies": {
-    "@types/nodegit": "^0.28.7",
     "vitest": "^3.0.5"
   }
 }

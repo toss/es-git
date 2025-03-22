@@ -1,5 +1,16 @@
 # Benchmarks
 
+## Setup
+
+To install the dependencies required for the benchmark, first run the command below.
+
+```shell
+cd nodegit
+npm install
+```
+
+Because nodegit may not be installed depending on the environment (to be exact, it fails to build locally because there is no prebuilt), it is managed separately in this yarn workspace.
+
 ## Running
 
 Run benchmarks with the below command:

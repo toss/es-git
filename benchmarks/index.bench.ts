@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Repository, Revparse } from '@figma/nodegit';
 import { openRepository } from 'es-git';
+import { Repository, Revparse } from 'nodegit';
 import { bench, describe } from 'vitest';
 import { exec } from './util';
 
