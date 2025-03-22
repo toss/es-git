@@ -28,10 +28,11 @@
     }
   },
   "engines": {
-    "node": ">= 10.7.0"
+    "node": ">= 10.20.0"
   },
   "workspaces": [
-    "docs"
+    "docs",
+    "benchmarks"
   ],
   "scripts": {
     "prepublishOnly": "napi prepublish -t npm",
