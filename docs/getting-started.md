@@ -1,34 +1,35 @@
 # Getting Started
 
-es-git is a modern Git library for Node.js. With its simple interface, you can easily integrate complex Git operations,
-and it supports TypeScript types for fast and reliable development.
+A modern Git library built for Node.js with blazing-fast installation and rock-solid stability, powered by N-API.
 
-## Key Features
+With its simple interface, you can easily integrate complex Git operations, and it supports TypeScript types for fast and reliable development.
 
-### 🚀 Easy Git Integration
-- Simplifies complex Git operations with an intuitive API.
-- Seamlessly integrates Git functionality into Node.js applications.
+## Why es-git?
 
-### 🛠️ TypeScript Support
-- Provides static type definitions for safer and more reliable code.
-- Enhances development productivity with better autocompletion.
+There was no good option for handling Git in a Node.js environment. Usually, when you have to handle Git, there are two options:
 
-### ⚡ High-Performance Git Operations
-- Built on `libgit2`, optimized for efficient Git workflows.
-- Uses a native module for fast and seamless execution.
+#### Using `child_process` to execute git command
 
-### 💻 Cross-Platform Compatibility
-- Powered by `napi-rs`, ensuring compatibility with Windows, macOS, and Linux.
-- Prebuilt binaries allow installation without manual compilation.
+Since it spawns a child process, it tends to be slow, and parsing stdout to retrieve the results can be quite painful.
 
-### 🔧 Easy Installation & Maintenance
-- No need for `node-gyp`, making installation straightforward.
-- Minimal dependencies for easier maintenance.
+#### Using `nodegit`
 
+Nodegit also uses libgit2 like es-git, but since it builds using `node-gyp`, if there is no prebuilt for the Node.js version you are currently using, you will need to build the source code locally.
+
+Depending on the architecture or the presence of required dependencies during the build process, the build may fail, making Nodegit a challenge to install from the start. 
+
+---
+
+`es-git` can be a good choice for using Git in Node.js.
+
+- **🚀 Ease of Use** : Access complex Git features through simple APIs. Additionally, it supports TypeScript types for fast and reliable development.
+- **⚡ High-Performance Git** : es-git provides native modules built on libgit2, offering high performance. It can be up to 100 times faster than executing Git commands via `child_process`.
+- **🔧 Hassle-Free Installation** : Since es-git makes prebuilt native modules with [napi.rs](https://napi.rs/) instead of `node-gyp`, there's no need to build native modules locally when installing the package. This means you won’t face installation failures due to build errors.
+- **💻 Cross-Platform**: It is compatible with all Windows/macOS/Linux operating systems.
 
 ## Installation
 
-`es-git` supports Node.js 10.7 or later. To install `es-git`, run one of the following commands:
+`es-git` supports Node.js 10.20 or later. To install `es-git`, run one of the following commands:
 
 ::: code-group
 
