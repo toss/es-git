@@ -4,6 +4,7 @@ _default:
 alias f := format
 alias t := test
 alias l := lint
+alias bench := benchmarks
 
 # Setup development environment
 setup:
@@ -69,3 +70,7 @@ docs:
 # Run documentation generator
 docs-gen *ARGS:
     yarn workspace docs run gen {{ARGS}}
+
+# Run benchmarks
+benchmarks:
+    yarn workspace benchmarks run bench
