@@ -41,6 +41,10 @@ function sidebar(): DefaultTheme.Sidebar {
           link: '/ko/getting-started',
         },
         {
+          text: '성능',
+          link: '/ko/performance',
+        },
+        {
           text: '사용법',
           items: [
             { text: '리포지토리', link: '/ko/usage/repository' },

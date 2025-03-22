@@ -41,6 +41,10 @@ function sidebar(): DefaultTheme.Sidebar {
           link: '/getting-started',
         },
         {
+          text: 'Performance',
+          link: '/performance',
+        },
+        {
           text: 'Usage',
           items: [
             { text: 'Repository', link: '/usage/repository' },
