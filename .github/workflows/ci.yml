@@ -23,7 +23,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: ".node-version"
           check-latest: true
           cache: yarn
       - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: ".node-version"
           check-latest: true
           cache: yarn
       - name: Install rust
@@ -100,7 +100,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 20
+          node-version-file: ".node-version"
           check-latest: true
           cache: yarn
       - name: Install rust
