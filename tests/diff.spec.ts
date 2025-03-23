@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { type DiffDelta, type DiffFile, openDefaultConfig, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
@@ -29,7 +29,7 @@ function flattenDiffDelta(delta: DiffDelta): FlattenMethods<DiffDelta> {
 }
 
 describe('diff', () => {
-  afterEach(() => {
+  beforeEach(() => {
     if (isTarget('win32')) {
       const config = openDefaultConfig();
       config.setBool('core.autocrlf', true);
