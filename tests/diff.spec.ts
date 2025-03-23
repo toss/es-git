@@ -1,8 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { type DiffDelta, type DiffFile, openDefaultConfig, openRepository } from '../index';
-import { isTarget } from './env';
+import { describe, expect, it } from 'vitest';
+import { type DiffDelta, type DiffFile, openRepository } from '../index';
 import { useFixture } from './fixtures';
 import type { FlattenMethods } from './types';
 
@@ -29,22 +28,14 @@ function flattenDiffDelta(delta: DiffDelta): FlattenMethods<DiffDelta> {
 }
 
 describe('diff', () => {
-  beforeEach(() => {
-    if (isTarget('win32')) {
-      const config = openDefaultConfig();
-      config.setBool('core.autocrlf', false);
-      config.setString('core.eol', 'lf');
-    }
-  });
-
   it('get diff', async () => {
-    const p = await useFixture('commits');
+    const p = await useFixture('diff');
     const repo = await openRepository(p);
-    await fs.writeFile(path.join(p, 'first'), 'first modified');
-    await fs.rm(path.join(p, 'second'));
-    await fs.writeFile(path.join(p, 'new'), 'new created');
+    await fs.writeFile(path.join(p, 'A'), 'A modified');
+    await fs.rm(path.join(p, 'B'));
+    await fs.writeFile(path.join(p, 'D'), 'D created');
     const index = repo.index();
-    index.addPath('new');
+    index.addPath('D');
     index.write();
     const diff = repo.diffTreeToWorkdirWithIndex(repo.head().peelToTree());
     const deltas = [...diff.deltas()];
@@ -54,9 +45,9 @@ describe('diff', () => {
         numFiles: 2,
         status: 'Modified',
         oldFile: {
-          id: '9c59e24b8393179a5d712de4f990178df5734d99',
-          path: 'first',
-          size: 6n,
+          id: 'f70f10e4db19068f79bc43844b49f3eece45c4e8',
+          path: 'A',
+          size: 2n,
           isBinary: false,
           isValidId: true,
           exists: true,
@@ -64,8 +55,8 @@ describe('diff', () => {
         },
         newFile: {
           id: '0000000000000000000000000000000000000000',
-          path: 'first',
-          size: 14n,
+          path: 'A',
+          size: 10n,
           isBinary: false,
           isValidId: false,
           exists: true,
@@ -75,47 +66,47 @@ describe('diff', () => {
       {
         flags: 0,
         numFiles: 1,
-        status: 'Added',
+        status: 'Deleted',
         oldFile: {
+          id: '223b7836fb19fdf64ba2d3cd6173c6a283141f78',
+          path: 'B',
+          size: 2n,
+          isBinary: false,
+          isValidId: true,
+          exists: true,
+          mode: 'Blob',
+        },
+        newFile: {
           id: '0000000000000000000000000000000000000000',
-          path: 'new',
+          path: 'B',
           size: 0n,
           isBinary: false,
           isValidId: true,
           exists: false,
           mode: 'Unreadable',
-        },
-        newFile: {
-          id: '706aecd4acb830a38b099ede1d9f4010bc9a0312',
-          path: 'new',
-          size: 11n,
-          isBinary: false,
-          isValidId: true,
-          exists: true,
-          mode: 'Blob',
         },
       },
       {
         flags: 0,
         numFiles: 1,
-        status: 'Deleted',
+        status: 'Added',
         oldFile: {
-          id: 'e019be006cf33489e2d0177a3837a2384eddebc5',
-          path: 'second',
-          size: 7n,
-          isBinary: false,
-          isValidId: true,
-          exists: true,
-          mode: 'Blob',
-        },
-        newFile: {
           id: '0000000000000000000000000000000000000000',
-          path: 'second',
+          path: 'D',
           size: 0n,
           isBinary: false,
           isValidId: true,
           exists: false,
           mode: 'Unreadable',
+        },
+        newFile: {
+          id: '99f203cbf201fb268d8c2e5a695033551383cb53',
+          path: 'D',
+          size: 9n,
+          isBinary: false,
+          isValidId: true,
+          exists: true,
+          mode: 'Blob',
         },
       },
     ];
@@ -124,15 +115,12 @@ describe('diff', () => {
   });
 
   it('get diff include untracked', async () => {
-    const p = await useFixture('commits');
+    const p = await useFixture('diff');
     const repo = await openRepository(p);
-    await fs.writeFile(path.join(p, 'third'), 'third created');
+    await fs.writeFile(path.join(p, 'D'), 'D');
     const diff = repo.diffIndexToWorkdir(undefined, {
       includeUntracked: true,
     });
-    if (isTarget('win32')) {
-      console.log(diff.print());
-    }
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -141,7 +129,7 @@ describe('diff', () => {
         status: 'Untracked',
         oldFile: {
           id: '0000000000000000000000000000000000000000',
-          path: 'third',
+          path: 'D',
           size: 0n,
           isBinary: false,
           isValidId: true,
@@ -150,8 +138,8 @@ describe('diff', () => {
         },
         newFile: {
           id: '0000000000000000000000000000000000000000',
-          path: 'third',
-          size: 13n,
+          path: 'D',
+          size: 1n,
           isBinary: false,
           isValidId: false,
           exists: true,
@@ -164,58 +152,55 @@ describe('diff', () => {
   });
 
   it('print diff with formatting', async () => {
-    const p = await useFixture('commits');
+    const p = await useFixture('diff');
     const repo = await openRepository(p);
-    await fs.writeFile(path.join(p, 'first'), 'first modified\n\n');
-    await fs.rm(path.join(p, 'second'));
+    await fs.writeFile(path.join(p, 'A'), 'A modified');
+    await fs.rm(path.join(p, 'B'));
     const diff = repo.diffIndexToWorkdir(undefined);
-    expect(diff.print()).toEqual(`diff --git a/first b/first
-index 9c59e24..46d3a3e 100644
---- a/first
-+++ b/first
-@@ -1 +1,2 @@
-first
-first modified
-
-diff --git a/second b/second
+    expect(diff.print()).toEqual(`diff --git a/A b/A
+index f70f10e..784f93d 100644
+--- a/A
++++ b/A
+@@ -1 +1 @@
+A
+A modified
+\\ No newline at end of file
+diff --git a/B b/B
 deleted file mode 100644
-index e019be0..0000000
---- a/second
+index 223b783..0000000
+--- a/B
 +++ /dev/null
 @@ -1 +0,0 @@
-second
+B
 `);
-    expect(diff.print({ format: 'PatchHeader' })).toEqual(`diff --git a/first b/first
-index 9c59e24..46d3a3e 100644
---- a/first
-+++ b/first
-diff --git a/second b/second
+    expect(diff.print({ format: 'PatchHeader' })).toEqual(`diff --git a/A b/A
+index f70f10e..784f93d 100644
+--- a/A
++++ b/A
+diff --git a/B b/B
 deleted file mode 100644
-index e019be0..0000000
---- a/second
+index 223b783..0000000
+--- a/B
 +++ /dev/null
 `);
-    expect(diff.print({ format: 'NameOnly' })).toEqual(`first
-second
+    expect(diff.print({ format: 'NameOnly' })).toEqual(`A
+B
 `);
-    expect(diff.print({ format: 'Raw' })).toEqual(`:100644 100644 9c59e24... 46d3a3e... M\tfirst
-:100644 000000 e019be0... 0000000... D\tsecond
+    expect(diff.print({ format: 'Raw' })).toEqual(`:100644 100644 f70f10e... 784f93d... M\tA
+:100644 000000 223b783... 0000000... D\tB
 `);
   });
 
   it('find renamed diff delta', async () => {
-    const p = await useFixture('commits');
+    const p = await useFixture('diff');
     const repo = await openRepository(p);
     const headTree = repo.head().peelToTree();
-    await fs.rename(path.join(p, 'first'), path.join(p, 'first-renamed'));
+    await fs.rename(path.join(p, 'A'), path.join(p, 'A-renamed'));
     const index = repo.index();
-    index.addPath('first-renamed');
+    index.addPath('A-renamed');
     index.write();
     const diff = repo.diffTreeToWorkdirWithIndex(headTree);
     diff.findSimilar({ renames: true });
-    if (isTarget('win32')) {
-      console.log(diff.print());
-    }
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -223,18 +208,18 @@ second
         numFiles: 2,
         status: 'Renamed',
         oldFile: {
-          id: '9c59e24b8393179a5d712de4f990178df5734d99',
-          path: 'first',
-          size: 6n,
+          id: 'f70f10e4db19068f79bc43844b49f3eece45c4e8',
+          path: 'A',
+          size: 2n,
           isBinary: false,
           isValidId: true,
           exists: true,
           mode: 'Blob',
         },
         newFile: {
-          id: '9c59e24b8393179a5d712de4f990178df5734d99',
-          path: 'first-renamed',
-          size: 6n,
+          id: 'f70f10e4db19068f79bc43844b49f3eece45c4e8',
+          path: 'A-renamed',
+          size: 2n,
           isBinary: false,
           isValidId: true,
           exists: true,
