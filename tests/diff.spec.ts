@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { type DiffDelta, type DiffFile, openRepository } from '../index';
+import { afterEach, describe, expect, it } from 'vitest';
+import { type DiffDelta, type DiffFile, openDefaultConfig, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import type { FlattenMethods } from './types';
@@ -29,6 +29,13 @@ function flattenDiffDelta(delta: DiffDelta): FlattenMethods<DiffDelta> {
 }
 
 describe('diff', () => {
+  afterEach(() => {
+    if (isTarget('win32')) {
+      const config = openDefaultConfig();
+      config.setBool('core.autocrlf', true);
+    }
+  });
+
   it('get diff', async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
@@ -118,9 +125,6 @@ describe('diff', () => {
   it('get diff include untracked', async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
-    if (isTarget('win32')) {
-      repo.config().setBool('core.autocrlf', true);
-    }
     await fs.writeFile(path.join(p, 'third'), 'third created');
     const diff = repo.diffIndexToWorkdir(undefined, {
       includeUntracked: true,
@@ -198,9 +202,6 @@ second
   it('find renamed diff delta', async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
-    if (isTarget('win32')) {
-      repo.config().setBool('core.autocrlf', true);
-    }
     const headTree = repo.head().peelToTree();
     await fs.rename(path.join(p, 'first'), path.join(p, 'first-renamed'));
     const index = repo.index();
