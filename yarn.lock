@@ -1881,12 +1881,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:*":
+  version: 22.13.11
+  resolution: "@types/node@npm:22.13.11"
+  dependencies:
+    undici-types: "npm:~6.20.0"
+  checksum: 10c0/f6ee33d36372242535c38640fe7550a6640d8a775ec19b55bfc11775b521cba072d892ca92a912332ce01b317293d645c1bf767f3f882ec719f2404a3d2a5b96
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^22.8.4":
   version: 22.8.4
   resolution: "@types/node@npm:22.8.4"
   dependencies:
     undici-types: "npm:~6.19.8"
   checksum: 10c0/f88d030480630194a9168772462ec09b2d86454f34368c46d2b7fda5dc6e14594b1576fcc5c35cc53b57a4d1e8dd2865a85ae81f34ded0d1af753a0f5d294c25
+  languageName: node
+  linkType: hard
+
+"@types/nodegit@npm:^0.28.7":
+  version: 0.28.7
+  resolution: "@types/nodegit@npm:0.28.7"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/165ff8b54fe73c22ec38f5f08ce15b2af48aeab79774bdeaec05f61ab946106f5ff99229099f8f0cf25c14ca315a98a587774a6fd47fd8c29b5a18ca6bec0c8f
   languageName: node
   linkType: hard
 
@@ -2434,7 +2452,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "benchmarks@workspace:benchmarks"
   dependencies:
-    es-git: "workspace:^"
+    "@types/nodegit": "npm:^0.28.7"
     nodegit: "link:./nodegit"
     vitest: "npm:^3.0.5"
   languageName: unknown
@@ -2994,7 +3012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-git@workspace:., es-git@workspace:^":
+"es-git@workspace:.":
   version: 0.0.0-use.local
   resolution: "es-git@workspace:."
   dependencies:
@@ -5633,6 +5651,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10c0/68e659a98898d6a836a9a59e6adf14a5d799707f5ea629433e025ac90d239f75e408e2e5ff086afc3cace26f8b26ee52155293564593fbb4a2f666af57fc59bf
   languageName: node
   linkType: hard
 
