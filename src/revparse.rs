@@ -29,12 +29,12 @@ pub enum RevparseMode {
 ///
 /// @example
 /// ```ts
-/// import { openRepository, RevparseMode } from 'es-git';
+/// import { openRepository, revparseModeContains, RevparseMode } from 'es-git';
 ///
 /// const repo = await openRepository('.');
 /// const spec = repo.revparse('main..other');
 ///
-/// console.assert(spec.mode, RevparseMode.Range);
+/// console.assert(revparseModeContains(spec.mode, RevparseMode.Range));
 /// ```
 pub fn revparse_mode_contains(source: u32, target: u32) -> bool {
   bitflags_contain(

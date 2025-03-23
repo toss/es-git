@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openRepository } from 'es-git';
 import { Repository, Revparse } from 'nodegit';
 import { bench, describe } from 'vitest';
+import { openRepository } from '../index';
 import { exec } from './util';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));

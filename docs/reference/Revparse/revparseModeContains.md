@@ -36,10 +36,10 @@ function revparseModeContains(source: number, target: number): boolean;
 ## Examples
 
 ```ts
-import { openRepository, RevparseMode } from 'es-git';
+import { openRepository, revparseModeContains, RevparseMode } from 'es-git';
 
 const repo = await openRepository('.');
 const spec = repo.revparse('main..other');
 
-console.assert(spec.mode, RevparseMode.Range);
+console.assert(revparseModeContains(spec.mode, RevparseMode.Range));
 ```
