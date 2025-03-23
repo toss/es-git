@@ -310,10 +310,21 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Blob, Commit, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64 } = nativeBinding
+const { Blob, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
 
 module.exports.Blob = Blob
 module.exports.Commit = Commit
+module.exports.ConfigLevel = ConfigLevel
+module.exports.ConfigEntries = ConfigEntries
+module.exports.Config = Config
+module.exports.openConfig = openConfig
+module.exports.openDefaultConfig = openDefaultConfig
+module.exports.findGlobalConfigPath = findGlobalConfigPath
+module.exports.findSystemConfigPath = findSystemConfigPath
+module.exports.findXdgConfigPath = findXdgConfigPath
+module.exports.parseConfigBool = parseConfigBool
+module.exports.parseConfigI32 = parseConfigI32
+module.exports.parseConfigI64 = parseConfigI64
 module.exports.DiffFlags = DiffFlags
 module.exports.diffFlagsContains = diffFlagsContains
 module.exports.DeltaType = DeltaType
@@ -363,14 +374,3 @@ module.exports.TreeWalkMode = TreeWalkMode
 module.exports.Tree = Tree
 module.exports.TreeIter = TreeIter
 module.exports.TreeEntry = TreeEntry
-module.exports.ConfigLevel = ConfigLevel
-module.exports.ConfigEntries = ConfigEntries
-module.exports.Config = Config
-module.exports.openConfig = openConfig
-module.exports.openDefaultConfig = openDefaultConfig
-module.exports.findGlobalConfigPath = findGlobalConfigPath
-module.exports.findSystemConfigPath = findSystemConfigPath
-module.exports.findXdgConfigPath = findXdgConfigPath
-module.exports.parseConfigBool = parseConfigBool
-module.exports.parseConfigI32 = parseConfigI32
-module.exports.parseConfigI64 = parseConfigI64
