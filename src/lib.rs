@@ -16,6 +16,7 @@ pub mod signature;
 pub mod tag;
 pub mod tree;
 pub(crate) mod util;
+pub mod config;
 
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, Error>;

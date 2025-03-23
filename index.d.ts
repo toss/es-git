@@ -1220,6 +1220,149 @@ export interface CreateLightweightTagOptions {
  */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
 /**
+ * - `ProgramData` : System-wide on Windows, for compatibility with portable git.
+ * - `System` : System-wide configuration file. (e.g. `/etc/gitconfig`)
+ * - `XDG` : XDG-compatible configuration file. (e.g. `~/.config/git/config`)
+ * - `Global` : User-specific configuration. (e.g. `~/.gitconfig`)
+ * - `Local` : Repository specific config. (e.g. `$PWD/.git/config`)
+ * - `Worktree` : Worktree specific configuration file. (e.g. `$GIT_DIR/config.worktree`)
+ * - `App` : Application specific configuration file.
+ * - `Highest` : Highest level available.
+ */
+export type ConfigLevel = 'ProgramData' | 'System' | 'XDG' | 'Global' | 'Local' | 'Worktree' | 'App' | 'Highest';
+export interface ConfigEntry {
+  /** The name of this entry. */
+  name: string
+  /** The value of this entry. If no value is defined, the value will be `null`. */
+  value?: string
+  /** The configuration level of this entry. */
+  level: ConfigLevel
+  /** Depth of includes where this variable was found */
+  includeDepth: number
+}
+/**
+ * Create a new config instance containing a single on-disk file
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function openConfig(path: string): Config;
+ * ```
+ *
+ * @param {string} path - Path to config file.
+ * @returns Config instance representing a git configuration key/value store.
+ */
+export declare function openConfig(path: string): Config
+/**
+ * Open the global, XDG and system configuration files
+ *
+ * Utility wrapper that finds the global, XDG and system configuration
+ * files and opens them into a single prioritized config object that can
+ * be used when accessing default config data outside a repository.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function openDefaultConfig(): Config;
+ * ```
+ *
+ * @returns Config instance representing a git configuration key/value store.
+ */
+export declare function openDefaultConfig(): Config
+/**
+ * Locate the path to the global configuration file.
+ *
+ * The user or global configuration file is usually located in
+ * `$HOME/.gitconfig`.
+ *
+ * This method will try to guess the full path to that file, if the file
+ * exists. The returned path may be used on any method call to load
+ * the global configuration file.
+ *
+ * This method will not guess the path to the XDG compatible config file
+ * (`.config/git/config`).
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function findGlobalConfigPath(): string | null;
+ * ```
+ *
+ * @returns The path to the global configuration file.
+ */
+export declare function findGlobalConfigPath(): string | null
+/**
+ * Locate the path to the system configuration file.
+ *
+ * If `/etc/gitconfig` doesn't exist, it will look for `%PROGRAMFILES%`.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function findSystemConfigPath(): string | null;
+ * ```
+ *
+ * @returns The path to the system configuration file.
+ */
+export declare function findSystemConfigPath(): string | null
+/**
+ * Locate the path to the global XDG compatible configuration file.
+ *
+ * The XDG compatible configuration file is usually located in
+ * `$HOME/.config/git/config`.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function findXdgConfigPath(): string | null;
+ * ```
+ *
+ * @returns The path to the XDG compatible configuration file.
+ */
+export declare function findXdgConfigPath(): string | null
+/**
+ * Parse a string as a bool.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function parseConfigBool(value: string): boolean;
+ * ```
+ *
+ * @param {string} value - Input value.
+ * @returns Interprets "true", "yes", "on", 1, or any non-zero number as `true`.
+ * Interprets "false", "no", "off", 0, or an empty string as `false`.
+ */
+export declare function parseConfigBool(value: string): boolean
+/**
+ * Parse a string as an i32; handles suffixes like k, M, or G, and
+ * multiplies by the appropriate power of 1024.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function parseConfigI32(value: string): number;
+ * ```
+ *
+ * @param {string} value - Input value.
+ * @returns Parsed i32 value.
+ */
+export declare function parseConfigI32(value: string): number
+/**
+ * Parse a string as an i64; handles suffixes like k, M, or G, and
+ * multiplies by the appropriate power of 1024.
+ *
+ * @category Config
+ * @signature
+ * ```ts
+ * function parseConfigI64(value: string): number;
+ * ```
+ *
+ * @param {string} value - Input value.
+ * @returns Parsed i64 value.
+ */
+export declare function parseConfigI64(value: string): number
+/**
  * A class to represent a git [blob][1].
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
  */
@@ -3419,6 +3562,22 @@ export declare class Repository {
    * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
+  /**
+   * Get the configuration file for this repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   config(): Config;
+   * }
+   * ```
+   *
+   * @returns If a configuration file has not been set, the default config set for the
+   * repository will be returned, including global and system configurations
+   * (if they are available).
+   */
+  config(): Config
 }
 /**
  * A revwalk allows traversal of the commit graph defined by including one or
@@ -3997,4 +4156,436 @@ export declare class TreeEntry {
    * @returns Git object that pointed by the entry.
    */
   toObject(repo: Repository): GitObject
+}
+/** An iterator over the `ConfigEntry` values of a config. */
+export declare class ConfigEntries {
+  [Symbol.iterator](): Iterator<ConfigEntry, void, void>
+}
+export declare class Config {
+  /**
+   * Delete a config variable from the config file with the highest level
+   * (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   remove(name: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   */
+  remove(name: string): void
+  /**
+   * Remove multivar config variables in the config file with the highest level (usually the
+   * local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   removeMultivar(name: string, regexp: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {string} regexp - The regular expression is applied case-sensitively on the value.
+   */
+  removeMultivar(name: string, regexp: string): void
+  /**
+   * Get the value of a boolean config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getBool(name: string): boolean;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a boolean config variable.
+   */
+  getBool(name: string): boolean
+  /**
+   * Find the value of a boolean config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findBool(name: string): boolean | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a boolean config variable.
+   */
+  findBool(name: string): boolean | null
+  /**
+   * Get the value of an integer config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getI32(name: string): number;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of an integer config variable.
+   */
+  getI32(name: string): number
+  /**
+   * Find the value of an integer config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findI32(name: string): number | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of an integer config variable.
+   */
+  findI32(name: string): number | null
+  /**
+   * Get the value of an integer config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getI64(name: string): number;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of an integer config variable.
+   */
+  getI64(name: string): number
+  /**
+   * Find the value of an integer config variable.
+   *
+   * All config files will be looked into, in the order of their defined
+   * level. A higher level means a higher priority. The first occurrence of
+   * the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findI64(name: string): number | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of an integer config variable.
+   */
+  findI64(name: string): number | null
+  /**
+   * Get the value of a string config variable as a byte slice.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getBytes(name: string): Uint8Array;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a string config variable as a byte slice.
+   */
+  getBytes(name: string): Uint8Array
+  /**
+   * Find the value of a string config variable as a byte slice.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findBytes(name: string): Uint8Array | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a string config variable as a byte slice.
+   */
+  findBytes(name: string): Uint8Array | null
+  /**
+   * Get the value of a string config variable as an owned string.
+   *
+   * All config files will be looked into, in the order of their
+   * defined level. A higher level means a higher priority. The
+   * first occurrence of the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getString(name: string): string;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a string config variable.
+   * @throws An error will be returned if the config value is not valid utf-8.
+   */
+  getString(name: string): string
+  /**
+   * Find the value of a string config variable as an owned string.
+   *
+   * All config files will be looked into, in the order of their
+   * defined level. A higher level means a higher priority. The
+   * first occurrence of the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findString(name: string): string | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a string config variable.
+   */
+  findString(name: string): string | null
+  /**
+   * Get the value of a path config variable.
+   *
+   * A leading '~' will be expanded to the global search path (which
+   * defaults to the user's home directory but can be overridden via
+   * [`git_libgit2_opts`][1].
+   *
+   * [1]: https://libgit2.org/docs/reference/v1.9.0/common/git_libgit2_opts.html
+   *
+   * All config files will be looked into, in the order of their
+   * defined level. A higher level means a higher priority. The
+   * first occurrence of the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getPath(name: string): string;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a path config variable.
+   */
+  getPath(name: string): string
+  /**
+   * Find the value of a path config variable.
+   *
+   * A leading '~' will be expanded to the global search path (which
+   * defaults to the user's home directory but can be overridden via
+   * [`git_libgit2_opts`][1].
+   *
+   * [1]: https://libgit2.org/docs/reference/v1.9.0/common/git_libgit2_opts.html
+   *
+   * All config files will be looked into, in the order of their
+   * defined level. A higher level means a higher priority. The
+   * first occurrence of the variable will be returned here.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findPath(name: string): string | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns The value of a path config variable.
+   */
+  findPath(name: string): string | null
+  /**
+   * Get the entry for a config variable.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   getEntry(name: string): ConfigEntry;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns `ConfigEntry` object representing a certain entry owned by a `Config` instance.
+   */
+  getEntry(name: string): ConfigEntry
+  /**
+   * Find the entry for a config variable.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   findEntry(name: string): ConfigEntry | null;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @returns `ConfigEntry` object representing a certain entry owned by a `Config` instance.
+   */
+  findEntry(name: string): ConfigEntry | null
+  /**
+   * Iterate over all the config variables.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   entries(glob?: string): ConfigEntries;
+   * }
+   * ```
+   *
+   * @param {string} [glob] - If `glob` is provided, then the iterator will only iterate over all
+   * variables whose name matches the pattern.
+   * The regular expression is applied case-sensitively on the normalized form of
+   * the variable name: the section and variable parts are lower-cased. The
+   * subsection is left unchanged.
+   *
+   * @returns An iterator over the `ConfigEntry` values of a config.
+   * @example
+   *
+   * ```ts
+   * import { openDefaultConfig } from 'es-git';
+   *
+   * const config = openDefaultConfig();
+   * for (const entry of config.entries()) {
+   *   console.log(entry.name, entry.value);
+   * }
+   * ```
+   */
+  entries(glob?: string | undefined | null): ConfigEntries
+  /**
+   * Iterate over the values of a multivar.
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   multivar(name: string, regexp?: string): ConfigEntries;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {string} [regexp] - If `regexp` is provided, then the iterator will only iterate over all
+   * values which match the pattern.
+   * The regular expression is applied case-sensitively on the normalized form of
+   * the variable name: the section and variable parts are lower-cased. The
+   * subsection is left unchanged.
+   *
+   * @returns An iterator over the `ConfigEntry` values of a config.
+   */
+  multivar(name: string, regexp?: string | undefined | null): ConfigEntries
+  /**
+   * Set the value of a boolean config variable in the config file with the
+   * highest level (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   setBool(name: string, value: boolean): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {boolean} value - The value of config entry.
+   */
+  setBool(name: string, value: boolean): void
+  /**
+   * Set the value of an integer config variable in the config file with the
+   * highest level (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   setI32(name: string, value: number): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {number} value - The value of config entry.
+   */
+  setI32(name: string, value: number): void
+  /**
+   * Set the value of an integer config variable in the config file with the
+   * highest level (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   setI64(name: string, value: number): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {number} value - The value of config entry.
+   */
+  setI64(name: string, value: number): void
+  /**
+   * Set the value of an multivar config variable in the config file with the
+   * highest level (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   setMultivar(name: string, regexp: string, value: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {string} regexp - The regular expression is applied case-sensitively on the value.
+   * @param {string} value - The value of config entry.
+   */
+  setMultivar(name: string, regexp: string, value: string): void
+  /**
+   * Set the value of a string config variable in the config file with the
+   * highest level (usually the local one).
+   *
+   * @category Config/Methods
+   * @signature
+   * ```ts
+   * class Config {
+   *   setString(name: string, value: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - The name of config entry.
+   * @param {string} value - The value of config entry.
+   */
+  setString(name: string, value: string): void
 }
