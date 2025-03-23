@@ -130,6 +130,9 @@ describe('diff', () => {
     const diff = repo.diffIndexToWorkdir(undefined, {
       includeUntracked: true,
     });
+    if (isTarget('win32')) {
+      console.log(diff.print());
+    }
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -210,6 +213,9 @@ second
     index.write();
     const diff = repo.diffTreeToWorkdirWithIndex(headTree);
     diff.findSimilar({ renames: true });
+    if (isTarget('win32')) {
+      console.log(diff.print());
+    }
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
