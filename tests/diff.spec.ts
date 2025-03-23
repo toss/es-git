@@ -32,7 +32,8 @@ describe('diff', () => {
   beforeEach(() => {
     if (isTarget('win32')) {
       const config = openDefaultConfig();
-      config.setBool('core.autocrlf', true);
+      config.setBool('core.autocrlf', false);
+      config.setString('core.eol', 'lf');
     }
   });
 
