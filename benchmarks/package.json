@@ -5,10 +5,10 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
-    "es-git": "workspace:^",
     "nodegit": "link:./nodegit"
   },
   "devDependencies": {
+    "@types/nodegit": "^0.28.7",
     "vitest": "^3.0.5"
   }
 }
