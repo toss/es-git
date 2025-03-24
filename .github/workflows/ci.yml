@@ -46,9 +46,7 @@ jobs:
         with:
           components: rustfmt
       - name: Install taplo
-        run: |
-          cargo install cargo-binstall
-          cargo binstall -y taplo-cli
+        run: cargo install taplo-cli --locked
       - name: Install dependencies
         run: yarn install
       - name: Run rustfmt

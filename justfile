@@ -9,8 +9,7 @@ alias bench := benchmarks
 # Setup development environment
 setup:
     # Install Rust-related tools
-    cargo install cargo-binstall
-    cargo binstall -y taplo-cli
+    cargo install taplo-cli --locked
 
     # Setup Node.js environment
     corepack enable
