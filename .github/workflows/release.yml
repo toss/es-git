@@ -48,11 +48,10 @@ jobs:
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: moonrepo/setup-rust@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         if: ${{ !matrix.settings.docker }}
         with:
-          profile: minimal
-          targets: ${{ matrix.settings.target }}
+          target: ${{ matrix.settings.target }}
       - name: Cache cargo
         uses: actions/cache@v4
         with:
