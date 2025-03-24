@@ -22,10 +22,21 @@ Depending on the architecture or the presence of required dependencies during th
 
 `es-git` can be a good choice for using Git in Node.js.
 
-- **🚀 Ease of Use** : Access complex Git features through simple APIs. Additionally, it supports TypeScript types for fast and reliable development.
-- **⚡ High-Performance Git** : es-git provides native modules built on libgit2, offering high performance. It can be up to 100 times faster than executing Git commands via `child_process`.
-- **🔧 Hassle-Free Installation** : Since es-git makes prebuilt native modules with [napi.rs](https://napi.rs/) instead of `node-gyp`, there's no need to build native modules locally when installing the package. This means you won’t face installation failures due to build errors.
-- **💻 Cross-Platform**: It is compatible with all Windows/macOS/Linux operating systems.
+#### 🚀 Ease of Use 
+
+Access complex Git features through simple APIs. Additionally, it supports TypeScript types for fast and reliable development.
+
+#### ⚡ High-Performance Git
+
+es-git provides native modules built on libgit2, offering high performance. It can be up to 100 times faster than executing Git commands via `child_process`.
+
+#### 🔧 Hassle-Free Installation
+
+Since es-git makes prebuilt native modules with [napi.rs](https://napi.rs/) instead of `node-gyp`, there's no need to build native modules locally when installing the package. This means you won’t face installation failures due to build errors.
+
+#### 💻 Cross-Platform
+
+It is compatible with all Windows/macOS/Linux operating systems.
 
 ## Installation
 
