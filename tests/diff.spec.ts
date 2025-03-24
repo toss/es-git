@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { type DiffDelta, type DiffFile, openRepository } from '../index';
+import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import type { FlattenMethods } from './types';
 
@@ -37,7 +38,9 @@ describe('diff', () => {
     const index = repo.index();
     index.addPath('D');
     index.write();
-    const diff = repo.diffTreeToWorkdirWithIndex(repo.head().peelToTree());
+    const diff = repo.diffTreeToWorkdirWithIndex(repo.head().peelToTree(), {
+      ignoreWhitespaceEol: isTarget('win32'),
+    });
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
       {
@@ -120,6 +123,7 @@ describe('diff', () => {
     await fs.writeFile(path.join(p, 'D'), 'D');
     const diff = repo.diffIndexToWorkdir(undefined, {
       includeUntracked: true,
+      ignoreWhitespaceEol: isTarget('win32'),
     });
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
@@ -156,7 +160,9 @@ describe('diff', () => {
     const repo = await openRepository(p);
     await fs.writeFile(path.join(p, 'A'), 'A modified');
     await fs.rm(path.join(p, 'B'));
-    const diff = repo.diffIndexToWorkdir(undefined);
+    const diff = repo.diffIndexToWorkdir(undefined, {
+      ignoreWhitespaceEol: isTarget('win32'),
+    });
     expect(diff.print()).toEqual(`diff --git a/A b/A
 index f70f10e..784f93d 100644
 --- a/A
@@ -199,7 +205,9 @@ B
     const index = repo.index();
     index.addPath('A-renamed');
     index.write();
-    const diff = repo.diffTreeToWorkdirWithIndex(headTree);
+    const diff = repo.diffTreeToWorkdirWithIndex(headTree, {
+      ignoreWhitespaceEol: isTarget('win32'),
+    });
     diff.findSimilar({ renames: true });
     const deltas = [...diff.deltas()];
     const expected: FlattenMethods<DiffDelta>[] = [
