@@ -5,7 +5,8 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
-    "nodegit": "link:./nodegit"
+    "nodegit": "link:./nodegit",
+    "simple-git": "link:./simple-git"
   },
   "devDependencies": {
     "@types/nodegit": "^0.28.7",
