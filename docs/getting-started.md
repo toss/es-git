@@ -1,6 +1,6 @@
 # Getting Started
 
-A modern Git library built for Node.js with blazing-fast installation and rock-solid stability, powered by N-API.
+es-git is a modern Git library built for Node.js with blazing-fast installation and rock-solid stability, powered by N-API.
 
 With its simple interface, you can easily integrate complex Git operations, and it supports TypeScript types for fast and reliable development.
 
