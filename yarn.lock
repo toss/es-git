@@ -2454,6 +2454,7 @@ __metadata:
   dependencies:
     "@types/nodegit": "npm:^0.28.7"
     nodegit: "link:./nodegit"
+    simple-git: "link:./simple-git"
     vitest: "npm:^3.0.5"
   languageName: unknown
   linkType: soft
@@ -5187,6 +5188,12 @@ __metadata:
   checksum: 10c0/41602dce540e46d599edba9d9860193398d135f7ff72cab629db5171516cfae628d21e7bfccde1bbfdf11c48726bc2a6d1a8fb8701125852fbfda7cf19c6aa83
   languageName: node
   linkType: hard
+
+"simple-git@link:./simple-git::locator=benchmarks%40workspace%3Abenchmarks":
+  version: 0.0.0-use.local
+  resolution: "simple-git@link:./simple-git::locator=benchmarks%40workspace%3Abenchmarks"
+  languageName: node
+  linkType: soft
 
 "smart-buffer@npm:^4.2.0":
   version: 4.2.0
