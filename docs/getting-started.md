@@ -56,6 +56,10 @@ pnpm add es-git
 yarn add es-git
 ```
 
+```sh [bun]
+bun add es-git
+```
+
 :::
 
 ## Links

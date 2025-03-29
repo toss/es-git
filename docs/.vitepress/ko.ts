@@ -7,7 +7,7 @@ const docsRoot = path.resolve(import.meta.dirname, '..');
 export const ko = defineConfig({
   lang: 'ko',
   title: 'es-git',
-  description: 'Node.js를 위한 현대적인 git 라이브러리',
+  description: '번개같이 빠르게 설치할 수 있는 N-API 기반 최신 Git 라이브러리',
   themeConfig: {
     nav: nav(),
     sidebar: sidebar(),

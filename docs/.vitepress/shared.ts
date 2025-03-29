@@ -60,22 +60,52 @@ export const shared = defineConfig({
     [
       'meta',
       {
+        property: 'og:title',
+        content: 'es-git',
+      },
+    ],
+    [
+      'meta',
+      {
+        name: 'twitter:title',
+        content: 'es-git',
+      },
+    ],
+    [
+      'meta',
+      {
+        property: 'og:description',
+        content:
+          'The latest Git library built for Node.js with blazing-fast installation and rock-solid stability, powered by N-API.',
+      },
+    ],
+    [
+      'meta',
+      {
+        name: 'twitter:description',
+        content:
+          'The latest Git library built for Node.js with blazing-fast installation and rock-solid stability, powered by N-API.',
+      },
+    ],
+    [
+      'meta',
+      {
         property: 'og:image',
-        content: '/og.png',
+        content: 'https://es-git.slash.page/og.png',
       },
     ],
     [
       'meta',
       {
         name: 'twitter:image',
-        content: '/og.png',
+        content: 'https://es-git.slash.page/og.png',
       },
     ],
     [
       'meta',
       {
         name: 'twitter:card',
-        content: 'summary',
+        content: 'summary_large_image',
       },
     ],
   ],
