@@ -2538,7 +2538,7 @@ export declare class Index {
    * }
    * ```
    */
-  writeTree(): string
+  writeTree(): void
   /**
    * Remove an index entry corresponding to a file on disk.
    *

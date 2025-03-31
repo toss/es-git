@@ -405,9 +405,9 @@ impl Index {
   ///   writeTree(): void;
   /// }
   /// ```
-  pub fn write_tree(&mut self) -> crate::Result<String> {
-    let id = self.inner.write_tree().map(|x| x.to_string())?;
-    Ok(id)
+  pub fn write_tree(&mut self) -> crate::Result<()> {
+    self.inner.write_tree()?;
+    Ok(())
   }
 
   #[napi]
