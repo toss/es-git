@@ -7,8 +7,8 @@ Creates a new repository in the specified folder.
 ```ts
 function initRepository(
   path: string,
-  options?: RepositoryInitOptions,
-  signal?: AbortSignal,
+  options?: RepositoryInitOptions | null | undefined,
+  signal?: AbortSignal | null | undefined,
 ): Promise<Repository>;
 ```
 

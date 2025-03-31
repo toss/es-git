@@ -8,7 +8,7 @@ diff 파일 내에서 파일 리네임, 복사 등을 반영하도록 변환해�
 
 ```ts
 class Diff {
-  findSimilar(options?: DiffFindOptions): void;
+  findSimilar(options?: DiffFindOptions | null | undefined): void;
 }
 ```
 

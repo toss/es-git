@@ -10,8 +10,8 @@
 function cloneRepository(
   url: string,
   path: string,
-  options?: RepositoryCloneOptions | null,
-  signal?: AbortSignal | null
+  options?: RepositoryCloneOptions | null | undefined,
+  signal?: AbortSignal | null | undefined
 ): Promise<Repository>;
 ```
 

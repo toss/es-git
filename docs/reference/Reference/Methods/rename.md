@@ -8,7 +8,7 @@ This method works for both direct and symbolic references.
 
 ```ts
 class Reference {
-  rename(newName: string, options?: RenameReferenceOptions): Reference;
+  rename(newName: string, options?: RenameReferenceOptions | null | undefined): Reference;
 }
 ```
 

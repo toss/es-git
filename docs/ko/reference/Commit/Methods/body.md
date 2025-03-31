@@ -8,7 +8,7 @@ git 커밋 메시지의 긴 "본문"을 가져와요.
 
 ```ts
 class Commit {
-  body(): string;
+  body(): string | null;
 }
 ```
 

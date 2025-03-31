@@ -24,7 +24,7 @@ the name according to the following rules:
 ## Signature
 
 ```ts
-function normalizeReferenceName(refname: string, format?: number): string | null;
+function normalizeReferenceName(refname: string, format?: number | null | undefined): string | null;
 ```
 
 ### Parameters

@@ -7,7 +7,7 @@ from the hard disk.
 
 ```ts
 class Index {
-  read(force?: boolean): void;
+  read(force?: boolean | null | undefined): void;
 }
 ```
 

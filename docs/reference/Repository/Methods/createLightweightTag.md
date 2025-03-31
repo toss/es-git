@@ -11,7 +11,7 @@ class Repository {
   createLightweightTag(
     name: string,
     target: GitObject,
-    options?: CreateLightweightTagOptions,
+    options?: CreateLightweightTagOptions | null | undefined,
   ): string;
 }
 ```

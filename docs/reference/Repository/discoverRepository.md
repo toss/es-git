@@ -8,7 +8,7 @@ until it finds a repository.
 ## Signature
 
 ```ts
-function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+function discoverRepository(path: string, signal?: AbortSignal | null | undefined): Promise<Repository>;
 ```
 
 ### Parameters

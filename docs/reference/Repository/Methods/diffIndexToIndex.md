@@ -9,7 +9,7 @@ class Repository {
   diffIndexToIndex(
     oldIndex: Index,
     newIndex: Index,
-    options?: DiffOptions,
+    options?: DiffOptions | null | undefined,
   ): Diff;
 }
 ```

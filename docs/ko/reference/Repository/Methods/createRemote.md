@@ -6,7 +6,7 @@
 
 ```ts
 class Repository {
-  createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+  createRemote(name: string, url: string, options?: CreateRemoteOptions | null | undefined): Remote;
 }
 ```
 

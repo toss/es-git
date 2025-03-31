@@ -10,8 +10,8 @@ Convenience function to connect to a remote, download the data, disconnect and u
 class Remote {
   fetch(
     refspecs: string[],
-    options?: FetchRemoteOptions,
-    signal?: AbortSignal,
+    options?: FetchRemoteOptions | null | undefined,
+    signal?: AbortSignal | null | undefined,
   ): Promise<void>;
 }
 ```

@@ -6,7 +6,7 @@
 
 ```ts
 class Remote {
-  prune(options?: PruneOptions, signal?: AbortSignal): Promise<void>;
+  prune(options?: PruneOptions | null | undefined, signal?: AbortSignal | null | undefined): Promise<void>;
 }
 ```
 
