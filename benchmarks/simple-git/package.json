@@ -1,8 +1,0 @@
-{
-  "name": "simple-git",
-  "main": "./index.js",
-  "types": "./index.d.ts",
-  "dependencies": {
-    "@napi-rs/simple-git": "0.1.19"
-  }
-}

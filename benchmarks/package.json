@@ -5,8 +5,8 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
-    "nodegit": "link:./nodegit",
-    "simple-git": "link:./simple-git"
+    "@napi-rs/simple-git": "0.1.19",
+    "nodegit": "link:./nodegit"
   },
   "devDependencies": {
     "@types/nodegit": "^0.28.7",

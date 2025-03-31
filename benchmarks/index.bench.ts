@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Repository as NodeGitRepository, Revparse as NodeGitRevparse } from 'nodegit';
-import { Repository as SimpleGitRepository } from 'simple-git';
+import { Repository as SimpleGitRepository } from '@napi-rs/simple-git';
 import { bench, describe } from 'vitest';
 import { openRepository } from '../index';
 import { exec } from './util';
@@ -18,7 +18,7 @@ describe('open', () => {
     await NodeGitRepository.open(gitDir);
   });
 
-  bench('simple-git', () => {
+  bench('@napi-rs/simple-git', () => {
     SimpleGitRepository.init(gitDir);
   });
 });
@@ -34,7 +34,7 @@ describe('rev-parse', () => {
     await NodeGitRevparse.single(repo, 'HEAD');
   });
 
-  bench('simple-git', () => {
+  bench('@napi-rs/simple-git', () => {
     const repo = SimpleGitRepository.init(gitDir);
     repo.head().resolve();
   });
@@ -59,7 +59,7 @@ describe('revwalk', () => {
     console.assert(oids.length === 103);
   });
 
-  bench('simple-git', () => {
+  bench('@napi-rs/simple-git', () => {
     const repo = SimpleGitRepository.init(gitDir);
     const revwalk = repo.revWalk();
     const oids = [...revwalk.pushRange('b597cf0b..d47af3b0')];
@@ -82,7 +82,7 @@ describe('get commit', () => {
     await repo.getCommit('d47af3b02b36834dcde1b60afb64547460f5abc0');
   });
 
-  bench('simple-git', () => {
+  bench('@napi-rs/simple-git', () => {
     const repo = SimpleGitRepository.init(gitDir);
     repo.findCommit('d47af3b02b36834dcde1b60afb64547460f5abc0');
   });
