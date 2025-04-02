@@ -61,7 +61,6 @@ describe('Repository', () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo-private', p, {
       fetch: {
-        followRedirects: 'All',
         credential: {
           type: 'Plain',
           password: process.env.TEST_GITHUB_TOKEN!,
