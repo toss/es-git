@@ -402,12 +402,12 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   writeTree(): void;
+  ///   writeTree(): string;
   /// }
   /// ```
-  pub fn write_tree(&mut self) -> crate::Result<()> {
-    self.inner.write_tree()?;
-    Ok(())
+  pub fn write_tree(&mut self) -> crate::Result<String> {
+    let id = self.inner.write_tree().map(|x| x.to_string())?;
+    Ok(id)
   }
 
   #[napi]

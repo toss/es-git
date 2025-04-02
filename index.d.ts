@@ -2534,11 +2534,11 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   writeTree(): void;
+   *   writeTree(): string;
    * }
    * ```
    */
-  writeTree(): void
+  writeTree(): string
   /**
    * Remove an index entry corresponding to a file on disk.
    *
