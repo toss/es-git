@@ -28,6 +28,6 @@ class Commit {
   <li class="param-li param-li-root">
     <span class="param-type">Error</span>
     <br>
-    <p class="param-description">올바른 utf-8이 아닐 경우 에러를 발생시켜요.</p>
+    <p class="param-description">올바른 UTF-8 인코딩이 아닐 경우 에러를 발생시켜요.</p>
   </li>
 </ul>
