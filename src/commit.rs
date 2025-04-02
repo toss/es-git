@@ -137,7 +137,7 @@ impl Commit {
   /// @signature
   /// ```ts
   /// class Commit {
-  ///   summary(): string;
+  ///   summary(): string | null;
   /// }
   /// ```
   ///
@@ -165,7 +165,7 @@ impl Commit {
   /// @signature
   /// ```ts
   /// class Commit {
-  ///   body(): string;
+  ///   body(): string | null;
   /// }
   /// ```
   ///
@@ -304,7 +304,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   commit(tree: Tree, message: string, options?: CommitOptions | null): string;
+  ///   commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
   /// }
   /// ```
   ///

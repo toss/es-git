@@ -375,7 +375,7 @@ impl Diff {
   /// @signature
   /// ```ts
   /// class Diff {
-  ///   print(options?: DiffPrintOptions | null): string;
+  ///   print(options?: DiffPrintOptions | null | undefined): string;
   /// }
   /// ```
   ///
@@ -405,7 +405,7 @@ impl Diff {
   /// @signature
   /// ```ts
   /// class Diff {
-  ///   findSimilar(options?: DiffFindOptions): void;
+  ///   findSimilar(options?: DiffFindOptions | null | undefined): void;
   /// }
   /// ```
   ///
@@ -1016,9 +1016,9 @@ impl Repository {
   /// ```ts
   /// class Repository {
   ///   diffTreeToTree(
-  ///     oldTree?: Tree,
-  ///     newTree?: Tree,
-  ///     options?: DiffOptions,
+  ///     oldTree?: Tree | null | undefined,
+  ///     newTree?: Tree | null | undefined,
+  ///     options?: DiffOptions | null | undefined,
   ///   ): Diff;
   /// }
   /// ```
@@ -1064,7 +1064,7 @@ impl Repository {
   ///   diffIndexToIndex(
   ///     oldIndex: Index,
   ///     newIndex: Index,
-  ///     options?: DiffOptions,
+  ///     options?: DiffOptions | null | undefined,
   ///   ): Diff;
   /// }
   /// ```
@@ -1105,7 +1105,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   diffIndexToWorkdir(index?: Index, options?: DiffOptions): Diff;
+  ///   diffIndexToWorkdir(index?: Index | null | undefined, options?: DiffOptions | null | undefined): Diff;
   /// }
   /// ```
   ///
@@ -1158,7 +1158,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+  ///   diffTreeToWorkdir(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
   /// }
   /// ```
   ///
@@ -1198,7 +1198,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   diffTreeToWorkdirWithIndex(oldTree?: Tree, options?: DiffOptions): Diff;
+  ///   diffTreeToWorkdirWithIndex(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
   /// }
   /// ```
   ///

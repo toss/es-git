@@ -251,7 +251,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   tagNames(pattern?: string): string[];
+  ///   tagNames(pattern?: string | null | undefined): string[];
   /// }
   /// ```
   ///
@@ -347,7 +347,7 @@ impl Repository {
   ///     name: string,
   ///     target: GitObject,
   ///     message: string,
-  ///     options?: CreateTagOptions,
+  ///     options?: CreateTagOptions | null | undefined,
   ///   ): string;
   /// }
   /// ```
@@ -424,7 +424,7 @@ impl Repository {
   ///     name: string,
   ///     target: GitObject,
   ///     message: string,
-  ///     options?: CreateAnnotationTagOptions,
+  ///     options?: CreateAnnotationTagOptions | null | undefined,
   ///   ): string;
   /// }
   /// ```
@@ -467,7 +467,7 @@ impl Repository {
   ///   createLightweightTag(
   ///     name: string,
   ///     target: GitObject,
-  ///     options?: CreateLightweightTagOptions,
+  ///     options?: CreateLightweightTagOptions | null | undefined,
   ///   ): string;
   /// }
   /// ```

@@ -577,8 +577,8 @@ impl Remote {
   /// class Remote {
   ///   fetch(
   ///     refspecs: string[],
-  ///     options?: FetchRemoteOptions,
-  ///     signal?: AbortSignal,
+  ///     options?: FetchRemoteOptions | null | undefined,
+  ///     signal?: AbortSignal | null | undefined,
   ///   ): Promise<void>;
   /// }
   /// ```
@@ -629,8 +629,8 @@ impl Remote {
   /// class Remote {
   ///   push(
   ///     refspecs: string[],
-  ///     options?: PushOptions,
-  ///     signal?: AbortSignal,
+  ///     options?: PushOptions | null | undefined,
+  ///     signal?: AbortSignal | null | undefined,
   ///   ): Promise<void>;
   /// }
   /// ```
@@ -681,7 +681,7 @@ impl Remote {
   /// @signature
   /// ```ts
   /// class Remote {
-  ///   prune(options?: PruneOptions, signal?: AbortSignal): Promise<void>;
+  ///   prune(options?: PruneOptions | null | undefined, signal?: AbortSignal | null | undefined): Promise<void>;
   /// }
   /// ```
   ///
@@ -711,7 +711,7 @@ impl Remote {
   /// @signature
   /// ```ts
   /// class Remote {
-  ///   defaultBranch(signal?: AbortSignal): Promise<string>;
+  ///   defaultBranch(signal?: AbortSignal | null | undefined): Promise<string>;
   /// }
   /// ```
   ///
@@ -821,7 +821,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+  ///   createRemote(name: string, url: string, options?: CreateRemoteOptions | null | undefined): Remote;
   /// }
   /// ```
   ///

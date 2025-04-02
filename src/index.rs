@@ -219,7 +219,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   setVersion(version: number): number;
+  ///   setVersion(version: number): void;
   /// }
   /// ```
   ///
@@ -239,7 +239,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+  ///   getByPath(path: string, stage?: IndexStage | null | undefined): IndexEntry | null;
   /// }
   /// ```
   ///
@@ -287,7 +287,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+  ///   addAll(pathspecs: string[], options?: IndexAddAllOptions | null | undefined): void;
   /// }
   /// ```
   ///
@@ -352,7 +352,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   read(force?: boolean): void;
+  ///   read(force?: boolean | null | undefined): void;
   /// }
   /// ```
   ///
@@ -421,7 +421,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   removePath(path: string, options?: IndexRemoveOptions): void;
+  ///   removePath(path: string, options?: IndexRemoveOptions | null | undefined): void;
   /// }
   /// ```
   ///
@@ -443,7 +443,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions): void;
+  ///   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions | null | undefined): void;
   /// }
   /// ```
   ///
@@ -492,7 +492,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+  ///   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions | null | undefined): void;
   /// }
   /// ```
   ///
