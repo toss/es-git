@@ -57,7 +57,9 @@ describe('Repository', () => {
     expect(repo.state()).toBe('Clean');
   });
 
-  it('clone from remote with credential', { skip: !isCI }, async () => {
+  // If an action is executed by another contributor, it will not be authenticate properly.
+  // So turn off the test.
+  it('clone from remote with credential', { skip: true }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo-private', p, {
       fetch: {
