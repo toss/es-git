@@ -416,7 +416,7 @@ fn update_submodules(repo: &git2::Repository) -> crate::Result<()> {
   let mut repos = Vec::new();
   add_subrepos(repo, &mut repos)?;
   while let Some(repo) = repos.pop() {
-    add_subrepos(&repo, &mut repos)?
+    add_subrepos(&repo, &mut repos)?;
   }
   Ok(())
 }
@@ -473,7 +473,7 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// import { initRepository } from 'es-git';
 ///
-/// const repo = await iniRepository('/path/to/repo');
+/// const repo = await initRepository('/path/to/repo');
 /// ```
 ///
 /// Create bare repository.
@@ -481,7 +481,7 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// import { initRepository } from 'es-git';
 ///
-/// const repo = await iniRepository('/path/to/repo.git', {
+/// const repo = await initRepository('/path/to/repo.git', {
 ///   bare: true,
 /// });
 /// ```
