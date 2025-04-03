@@ -11,7 +11,7 @@ amount of change is above a threshold.
 
 ```ts
 class Diff {
-  findSimilar(options?: DiffFindOptions): void;
+  findSimilar(options?: DiffFindOptions | null | undefined): void;
 }
 ```
 

@@ -6,7 +6,7 @@
 
 ```ts
 class Diff {
-  print(options?: DiffPrintOptions | null): string;
+  print(options?: DiffPrintOptions | null | undefined): string;
 }
 ```
 

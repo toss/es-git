@@ -6,7 +6,7 @@
 
 ```ts
 class Index {
-  removeAll(pathspecs: string[], options?: IndexRemoveAllOptions): void;
+  removeAll(pathspecs: string[], options?: IndexRemoveAllOptions | null | undefined): void;
 }
 ```
 

@@ -6,7 +6,7 @@
 
 ```ts
 class Index {
-  getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+  getByPath(path: string, stage?: IndexStage | null | undefined): IndexEntry | null;
 }
 ```
 

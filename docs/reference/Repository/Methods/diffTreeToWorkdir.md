@@ -21,7 +21,7 @@ show status 'deleted' since there is a staged delete.
 
 ```ts
 class Repository {
-  diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+  diffTreeToWorkdir(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
 }
 ```
 

@@ -6,7 +6,7 @@ Add or update index entries matching files in the working directory.
 
 ```ts
 class Index {
-  addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+  addAll(pathspecs: string[], options?: IndexAddAllOptions | null | undefined): void;
 }
 ```
 

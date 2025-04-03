@@ -6,7 +6,7 @@ Get a list with all the tags in the repository.
 
 ```ts
 class Repository {
-  tagNames(pattern?: string): string[];
+  tagNames(pattern?: string | null | undefined): string[];
 }
 ```
 

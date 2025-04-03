@@ -11,8 +11,8 @@ If no refspecs are passed, then the configured refspecs will be used.
 class Remote {
   push(
     refspecs: string[],
-    options?: PushOptions,
-    signal?: AbortSignal,
+    options?: PushOptions | null | undefined,
+    signal?: AbortSignal | null | undefined,
   ): Promise<void>;
 }
 ```

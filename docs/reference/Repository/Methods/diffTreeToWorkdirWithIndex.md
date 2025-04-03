@@ -11,7 +11,7 @@ single diff that includes staged deleted, etc.
 
 ```ts
 class Repository {
-  diffTreeToWorkdirWithIndex(oldTree?: Tree, options?: DiffOptions): Diff;
+  diffTreeToWorkdirWithIndex(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
 }
 ```
 

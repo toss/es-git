@@ -6,7 +6,7 @@ Get one of the entries in the index by its path.
 
 ```ts
 class Index {
-  getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+  getByPath(path: string, stage?: IndexStage | null | undefined): IndexEntry | null;
 }
 ```
 

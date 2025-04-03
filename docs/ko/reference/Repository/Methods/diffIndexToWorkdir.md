@@ -10,7 +10,7 @@
 
 ```ts
 class Repository {
-  diffIndexToWorkdir(index?: Index, options?: DiffOptions): Diff;
+  diffIndexToWorkdir(index?: Index | null | undefined, options?: DiffOptions | null | undefined): Diff;
 }
 ```
 

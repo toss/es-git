@@ -18,7 +18,7 @@ class Repository {
     name: string,
     target: GitObject,
     message: string,
-    options?: CreateTagOptions,
+    options?: CreateTagOptions | null | undefined,
   ): string;
 }
 ```

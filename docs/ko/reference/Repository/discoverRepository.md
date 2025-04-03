@@ -7,7 +7,7 @@
 ## 시그니처
 
 ```ts
-function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+function discoverRepository(path: string, signal?: AbortSignal | null | undefined): Promise<Repository>;
 ```
 
 ### 파라미터

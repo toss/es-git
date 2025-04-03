@@ -8,7 +8,7 @@ The `fetch` operation from the remote is also performed.
 
 ```ts
 class Remote {
-  defaultBranch(signal?: AbortSignal): Promise<string>;
+  defaultBranch(signal?: AbortSignal | null | undefined): Promise<string>;
 }
 ```
 

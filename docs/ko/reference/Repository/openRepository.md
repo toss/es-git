@@ -7,8 +7,8 @@
 ```ts
 function openRepository(
   path: string,
-  options?: RepositoryOpenOptions,
-  signal?: AbortSignal,
+  options?: RepositoryOpenOptions | null | undefined,
+  signal?: AbortSignal | null | undefined,
 ): Promise<Repository>;
 ```
 

@@ -11,7 +11,7 @@ adding the latest version of file to the ODB if needed).
 
 ```ts
 class Index {
-  updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+  updateAll(pathspecs: string[], options?: IndexUpdateAllOptions | null | undefined): void;
 }
 ```
 

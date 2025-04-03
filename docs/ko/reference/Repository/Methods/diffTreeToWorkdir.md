@@ -19,7 +19,7 @@ Git 명령어와 동일한 동작을 하려면 `diffTreeToWorkdirWithIndex`를 �
 
 ```ts
 class Repository {
-  diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+  diffTreeToWorkdir(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
 }
 ```
 

@@ -11,7 +11,7 @@ Throws error if the summary is not valid utf-8.
 
 ```ts
 class Commit {
-  summary(): string;
+  summary(): string | null;
 }
 ```
 

@@ -454,8 +454,8 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// function initRepository(
 ///   path: string,
-///   options?: RepositoryInitOptions,
-///   signal?: AbortSignal,
+///   options?: RepositoryInitOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined,
 /// ): Promise<Repository>;
 /// ```
 ///
@@ -524,8 +524,8 @@ impl Task for OpenRepositoryTask {
 /// ```ts
 /// function openRepository(
 ///   path: string,
-///   options?: RepositoryOpenOptions,
-///   signal?: AbortSignal,
+///   options?: RepositoryOpenOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined,
 /// ): Promise<Repository>;
 /// ```
 ///
@@ -591,7 +591,7 @@ impl Task for DiscoverRepositoryTask {
 /// @category Repository
 /// @signature
 /// ```ts
-/// function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+/// function discoverRepository(path: string, signal?: AbortSignal | null | undefined): Promise<Repository>;
 /// ```
 ///
 /// @param {string} path - Directory path to discover repository.
@@ -658,8 +658,8 @@ impl Task for CloneRepositoryTask {
 /// function cloneRepository(
 ///   url: string,
 ///   path: string,
-///   options?: RepositoryCloneOptions | null,
-///   signal?: AbortSignal | null
+///   options?: RepositoryCloneOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined
 /// ): Promise<Repository>;
 /// ```
 ///

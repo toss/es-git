@@ -6,7 +6,7 @@
 
 ```ts
 class Repository {
-  tagNames(pattern?: string): string[];
+  tagNames(pattern?: string | null | undefined): string[];
 }
 ```
 

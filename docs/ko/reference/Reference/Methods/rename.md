@@ -8,7 +8,7 @@
 
 ```ts
 class Reference {
-  rename(newName: string, options?: RenameReferenceOptions): Reference;
+  rename(newName: string, options?: RenameReferenceOptions | null | undefined): Reference;
 }
 ```
 

@@ -8,7 +8,7 @@ Create a new action signature.
 function createSignature(
   name: string,
   email: string,
-  timeOptions?: SignatureTimeOptions,
+  timeOptions?: SignatureTimeOptions | null | undefined,
 ): Signature;
 ```
 

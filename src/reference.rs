@@ -119,7 +119,7 @@ impl Default for ReferenceFormat {
 /// @category Reference
 /// @signature
 /// ```ts
-/// function normalizeReferenceName(refname: string, format?: number): string | null;
+/// function normalizeReferenceName(refname: string, format?: number | null | undefined): string | null;
 /// ```
 ///
 /// @param {string} refname - Reference name to normalize.
@@ -432,7 +432,7 @@ impl Reference {
   /// @signature
   /// ```ts
   /// class Reference {
-  ///   rename(newName: string, options?: RenameReferenceOptions): Reference;
+  ///   rename(newName: string, options?: RenameReferenceOptions | null | undefined): Reference;
   /// }
   /// ```
   ///
