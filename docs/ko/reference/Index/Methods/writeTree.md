@@ -12,6 +12,6 @@
 
 ```ts
 class Index {
-  writeTree(): void;
+  writeTree(): string;
 }
 ```

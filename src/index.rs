@@ -402,7 +402,7 @@ impl Index {
   /// @signature
   /// ```ts
   /// class Index {
-  ///   writeTree(): void;
+  ///   writeTree(): string;
   /// }
   /// ```
   pub fn write_tree(&mut self) -> crate::Result<String> {

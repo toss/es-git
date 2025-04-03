@@ -2534,7 +2534,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   writeTree(): void;
+   *   writeTree(): string;
    * }
    * ```
    */
