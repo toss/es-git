@@ -352,6 +352,12 @@ jobs:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '18'
+          - '20'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
