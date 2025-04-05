@@ -383,7 +383,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: node:${{ matrix.node }}-alpine
-          options: '--user 0:0 --platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
+          options: '--user 0:0 --platform linux/arm64 -v ${{ github.workspace }}:/build:rw,z -w /build'
           run: |
             set -e
             yarn vitest run
