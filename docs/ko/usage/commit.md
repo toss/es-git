@@ -10,18 +10,18 @@ const repo = await openRepository('.');
  
 await fs.writeFile('README.md', 'Hello World!', 'utf8');
 
-const index = repo.index();
-index.addPath('README.md');
-index.write();
+const treeOid = index.writeTree();
+const tree = repo.getTree(treeOid);
 
-const tree = repo.head().peelToTree();
 const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
-const sha = repo.commit(tree, 'added new file', {
+const oid = repo.commit(tree, 'added new file', {
+  updateRef: 'HEAD',
   author: signature,
   committer: signature,
+  parents: [repo.head().target()!],
 });
 
-const commit = repo.getCommit(sha);
+const commit = repo.getCommit(oid);
 console.log(commit.summary()); // "added new file"
 ```
 
