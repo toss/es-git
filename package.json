@@ -40,7 +40,6 @@
     "benchmarks"
   ],
   "scripts": {
-    "prepublishOnly": "napi prepublish -t npm",
     "build": "napi build --platform --release --no-const-enum --pipe=\"yarn transform:dts\"",
     "build:debug": "DEBUG=\"napi:*\" napi build --platform --no-const-enum --pipe=\"yarn transform:dts\"",
     "transform:dts": "jscodeshift -t transforms/dts.mjs index.d.ts",

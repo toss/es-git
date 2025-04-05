@@ -133,6 +133,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-artifacts
+      - name: Prepare next release
+        if: github.ref_type == 'branch'
+        run: node ./.scripts/prepare-next-release.ts ${{ github.run_number }} ${{ github.sha }}
       - name: Create npm dirs
         run: yarn napi create-npm-dir -t .
       - name: Move artifacts
@@ -150,26 +153,28 @@ jobs:
           omit-heading: true
       - run: 'cat ${{ steps.extract-changelog.outputs.output-file }}'
       - name: Release
+        id: gh-release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref_type == 'tag'
         with:
           body_path: ${{ steps.extract-changelog.outputs.output-file }}
           repository: toss/es-git
           generate_release_notes: false
           token: ${{ github.token }}
       - name: Publish
-        if: |
-          github.event_name == 'push' &&
-          (github.ref_type == 'tag' || github.ref == 'refs/heads/main')
         run: |
           set -ex
           npm config set provenance true
           npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
           npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
+            yarn napi prepublish -t npm --gh-release-id ${{ steps.gh-release.outputs.id }}
             npm publish --access public
-          else
+          elif [[ "$GITHUB_REF_TYPE" = "branch" ]]; then
+            yarn napi prepublish -t npm --skip-gh-release
             npm publish --access public --tag next
+          else
+            echo "Skip publish"
           fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
