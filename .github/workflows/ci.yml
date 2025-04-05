@@ -42,8 +42,9 @@ jobs:
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           components: rustfmt
       - name: Install taplo
         run: cargo install taplo-cli --locked
@@ -59,8 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           components: clippy
       - name: Run clippy
         run: cargo clippy
@@ -120,15 +122,6 @@ jobs:
           - host: ubuntu-latest
             target: armv7-linux-androideabi
             build: yarn build --target armv7-linux-androideabi
-          - host: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-            setup: |
-              sudo apt-get update
-              sudo apt-get install gcc-arm-linux-gnueabihf -y
-            build: yarn build --target armv7-unknown-linux-gnueabihf
-          - host: ubuntu-latest
-            target: armv7-unknown-linux-musleabihf
-            build: yarn build --target armv7-unknown-linux-musleabihf
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -160,10 +153,6 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
-      - uses: goto-bus-stop/setup-zig@v2
-        if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' }}
-        with:
-          version: 0.13.0
       - name: Install dependencies
         run: yarn install
       - name: Build in docker
