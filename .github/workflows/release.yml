@@ -22,8 +22,11 @@ jobs:
             target: aarch64-apple-darwin
             build: yarn build --target aarch64-apple-darwin
           - host: windows-latest
-            build: yarn build --target x86_64-pc-windows-msvc
             target: x86_64-pc-windows-msvc
+            build: yarn build --target x86_64-pc-windows-msvc
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
+            build: yarn build --target aarch64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
@@ -36,7 +39,33 @@ jobs:
               set -e &&
               apk add perl &&
               yarn build
-    name: stable - ${{ matrix.settings.target }} - node@20
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            build: |-
+              # `perl` needs for building openssl
+              set -e &&
+              apt-get update &&
+              apt-get install -y perl &&
+              unset CC_aarch64_unknown_linux_gnu &&
+              unset CXX_aarch64_unknown_linux_gnu &&
+              yarn build --target aarch64-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: |-
+              # `perl` needs for building openssl
+              set -e &&
+              apk add perl &&
+              rustup target add aarch64-unknown-linux-musl &&
+              yarn build --target aarch64-unknown-linux-musl
+          - host: ubuntu-latest
+            target: aarch64-linux-android
+            build: yarn build --target aarch64-linux-android
+          - host: ubuntu-latest
+            target: armv7-linux-androideabi
+            build: yarn build --target armv7-linux-androideabi
+    name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -48,10 +77,11 @@ jobs:
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
         with:
-          target: ${{ matrix.settings.target }}
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
       - name: Cache cargo
         uses: actions/cache@v4
         with:

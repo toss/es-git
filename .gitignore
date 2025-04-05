@@ -200,3 +200,6 @@ $RECYCLE.BIN/
 
 # npm folders
 npm
+
+# tmp
+/tmp

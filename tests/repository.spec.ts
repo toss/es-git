@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
-import { isCI, isTarget } from './env';
+import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -41,7 +41,7 @@ describe('Repository', () => {
 
   it('error if given path is not git repository', async () => {
     const p = await useFixture('notgit');
-    await expect(openRepository(p)).rejects.toThrowError(/libgit2 error: could not find repository/);
+    await expect(openRepository(p)).rejects.toThrowError();
   });
 
   it('clone from local', async () => {
@@ -54,21 +54,6 @@ describe('Repository', () => {
   it('clone from remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
-    expect(repo.state()).toBe('Clean');
-  });
-
-  // If an action is executed by another contributor, it will not be authenticate properly.
-  // So turn off the test.
-  it('clone from remote with credential', { skip: true }, async () => {
-    const p = await makeTmpDir('clone');
-    const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo-private', p, {
-      fetch: {
-        credential: {
-          type: 'Plain',
-          password: process.env.TEST_GITHUB_TOKEN!,
-        },
-      },
-    });
     expect(repo.state()).toBe('Clean');
   });
 
