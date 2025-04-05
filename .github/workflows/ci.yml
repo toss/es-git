@@ -348,7 +348,6 @@ jobs:
           run: |
             set -e
             yarn vitest run
-            ls -la
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -377,7 +376,7 @@ jobs:
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
-          image: node:lts-alpine
+          image: node:${{ matrix.node }}-alpine
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e

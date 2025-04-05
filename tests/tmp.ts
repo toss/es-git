@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll } from 'vitest';
+import { isTarget } from './env';
 
 const tmpDirs: string[] = [];
 
@@ -12,7 +13,9 @@ afterAll(async () => {
 });
 
 export async function makeTmpDir(prefix?: string) {
-  const tmpdir = path.join(os.tmpdir(), 'es-git', prefix ?? '', randomHex(8));
+  const tmpdir = isTarget('linux', 'arm64')
+    ? path.join(process.cwd(), 'tmp', 'es-git', prefix ?? '', randomHex(8))
+    : path.join(os.tmpdir(), 'es-git', prefix ?? '', randomHex(8));
   await fs.mkdir(tmpdir, { recursive: true });
   tmpDirs.push(tmpdir);
   return tmpdir;
