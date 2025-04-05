@@ -4,6 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll } from 'vitest';
 import { isTarget } from './env';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const tmpDirs: string[] = [];
 
@@ -14,7 +17,7 @@ afterAll(async () => {
 
 export async function makeTmpDir(prefix?: string) {
   const tmpdir = isTarget('linux', 'arm64')
-    ? path.join(process.cwd(), 'tmp', 'es-git', prefix ?? '', randomHex(8))
+    ? path.join(__dirname, '..', 'tmp', 'es-git', prefix ?? '', randomHex(8))
     : path.join(os.tmpdir(), 'es-git', prefix ?? '', randomHex(8));
   await fs.mkdir(tmpdir, { recursive: true });
   tmpDirs.push(tmpdir);
