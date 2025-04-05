@@ -166,11 +166,13 @@ jobs:
           set -ex
           npm config set provenance true
           npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
+          npm config set access public
           npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
             yarn napi prepublish -t npm --gh-release-id ${{ steps.gh-release.outputs.id }}
             npm publish --access public
           elif [[ "$GITHUB_REF_TYPE" = "branch" ]]; then
+            npm config set tag next
             yarn napi prepublish -t npm --skip-gh-release
             npm publish --access public --tag next
           else
