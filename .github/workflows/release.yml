@@ -135,7 +135,7 @@ jobs:
           path: release-artifacts
       - name: Prepare next release
         if: github.ref_type == 'branch'
-        run: ./.scripts/prepare-next-release.ts ${{ github.run_number }} ${{ github.sha }}
+        run: node --no-warnings=ExperimentalWarning --experimental-strip-types ./.scripts/prepare-next-release.ts ${{ github.run_number }} ${{ github.sha }}
       - name: Create npm dirs
         run: yarn napi create-npm-dir -t .
       - name: Move artifacts
