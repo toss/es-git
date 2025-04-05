@@ -140,6 +140,12 @@ jobs:
           node-version-file: ".node-version"
           check-latest: true
           cache: yarn
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@stable
+        if: ${{ !matrix.settings.docker }}
+        with:
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -150,15 +156,14 @@ jobs:
             .cargo-cache
             target/
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+      - name: Setup toolchain
+        run: ${{ matrix.settings.setup }}
+        if: ${{ matrix.settings.setup }}
+        shell: bash
       - uses: goto-bus-stop/setup-zig@v2
-        if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' }}
+        if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' || matrix.settings.target == 'aarch64-unknown-linux-gnu' }}
         with:
           version: 0.13.0
-      - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        if: ${{ !matrix.settings.docker }}
-        with:
-          target: ${{ matrix.settings.target }}
       - name: Install dependencies
         run: yarn install
       - name: Build in docker
