@@ -72,7 +72,7 @@ impl GitObject {
   #[napi]
   /// Get the id (SHA1) of a repository object.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {
@@ -88,7 +88,7 @@ impl GitObject {
   #[napi(js_name = "type")]
   /// Get the object type of object.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {
@@ -104,7 +104,7 @@ impl GitObject {
   #[napi]
   /// Recursively peel an object until an object of the specified type is met.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {
@@ -128,7 +128,7 @@ impl GitObject {
   #[napi]
   /// Recursively peel an object until a commit is found.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {
@@ -148,7 +148,7 @@ impl GitObject {
   #[napi]
   /// Recursively peel an object until a blob is found.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {
@@ -173,7 +173,7 @@ impl GitObject {
   #[napi]
   /// Attempt to view this object as a commit.
   ///
-  /// @category Object/Methods
+  /// @category GitObject/Methods
   /// @signature
   /// ```ts
   /// class GitObject {

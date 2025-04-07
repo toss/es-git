@@ -8,7 +8,7 @@
 
 ```ts
 class Index {
-  removePath(path: string, options?: IndexRemoveOptions): void;
+  removePath(path: string, options?: IndexRemoveOptions | null | undefined): void;
 }
 ```
 

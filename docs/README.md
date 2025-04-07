@@ -17,11 +17,11 @@ To automatically generate reference documentations after writing a JSDoc, please
 
 ```shell
 # Generate all reference documentations.
-just gen-docs reference
+just docs-gen reference
 
 # Generate all korean reference docuementations.
-just gen-docs reference --lang=ko
+just docs-gen reference --lang=ko
 
 # Generate specific reference documentations with glob pattern.
-just gen-docs reference --pattern='Tree/Methods/*'
+just docs-gen reference --pattern='Tree/Methods/*'
 ```

@@ -8,7 +8,7 @@
 
 ```ts
 class Remote {
-  defaultBranch(signal?: AbortSignal): Promise<string>;
+  defaultBranch(signal?: AbortSignal | null | undefined): Promise<string>;
 }
 ```
 

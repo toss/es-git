@@ -42,8 +42,9 @@ jobs:
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           components: rustfmt
       - name: Install taplo
         run: cargo install taplo-cli --locked
@@ -59,8 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           components: clippy
       - name: Run clippy
         run: cargo clippy
@@ -79,6 +81,9 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: yarn build --target x86_64-pc-windows-msvc
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
+            build: yarn build --target aarch64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
@@ -91,6 +96,32 @@ jobs:
               set -e &&
               apk add perl &&
               yarn build
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            build: |-
+              # `perl` needs for building openssl
+              set -e &&
+              apt-get update &&
+              apt-get install -y perl &&
+              unset CC_aarch64_unknown_linux_gnu &&
+              unset CXX_aarch64_unknown_linux_gnu &&
+              yarn build --target aarch64-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: |-
+              # `perl` needs for building openssl
+              set -e &&
+              apk add perl &&
+              rustup target add aarch64-unknown-linux-musl &&
+              yarn build --target aarch64-unknown-linux-musl
+          - host: ubuntu-latest
+            target: aarch64-linux-android
+            build: yarn build --target aarch64-linux-android
+          - host: ubuntu-latest
+            target: armv7-linux-androideabi
+            build: yarn build --target armv7-linux-androideabi
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -103,10 +134,11 @@ jobs:
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
         with:
-          target: ${{ matrix.settings.target }}
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -175,8 +207,6 @@ jobs:
         shell: bash
       - name: Test bindings
         run: yarn vitest run
-        env:
-          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   test-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -211,8 +241,6 @@ jobs:
         shell: bash
       - name: Test bindings
         run: yarn vitest run
-        env:
-          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -243,7 +271,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -e TEST_GITHUB_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }} -v $(pwd):/build -w /build node:${{ matrix.node }}-slim yarn vitest run
+        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim yarn vitest run
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -276,4 +304,43 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -e TEST_GITHUB_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }} -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine yarn vitest run
+        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine yarn vitest run
+  test-linux-aarch64-gnu-binding:
+    name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '18'
+          - '20'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-aarch64-unknown-linux-gnu
+          path: .
+      - name: List packages
+        run: ls -R .
+        shell: bash
+      - name: Install dependencies
+        run: |
+          yarn config set supportedArchitectures.cpu "arm64"
+          yarn config set supportedArchitectures.libc "glibc"
+          yarn install
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Setup and run tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: node:${{ matrix.node }}-slim
+          options: '--user 0:0 --platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
+          run: |
+            set -e
+            yarn vitest run

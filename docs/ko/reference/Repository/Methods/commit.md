@@ -11,7 +11,7 @@
 
 ```ts
 class Repository {
-  commit(tree: Tree, message: string, options?: CommitOptions | null): string;
+  commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
 }
 ```
 

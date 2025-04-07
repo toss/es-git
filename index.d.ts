@@ -701,7 +701,7 @@ export enum ReferenceFormat {
  * @category Reference
  * @signature
  * ```ts
- * function normalizeReferenceName(refname: string, format?: number): string | null;
+ * function normalizeReferenceName(refname: string, format?: number | null | undefined): string | null;
  * ```
  *
  * @param {string} refname - Reference name to normalize.
@@ -1056,8 +1056,8 @@ export interface RepositoryCloneOptions {
  * ```ts
  * function initRepository(
  *   path: string,
- *   options?: RepositoryInitOptions,
- *   signal?: AbortSignal,
+ *   options?: RepositoryInitOptions | null | undefined,
+ *   signal?: AbortSignal | null | undefined,
  * ): Promise<Repository>;
  * ```
  *
@@ -1075,7 +1075,7 @@ export interface RepositoryCloneOptions {
  * ```ts
  * import { initRepository } from 'es-git';
  *
- * const repo = await iniRepository('/path/to/repo');
+ * const repo = await initRepository('/path/to/repo');
  * ```
  *
  * Create bare repository.
@@ -1083,7 +1083,7 @@ export interface RepositoryCloneOptions {
  * ```ts
  * import { initRepository } from 'es-git';
  *
- * const repo = await iniRepository('/path/to/repo.git', {
+ * const repo = await initRepository('/path/to/repo.git', {
  *   bare: true,
  * });
  * ```
@@ -1097,8 +1097,8 @@ export declare function initRepository(path: string, options?: RepositoryInitOpt
  * ```ts
  * function openRepository(
  *   path: string,
- *   options?: RepositoryOpenOptions,
- *   signal?: AbortSignal,
+ *   options?: RepositoryOpenOptions | null | undefined,
+ *   signal?: AbortSignal | null | undefined,
  * ): Promise<Repository>;
  * ```
  *
@@ -1139,7 +1139,7 @@ export declare function openRepository(path: string, options?: RepositoryOpenOpt
  * @category Repository
  * @signature
  * ```ts
- * function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+ * function discoverRepository(path: string, signal?: AbortSignal | null | undefined): Promise<Repository>;
  * ```
  *
  * @param {string} path - Directory path to discover repository.
@@ -1161,8 +1161,8 @@ export declare function discoverRepository(path: string, signal?: AbortSignal | 
  * function cloneRepository(
  *   url: string,
  *   path: string,
- *   options?: RepositoryCloneOptions | null,
- *   signal?: AbortSignal | null
+ *   options?: RepositoryCloneOptions | null | undefined,
+ *   signal?: AbortSignal | null | undefined
  * ): Promise<Repository>;
  * ```
  *
@@ -1290,7 +1290,7 @@ export interface SignatureTimeOptions {
  * function createSignature(
  *   name: string,
  *   email: string,
- *   timeOptions?: SignatureTimeOptions,
+ *   timeOptions?: SignatureTimeOptions | null | undefined,
  * ): Signature;
  * ```
  *
@@ -1509,7 +1509,7 @@ export declare class Commit {
    * @signature
    * ```ts
    * class Commit {
-   *   summary(): string;
+   *   summary(): string | null;
    * }
    * ```
    *
@@ -1531,7 +1531,7 @@ export declare class Commit {
    * @signature
    * ```ts
    * class Commit {
-   *   body(): string;
+   *   body(): string | null;
    * }
    * ```
    *
@@ -2095,7 +2095,7 @@ export declare class Diff {
    * @signature
    * ```ts
    * class Diff {
-   *   print(options?: DiffPrintOptions | null): string;
+   *   print(options?: DiffPrintOptions | null | undefined): string;
    * }
    * ```
    *
@@ -2115,7 +2115,7 @@ export declare class Diff {
    * @signature
    * ```ts
    * class Diff {
-   *   findSimilar(options?: DiffFindOptions): void;
+   *   findSimilar(options?: DiffFindOptions | null | undefined): void;
    * }
    * ```
    *
@@ -2400,7 +2400,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   setVersion(version: number): number;
+   *   setVersion(version: number): void;
    * }
    * ```
    *
@@ -2417,7 +2417,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   getByPath(path: string, stage?: IndexStage): IndexEntry | null;
+   *   getByPath(path: string, stage?: IndexStage | null | undefined): IndexEntry | null;
    * }
    * ```
    *
@@ -2457,7 +2457,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+   *   addAll(pathspecs: string[], options?: IndexAddAllOptions | null | undefined): void;
    * }
    * ```
    *
@@ -2490,7 +2490,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   read(force?: boolean): void;
+   *   read(force?: boolean | null | undefined): void;
    * }
    * ```
    *
@@ -2534,7 +2534,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   writeTree(): void;
+   *   writeTree(): string;
    * }
    * ```
    */
@@ -2550,7 +2550,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   removePath(path: string, options?: IndexRemoveOptions): void;
+   *   removePath(path: string, options?: IndexRemoveOptions | null | undefined): void;
    * }
    * ```
    *
@@ -2565,7 +2565,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions): void;
+   *   removeAll(pathspecs: string[], options?: IndexRemoveAllOptions | null | undefined): void;
    * }
    * ```
    *
@@ -2586,7 +2586,7 @@ export declare class Index {
    * @signature
    * ```ts
    * class Index {
-   *   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+   *   updateAll(pathspecs: string[], options?: IndexUpdateAllOptions | null | undefined): void;
    * }
    * ```
    *
@@ -2681,7 +2681,7 @@ export declare class GitObject {
   /**
    * Get the id (SHA1) of a repository object.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2695,7 +2695,7 @@ export declare class GitObject {
   /**
    * Get the object type of object.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2709,7 +2709,7 @@ export declare class GitObject {
   /**
    * Recursively peel an object until an object of the specified type is met.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2727,7 +2727,7 @@ export declare class GitObject {
   /**
    * Recursively peel an object until a commit is found.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2741,7 +2741,7 @@ export declare class GitObject {
   /**
    * Recursively peel an object until a blob is found.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2755,7 +2755,7 @@ export declare class GitObject {
   /**
    * Attempt to view this object as a commit.
    *
-   * @category Object/Methods
+   * @category GitObject/Methods
    * @signature
    * ```ts
    * class GitObject {
@@ -2989,7 +2989,7 @@ export declare class Reference {
    * @signature
    * ```ts
    * class Reference {
-   *   rename(newName: string, options?: RenameReferenceOptions): Reference;
+   *   rename(newName: string, options?: RenameReferenceOptions | null | undefined): Reference;
    * }
    * ```
    *
@@ -3095,8 +3095,8 @@ export declare class Remote {
    * class Remote {
    *   fetch(
    *     refspecs: string[],
-   *     options?: FetchRemoteOptions,
-   *     signal?: AbortSignal,
+   *     options?: FetchRemoteOptions | null | undefined,
+   *     signal?: AbortSignal | null | undefined,
    *   ): Promise<void>;
    * }
    * ```
@@ -3132,8 +3132,8 @@ export declare class Remote {
    * class Remote {
    *   push(
    *     refspecs: string[],
-   *     options?: PushOptions,
-   *     signal?: AbortSignal,
+   *     options?: PushOptions | null | undefined,
+   *     signal?: AbortSignal | null | undefined,
    *   ): Promise<void>;
    * }
    * ```
@@ -3169,7 +3169,7 @@ export declare class Remote {
    * @signature
    * ```ts
    * class Remote {
-   *   prune(options?: PruneOptions, signal?: AbortSignal): Promise<void>;
+   *   prune(options?: PruneOptions | null | undefined, signal?: AbortSignal | null | undefined): Promise<void>;
    * }
    * ```
    *
@@ -3186,7 +3186,7 @@ export declare class Remote {
    * @signature
    * ```ts
    * class Remote {
-   *   defaultBranch(signal?: AbortSignal): Promise<string>;
+   *   defaultBranch(signal?: AbortSignal | null | undefined): Promise<string>;
    * }
    * ```
    *
@@ -3262,7 +3262,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   commit(tree: Tree, message: string, options?: CommitOptions | null): string;
+   *   commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
    * }
    * ```
    *
@@ -3295,9 +3295,9 @@ export declare class Repository {
    * ```ts
    * class Repository {
    *   diffTreeToTree(
-   *     oldTree?: Tree,
-   *     newTree?: Tree,
-   *     options?: DiffOptions,
+   *     oldTree?: Tree | null | undefined,
+   *     newTree?: Tree | null | undefined,
+   *     options?: DiffOptions | null | undefined,
    *   ): Diff;
    * }
    * ```
@@ -3322,7 +3322,7 @@ export declare class Repository {
    *   diffIndexToIndex(
    *     oldIndex: Index,
    *     newIndex: Index,
-   *     options?: DiffOptions,
+   *     options?: DiffOptions | null | undefined,
    *   ): Diff;
    * }
    * ```
@@ -3346,7 +3346,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   diffIndexToWorkdir(index?: Index, options?: DiffOptions): Diff;
+   *   diffIndexToWorkdir(index?: Index | null | undefined, options?: DiffOptions | null | undefined): Diff;
    * }
    * ```
    *
@@ -3383,7 +3383,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   diffTreeToWorkdir(oldTree?: Tree, options?: DiffOptions): Diff;
+   *   diffTreeToWorkdir(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
    * }
    * ```
    *
@@ -3407,7 +3407,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   diffTreeToWorkdirWithIndex(oldTree?: Tree, options?: DiffOptions): Diff;
+   *   diffTreeToWorkdirWithIndex(oldTree?: Tree | null | undefined, options?: DiffOptions | null | undefined): Diff;
    * }
    * ```
    *
@@ -3579,7 +3579,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+   *   createRemote(name: string, url: string, options?: CreateRemoteOptions | null | undefined): Remote;
    * }
    * ```
    *
@@ -3815,7 +3815,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   tagNames(pattern?: string): string[];
+   *   tagNames(pattern?: string | null | undefined): string[];
    * }
    * ```
    *
@@ -3889,7 +3889,7 @@ export declare class Repository {
    *     name: string,
    *     target: GitObject,
    *     message: string,
-   *     options?: CreateTagOptions,
+   *     options?: CreateTagOptions | null | undefined,
    *   ): string;
    * }
    * ```
@@ -3942,7 +3942,7 @@ export declare class Repository {
    *     name: string,
    *     target: GitObject,
    *     message: string,
-   *     options?: CreateAnnotationTagOptions,
+   *     options?: CreateAnnotationTagOptions | null | undefined,
    *   ): string;
    * }
    * ```
@@ -3967,7 +3967,7 @@ export declare class Repository {
    *   createLightweightTag(
    *     name: string,
    *     target: GitObject,
-   *     options?: CreateLightweightTagOptions,
+   *     options?: CreateLightweightTagOptions | null | undefined,
    *   ): string;
    * }
    * ```

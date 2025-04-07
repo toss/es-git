@@ -9,9 +9,9 @@ This is equivalent to `git diff <old-tree> <new-tree>`.
 ```ts
 class Repository {
   diffTreeToTree(
-    oldTree?: Tree,
-    newTree?: Tree,
-    options?: DiffOptions,
+    oldTree?: Tree | null | undefined,
+    newTree?: Tree | null | undefined,
+    options?: DiffOptions | null | undefined,
   ): Diff;
 }
 ```

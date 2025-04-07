@@ -24,7 +24,7 @@
 ## 시그니처
 
 ```ts
-function normalizeReferenceName(refname: string, format?: number): string | null;
+function normalizeReferenceName(refname: string, format?: number | null | undefined): string | null;
 ```
 
 ### 파라미터

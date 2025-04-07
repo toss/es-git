@@ -8,7 +8,7 @@ git 커밋 메시지의 간단한 "요약"을 가져와요.
 
 ```ts
 class Commit {
-  summary(): string;
+  summary(): string | null;
 }
 ```
 

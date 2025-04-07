@@ -16,6 +16,6 @@ The index must not contain any file in conflict.
 
 ```ts
 class Index {
-  writeTree(): void;
+  writeTree(): string;
 }
 ```

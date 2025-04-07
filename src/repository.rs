@@ -416,7 +416,7 @@ fn update_submodules(repo: &git2::Repository) -> crate::Result<()> {
   let mut repos = Vec::new();
   add_subrepos(repo, &mut repos)?;
   while let Some(repo) = repos.pop() {
-    add_subrepos(&repo, &mut repos)?
+    add_subrepos(&repo, &mut repos)?;
   }
   Ok(())
 }
@@ -454,8 +454,8 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// function initRepository(
 ///   path: string,
-///   options?: RepositoryInitOptions,
-///   signal?: AbortSignal,
+///   options?: RepositoryInitOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined,
 /// ): Promise<Repository>;
 /// ```
 ///
@@ -473,7 +473,7 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// import { initRepository } from 'es-git';
 ///
-/// const repo = await iniRepository('/path/to/repo');
+/// const repo = await initRepository('/path/to/repo');
 /// ```
 ///
 /// Create bare repository.
@@ -481,7 +481,7 @@ impl Task for InitRepositoryTask {
 /// ```ts
 /// import { initRepository } from 'es-git';
 ///
-/// const repo = await iniRepository('/path/to/repo.git', {
+/// const repo = await initRepository('/path/to/repo.git', {
 ///   bare: true,
 /// });
 /// ```
@@ -524,8 +524,8 @@ impl Task for OpenRepositoryTask {
 /// ```ts
 /// function openRepository(
 ///   path: string,
-///   options?: RepositoryOpenOptions,
-///   signal?: AbortSignal,
+///   options?: RepositoryOpenOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined,
 /// ): Promise<Repository>;
 /// ```
 ///
@@ -591,7 +591,7 @@ impl Task for DiscoverRepositoryTask {
 /// @category Repository
 /// @signature
 /// ```ts
-/// function discoverRepository(path: string, signal?: AbortSignal): Promise<Repository>;
+/// function discoverRepository(path: string, signal?: AbortSignal | null | undefined): Promise<Repository>;
 /// ```
 ///
 /// @param {string} path - Directory path to discover repository.
@@ -658,8 +658,8 @@ impl Task for CloneRepositoryTask {
 /// function cloneRepository(
 ///   url: string,
 ///   path: string,
-///   options?: RepositoryCloneOptions | null,
-///   signal?: AbortSignal | null
+///   options?: RepositoryCloneOptions | null | undefined,
+///   signal?: AbortSignal | null | undefined
 /// ): Promise<Repository>;
 /// ```
 ///

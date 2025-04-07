@@ -6,7 +6,7 @@
 
 ```ts
 class Index {
-  addAll(pathspecs: string[], options?: IndexAddAllOptions): void;
+  addAll(pathspecs: string[], options?: IndexAddAllOptions | null | undefined): void;
 }
 ```
 

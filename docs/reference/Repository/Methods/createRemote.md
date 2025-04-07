@@ -6,7 +6,7 @@ Add a remote with the default fetch refspec to the repository’s configuration.
 
 ```ts
 class Repository {
-  createRemote(name: string, url: string, options?: CreateRemoteOptions): Remote;
+  createRemote(name: string, url: string, options?: CreateRemoteOptions | null | undefined): Remote;
 }
 ```
 

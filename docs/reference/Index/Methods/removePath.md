@@ -10,7 +10,7 @@ moved to the "resolve undo" (REUC) section.
 
 ```ts
 class Index {
-  removePath(path: string, options?: IndexRemoveOptions): void;
+  removePath(path: string, options?: IndexRemoveOptions | null | undefined): void;
 }
 ```
 

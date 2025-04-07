@@ -8,7 +8,7 @@
 
 ```ts
 class Index {
-  updateAll(pathspecs: string[], options?: IndexUpdateAllOptions): void;
+  updateAll(pathspecs: string[], options?: IndexUpdateAllOptions | null | undefined): void;
 }
 ```
 

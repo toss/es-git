@@ -6,7 +6,7 @@
 
 ```ts
 class Index {
-  setVersion(version: number): number;
+  setVersion(version: number): void;
 }
 ```
 

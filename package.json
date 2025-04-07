@@ -1,6 +1,6 @@
 {
   "name": "es-git",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
@@ -22,8 +22,13 @@
         "x86_64-apple-darwin",
         "aarch64-apple-darwin",
         "x86_64-pc-windows-msvc",
+        "aarch64-pc-windows-msvc",
         "x86_64-unknown-linux-gnu",
-        "x86_64-unknown-linux-musl"
+        "x86_64-unknown-linux-musl",
+        "aarch64-linux-android",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl",
+        "armv7-linux-androideabi"
       ]
     }
   },
@@ -35,7 +40,6 @@
     "benchmarks"
   ],
   "scripts": {
-    "prepublishOnly": "napi prepublish -t npm",
     "build": "napi build --platform --release --no-const-enum --pipe=\"yarn transform:dts\"",
     "build:debug": "DEBUG=\"napi:*\" napi build --platform --no-const-enum --pipe=\"yarn transform:dts\"",
     "transform:dts": "jscodeshift -t transforms/dts.mjs index.d.ts",
