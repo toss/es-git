@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Repository as NodeGitRepository, Revparse as NodeGitRevparse } from 'nodegit';
 import { Repository as SimpleGitRepository } from '@napi-rs/simple-git';
+import { Repository as NodeGitRepository, Revparse as NodeGitRevparse } from 'nodegit';
 import { bench, describe } from 'vitest';
 import { openRepository } from '../index';
 import { exec } from './util';
