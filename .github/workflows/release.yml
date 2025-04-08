@@ -9,6 +9,8 @@ env:
   DEBUG: napi:*
   APP_NAME: es-git
   MACOSX_DEPLOYMENT_TARGET: '10.13'
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 jobs:
   build:
     strategy:
@@ -181,3 +183,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    if: github.ref_type == 'tag'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
