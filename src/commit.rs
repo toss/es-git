@@ -27,14 +27,6 @@ pub struct CommitOptions {
   pub signature: Option<String>,
 }
 
-#[napi(object)]
-pub struct ExtractedSignature {
-  /// GPG signature of the commit, or null if the commit is not signed.
-  pub signature: Option<String>,
-  /// Signed data of the commit.
-  pub signed_data: String,
-}
-
 pub(crate) enum CommitInner {
   Repo(SharedReference<Repository, git2::Commit<'static>>),
   Owned(git2::Commit<'static>),
@@ -379,34 +371,5 @@ impl Repository {
     };
 
     Ok(oid.to_string())
-  }
-
-  #[napi]
-  /// Extract the signature from a commit.
-  ///
-  /// @category Repository/Methods
-  ///
-  /// @signature
-  /// ```ts
-  /// class Repository {
-  ///   extractCommitSignature(commit: Commit): { signature: string | null, signedData: string } | null;
-  /// }
-  /// ```
-  ///
-  /// @returns An object containing the signature and signed data if the commit is signed,
-  ///          or null if the commit is not signed.
-  pub fn extract_signature(&self, commit: &Commit) -> crate::Result<Option<ExtractedSignature>> {
-    let oid = commit.inner.id();
-    let (signature, signed_data) = match self.inner.extract_signature(&oid, None) {
-      Ok((sig, data)) => {
-        let signature = std::str::from_utf8(&sig)?.to_string();
-        let signed_data = std::str::from_utf8(&data)?.to_string();
-        (Some(signature), signed_data)
-      }
-      Err(e) if e.code() == git2::ErrorCode::NotFound => (None, String::new()),
-      Err(e) => return Err(crate::Error::from(e)),
-    };
-
-    Ok(Some(ExtractedSignature { signature, signed_data }))
   }
 }

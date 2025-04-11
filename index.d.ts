@@ -27,12 +27,6 @@ export interface CommitOptions {
    */
   signature?: string
 }
-export interface ExtractedSignature {
-  /** GPG signature of the commit, or null if the commit is not signed. */
-  signature?: string
-  /** Signed data of the commit. */
-  signedData: string
-}
 /**
  * - `ProgramData` : System-wide on Windows, for compatibility with portable git.
  * - `System` : System-wide configuration file. (e.g. `/etc/gitconfig`)
@@ -1059,6 +1053,12 @@ export interface RepositoryCloneOptions {
   recursive?: boolean
   /** Options which can be specified to various fetch operations. */
   fetch?: FetchOptions
+}
+export interface ExtractedSignature {
+  /** GPG signature of the commit, or null if the commit is not signed. */
+  signature?: string
+  /** Signed data of the commit. */
+  signedData: string
 }
 /**
  * Creates a new repository in the specified folder.
@@ -3282,22 +3282,6 @@ export declare class Repository {
    */
   commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
   /**
-   * Extract the signature from a commit.
-   *
-   * @category Repository/Methods
-   *
-   * @signature
-   * ```ts
-   * class Repository {
-   *   extractCommitSignature(commit: Commit): { signature: string | null, signedData: string } | null;
-   * }
-   * ```
-   *
-   * @returns An object containing the signature and signed data if the commit is signed,
-   *          or null if the commit is not signed.
-   */
-  extractSignature(commit: Commit): ExtractedSignature | null
-  /**
    * Get the configuration file for this repository.
    *
    * @category Repository/Methods
@@ -3758,6 +3742,24 @@ export declare class Repository {
    * @param {string} refname - Specified reference to point into `HEAD`.
    */
   setHead(refname: string): void
+  /**
+   * Extract a signature from an object identified by its ID.
+   *
+   * This method can be used for any object that may be signed, such as commits or tags.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   extractSignature(oid: string): { signature: string | null, signedData: string } | null;
+   * }
+   * ```
+   *
+   * @returns An object containing the signature and signed data if the object is signed,
+   *          or null if the object is not signed.
+   */
+  extractSignature(oid: string): ExtractedSignature | null
   /**
    * Execute a rev-parse operation against the `spec` listed.
    *
