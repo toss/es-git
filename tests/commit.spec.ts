@@ -81,8 +81,7 @@ describe('commit', () => {
         '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
     });
     expect(isValidOid(oid)).toBe(true);
-    const commit = repo.getCommit(oid);
-    const signatureInfo = repo.extractSignature(commit);
+    const signatureInfo = repo.extractSignature(oid);
     expect(signatureInfo).not.toBeNull();
 
     const { signature: extractedSignature = '', signedData = '' } = signatureInfo || {};
