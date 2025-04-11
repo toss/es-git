@@ -21,6 +21,18 @@ pub struct CommitOptions {
   /// If there is no default signature set for the repository, an error will occur.
   pub committer: Option<SignaturePayload>,
   pub parents: Option<Vec<String>>,
+  /// GPG signature string for signed commits.
+  ///
+  /// If provided, this will create a signed commit.
+  pub signature: Option<String>,
+}
+
+#[napi(object)]
+pub struct ExtractedSignature {
+  /// GPG signature of the commit, or null if the commit is not signed.
+  pub signature: Option<String>,
+  /// Signed data of the commit.
+  pub signed_data: String,
 }
 
 pub(crate) enum CommitInner {
@@ -310,7 +322,7 @@ impl Repository {
   ///
   /// @returns ID(SHA1) of created commit.
   pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
-    let (update_ref, author, committer, parents) = match options {
+    let (update_ref, author, committer, parents, signature) = match options {
       Some(opts) => {
         let update_ref = opts.update_ref;
         let author = opts.author.and_then(|x| Signature::try_from(x).ok());
@@ -325,9 +337,10 @@ impl Repository {
           }
           None => None,
         };
-        (update_ref, author, committer, parents)
+        let signature = opts.signature;
+        (update_ref, author, committer, parents, signature)
       }
-      None => (None, None, None, None),
+      None => (None, None, None, None, None),
     };
     let author = author
       .and_then(|x| git2::Signature::try_from(x).ok())
@@ -337,14 +350,63 @@ impl Repository {
       .and_then(|x| git2::Signature::try_from(x).ok())
       .or_else(|| self.inner.signature().ok())
       .ok_or(crate::Error::SignatureNotFound)?;
-    let oid = self.inner.commit(
-      update_ref.as_deref(),
-      &author,
-      &committer,
-      &message,
-      &tree.inner,
-      &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
-    )?;
+
+    let oid = if let Some(signature_str) = signature {
+      let commit_content = self.inner.commit_create_buffer(
+        &author,
+        &committer,
+        &message,
+        &tree.inner,
+        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+      )?;
+
+      let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
+
+      self.inner.commit_signed(
+        &commit_content_str,
+        &signature_str,
+        None, // Use default signature field (gpgsig)
+      )?
+    } else {
+      self.inner.commit(
+        update_ref.as_deref(),
+        &author,
+        &committer,
+        &message,
+        &tree.inner,
+        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+      )?
+    };
+
     Ok(oid.to_string())
+  }
+
+  #[napi]
+  /// Extract the signature from a commit.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   extractCommitSignature(commit: Commit): { signature: string | null, signedData: string } | null;
+  /// }
+  /// ```
+  ///
+  /// @returns An object containing the signature and signed data if the commit is signed,
+  ///          or null if the commit is not signed.
+  pub fn extract_commit_signature(&self, commit: &Commit) -> crate::Result<Option<ExtractedSignature>> {
+    let oid = commit.inner.id();
+    let (signature, signed_data) = match self.inner.extract_signature(&oid, None) {
+      Ok((sig, data)) => {
+        let signature = std::str::from_utf8(&sig)?.to_string();
+        let signed_data = std::str::from_utf8(&data)?.to_string();
+        (Some(signature), signed_data)
+      }
+      Err(e) if e.code() == git2::ErrorCode::NotFound => (None, String::new()),
+      Err(e) => return Err(crate::Error::from(e)),
+    };
+
+    Ok(Some(ExtractedSignature { signature, signed_data }))
   }
 }

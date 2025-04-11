@@ -63,4 +63,27 @@ describe('commit', () => {
     const commit = repo.getCommit(oid);
     expect(commit.summary()).toEqual('test commit');
   });
+
+  it('create signed commit', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'signed'), 'signed');
+    const index = repo.index();
+    index.addPath('signed');
+    const treeSha = index.writeTree();
+    const tree = repo.getTree(treeSha);
+    const oid = repo.commit(tree, 'signed commit', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+      signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+    });
+    expect(isValidOid(oid)).toBe(true);
+    const commit = repo.getCommit(oid);
+    const signatureInfo = repo.extractCommitSignature(commit);
+    expect(signatureInfo).not.toBeNull();
+    expect(signatureInfo?.signature).toEqual('-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----');
+    expect(signatureInfo?.signedData).toContain('signed commit');
+  });
 });
