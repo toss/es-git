@@ -77,13 +77,24 @@ describe('commit', () => {
       author: signature,
       committer: signature,
       parents: [repo.head().target()!],
-      signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+      signature:
+        '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
     });
     expect(isValidOid(oid)).toBe(true);
     const commit = repo.getCommit(oid);
-    const signatureInfo = repo.extractCommitSignature(commit);
+    const signatureInfo = repo.extractSignature(commit);
     expect(signatureInfo).not.toBeNull();
-    expect(signatureInfo?.signature).toEqual('-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----');
-    expect(signatureInfo?.signedData).toContain('signed commit');
+
+    const { signature: extractedSignature = '', signedData = '' } = signatureInfo || {};
+
+    expect(extractedSignature).toEqual(
+      '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+    );
+
+    expect(signedData).toContain('tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e');
+    expect(signedData).toContain('parent a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+    expect(signedData).toMatch(/author Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
+    expect(signedData).toMatch(/committer Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
+    expect(signedData).toContain('signed commit');
   });
 });

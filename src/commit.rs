@@ -395,7 +395,7 @@ impl Repository {
   ///
   /// @returns An object containing the signature and signed data if the commit is signed,
   ///          or null if the commit is not signed.
-  pub fn extract_commit_signature(&self, commit: &Commit) -> crate::Result<Option<ExtractedSignature>> {
+  pub fn extract_signature(&self, commit: &Commit) -> crate::Result<Option<ExtractedSignature>> {
     let oid = commit.inner.id();
     let (signature, signed_data) = match self.inner.extract_signature(&oid, None) {
       Ok((sig, data)) => {

@@ -3296,7 +3296,7 @@ export declare class Repository {
    * @returns An object containing the signature and signed data if the commit is signed,
    *          or null if the commit is not signed.
    */
-  extractCommitSignature(commit: Commit): ExtractedSignature | null
+  extractSignature(commit: Commit): ExtractedSignature | null
   /**
    * Get the configuration file for this repository.
    *
