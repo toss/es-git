@@ -112,7 +112,7 @@ describe('commit', () => {
       parents: [repo.head().target()!],
     });
     expect(isValidOid(oid)).toBe(true);
-    
+
     const signatureInfo = repo.extractSignature(oid);
     expect(signatureInfo).toBeNull();
   });
