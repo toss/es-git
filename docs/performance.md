@@ -4,45 +4,53 @@ Tested with MacBook Pro (14-inch, M2 Pro, 2023). Refer to our [benchmark](https:
 
 
 ```
- ✓ index.bench.ts > open 1210ms
-     name            hz     min      max    mean     p75     p99    p995    p999     rme  samples
-   · es-git   11,536.94  0.0673  14.4495  0.0867  0.0848  0.1633  0.2256  0.3882  ±5.69%     5769
-   · nodegit  12,511.07  0.0691   7.7552  0.0799  0.0801  0.1040  0.1179  0.1825  ±4.18%     6256   fastest
+  ✓ index.bench.ts > open 1815ms
+     name                        hz     min      max    mean     p75     p99    p995    p999     rme  samples
+   · es-git               11,590.57  0.0730  13.8912  0.0863  0.0863  0.1225  0.1327  0.2043  ±5.42%     5796
+   · nodegit              11,813.89  0.0704   7.5226  0.0846  0.0835  0.1289  0.1521  0.2398  ±4.22%     5908   fastest
+   · @napi-rs/simple-git   2,550.28  0.2557   4.3442  0.3921  0.4530  0.6906  0.7774  2.5094  ±2.52%     1276   slowest
 
- ✓ index.bench.ts > rev-parse 1817ms
-     name                 hz      min      max     mean      p75      p99     p995     p999     rme  samples
-   · es-git         6,530.94   0.1336  14.7510   0.1531   0.1514   0.1848   0.1974   0.2353  ±5.73%     3266   fastest
-   · nodegit        5,916.49   0.1488   5.6818   0.1690   0.1695   0.2487   0.2610   0.3844  ±2.89%     2959
-   · child_process   91.4863  10.1801  12.3195  10.9306  11.1550  12.3195  12.3195  12.3195  ±1.32%       46   slowest
+ ✓ index.bench.ts > rev-parse 2426ms
+     name                       hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · es-git               6,356.94   0.1370  14.3807   0.1573   0.1550   0.2074   0.2238   0.2840  ±5.58%     3179   fastest
+   · nodegit              5,688.24   0.1535  13.0313   0.1758   0.1749   0.2278   0.2493   0.3825  ±5.31%     2845
+   · @napi-rs/simple-git  2,511.09   0.2856   1.0381   0.3982   0.4885   0.7190   0.7559   0.8119  ±1.75%     1256
+   · child_process         88.5663  10.7419  12.6293  11.2910  11.3945  12.6293  12.6293  12.6293  ±1.08%       45   slowest
 
- ✓ index.bench.ts > revwalk 1817ms
-     name                hz      min      max     mean      p75      p99     p995     p999     rme  samples
-   · es-git          838.67   1.1241   5.0922   1.1924   1.1908   1.3663   1.4037   5.0922  ±1.58%      420   fastest
-   · nodegit         792.75   1.2143   1.6610   1.2614   1.2679   1.4472   1.5426   1.6610  ±0.35%      397
-   · child_process  73.8698  12.3492  26.3306  13.5373  13.7976  26.3306  26.3306  26.3306  ±5.76%       37   slowest
+ ✓ index.bench.ts > revwalk 2448ms
+     name                      hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · es-git                841.62   1.1206  11.6329   1.1882   1.1721   1.4188   1.5288  11.6329  ±4.12%      421   fastest
+   · nodegit               792.28   1.2102   1.8455   1.2622   1.2793   1.5123   1.7268   1.8455  ±0.46%      397
+   · @napi-rs/simple-git   650.71   1.3304   2.1619   1.5368   1.6075   2.1102   2.1270   2.1619  ±1.42%      326
+   · child_process        74.5720  12.9525  14.0355  13.4099  13.5443  14.0355  14.0355  14.0355  ±0.64%       38   slowest
 
- ✓ index.bench.ts > get commit 1812ms
-     name                 hz      min      max     mean      p75      p99     p995     p999      rme  samples
-   · es-git         7,411.15   0.1176   0.5647   0.1349   0.1375   0.1862   0.2058   0.2557   ±0.36%     3706   fastest
-   · nodegit        5,922.63   0.1333  29.4811   0.1688   0.1620   0.2758   0.3105   0.3711  ±11.51%     2962
-   · child_process   71.8030  12.6222  17.5353  13.9270  14.2632  17.5353  17.5353  17.5353   ±2.86%       36   slowest
+ ✓ index.bench.ts > get commit 2451ms
+     name                       hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · es-git               7,628.10   0.1154   1.2045   0.1311   0.1328   0.1821   0.1898   0.3014  ±0.51%     3815   fastest
+   · nodegit              6,723.92   0.1314  11.6206   0.1487   0.1474   0.2221   0.2447   0.3603  ±4.52%     3362
+   · @napi-rs/simple-git  2,359.88   0.3026   0.7248   0.4238   0.5073   0.6490   0.6592   0.7231  ±1.42%     1180
+   · child_process         78.9937  12.1418  14.0038  12.6592  12.7804  14.0038  14.0038  14.0038  ±0.96%       40   slowest
 ```
 
 Summary:
 
 ```
   nodegit - index.bench.ts > open
-    1.08x faster than es-git
+    1.02x faster than es-git
+    4.63x faster than @napi-rs/simple-git
 
   es-git - index.bench.ts > rev-parse
-    1.10x faster than nodegit
-    71.39x faster than child_process
+    1.12x faster than nodegit
+    2.53x faster than @napi-rs/simple-git
+    71.78x faster than child_process
 
   es-git - index.bench.ts > revwalk
     1.06x faster than nodegit
-    11.35x faster than child_process
+    1.29x faster than @napi-rs/simple-git
+    11.29x faster than child_process
 
   es-git - index.bench.ts > get commit
-    1.25x faster than nodegit
-    103.22x faster than child_process
+    1.13x faster than nodegit
+    3.23x faster than @napi-rs/simple-git
+    96.57x faster than child_process
 ```
