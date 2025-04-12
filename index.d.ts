@@ -1062,9 +1062,9 @@ export interface RepositoryCloneOptions {
 }
 export interface ExtractedSignature {
   /** GPG signature of the commit, or null if the commit is not signed. */
-  signature?: string
+  signature: string
   /** Signed data of the commit. */
-  signedData?: string
+  signedData: string
 }
 /**
  * Creates a new repository in the specified folder.
@@ -3758,12 +3758,12 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   extractSignature(oid: string): { signature: string | null, signedData: string } | null;
+   *   extractSignature(oid: string): ExtractedSignature | null;
    * }
    * ```
    *
    * @param {string} oid - Object ID (SHA1) of the signed object to extract the signature from.
-   * @returns An object containing the signature and signed data if the object is signed,
+   * @returns An ExtractedSignature object containing the signature and signed data if the object is signed,
    *          or null if the object is not signed.
    */
   extractSignature(oid: string): ExtractedSignature | null
