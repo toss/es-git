@@ -25,6 +25,10 @@ pub struct CommitOptions {
   ///
   /// If provided, this will create a signed commit.
   pub signature: Option<String>,
+  /// Custom signature field name.
+  ///
+  /// If not provided, the default signature field (gpgsig) will be used.
+  pub signature_field: Option<String>,
 }
 
 pub(crate) enum CommitInner {
@@ -314,7 +318,7 @@ impl Repository {
   ///
   /// @returns ID(SHA1) of created commit.
   pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
-    let (update_ref, author, committer, parents, signature) = match options {
+    let (update_ref, author, committer, parents, signature, signature_field) = match options {
       Some(opts) => {
         let update_ref = opts.update_ref;
         let author = opts.author.and_then(|x| Signature::try_from(x).ok());
@@ -330,9 +334,10 @@ impl Repository {
           None => None,
         };
         let signature = opts.signature;
-        (update_ref, author, committer, parents, signature)
+        let signature_field = opts.signature_field;
+        (update_ref, author, committer, parents, signature, signature_field)
       }
-      None => (None, None, None, None, None),
+      None => (None, None, None, None, None, None),
     };
     let author = author
       .and_then(|x| git2::Signature::try_from(x).ok())
@@ -354,11 +359,9 @@ impl Repository {
 
       let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
 
-      self.inner.commit_signed(
-        &commit_content_str,
-        &signature_str,
-        None, // Use default signature field (gpgsig)
-      )?
+      self
+        .inner
+        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?
     } else {
       self.inner.commit(
         update_ref.as_deref(),
