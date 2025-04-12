@@ -26,6 +26,12 @@ export interface CommitOptions {
    * If provided, this will create a signed commit.
    */
   signature?: string
+  /**
+   * Custom signature field name.
+   *
+   * If not provided, the default signature field (gpgsig) will be used.
+   */
+  signatureField?: string
 }
 /**
  * - `ProgramData` : System-wide on Windows, for compatibility with portable git.
@@ -1058,7 +1064,7 @@ export interface ExtractedSignature {
   /** GPG signature of the commit, or null if the commit is not signed. */
   signature?: string
   /** Signed data of the commit. */
-  signedData: string
+  signedData?: string
 }
 /**
  * Creates a new repository in the specified folder.
@@ -3756,6 +3762,7 @@ export declare class Repository {
    * }
    * ```
    *
+   * @param {string} oid - Object ID (SHA1) of the signed object to extract the signature from.
    * @returns An object containing the signature and signed data if the object is signed,
    *          or null if the object is not signed.
    */

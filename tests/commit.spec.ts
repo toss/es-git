@@ -96,4 +96,24 @@ describe('commit', () => {
     expect(signedData).toMatch(/committer Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
     expect(signedData).toContain('signed commit');
   });
+
+  it('extract signature from unsigned commit', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'unsigned'), 'unsigned');
+    const index = repo.index();
+    index.addPath('unsigned');
+    const treeSha = index.writeTree();
+    const tree = repo.getTree(treeSha);
+    const oid = repo.commit(tree, 'unsigned commit', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+    expect(isValidOid(oid)).toBe(true);
+    
+    const signatureInfo = repo.extractSignature(oid);
+    expect(signatureInfo).toBeNull();
+  });
 });

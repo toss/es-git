@@ -230,7 +230,7 @@ pub struct ExtractedSignature {
   /// GPG signature of the commit, or null if the commit is not signed.
   pub signature: Option<String>,
   /// Signed data of the commit.
-  pub signed_data: String,
+  pub signed_data: Option<String>,
 }
 
 #[napi]
@@ -426,6 +426,7 @@ impl Repository {
   /// }
   /// ```
   ///
+  /// @param {string} oid - Object ID (SHA1) of the signed object to extract the signature from.
   /// @returns An object containing the signature and signed data if the object is signed,
   ///          or null if the object is not signed.
   pub fn extract_signature(&self, oid: String) -> crate::Result<Option<ExtractedSignature>> {
@@ -434,11 +435,15 @@ impl Repository {
       Ok((sig, data)) => {
         let signature = std::str::from_utf8(&sig)?.to_string();
         let signed_data = std::str::from_utf8(&data)?.to_string();
-        (Some(signature), signed_data)
+        (Some(signature), Some(signed_data))
       }
-      Err(e) if e.code() == git2::ErrorCode::NotFound => (None, String::new()),
+      Err(e) if e.code() == git2::ErrorCode::NotFound => (None, None),
       Err(e) => return Err(crate::Error::from(e)),
     };
+
+    if signature.is_none() && signed_data.is_none() {
+      return Ok(None);
+    }
 
     Ok(Some(ExtractedSignature { signature, signed_data }))
   }
