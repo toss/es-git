@@ -1,6 +1,7 @@
 #![deny(clippy::all)]
 
 pub mod blob;
+pub mod branch;
 pub mod commit;
 pub mod config;
 pub mod diff;
