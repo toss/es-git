@@ -14,6 +14,7 @@ pub mod repository;
 pub mod revparse;
 pub mod revwalk;
 pub mod signature;
+pub mod status;
 pub mod tag;
 pub mod tree;
 pub(crate) mod util;
