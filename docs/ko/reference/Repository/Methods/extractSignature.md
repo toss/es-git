@@ -1,6 +1,6 @@
 # extractSignature
 
-서명된 Git 객체(커밋, 태그 등)에서 서명을 추출해요.
+서명된 Git 개체(커밋, 태그 등)에서 서명을 추출해요.
 
 ## 시그니처
 
@@ -16,7 +16,7 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-name">oid</span><span class="param-required">필수</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
-    <p class="param-description">서명을 추출할 서명된 객체의 ID(SHA1)예요.</p>
+    <p class="param-description">서명을 추출할 서명된 개체의 ID(SHA1)예요.</p>
   </li>
 </ul>
 
@@ -26,17 +26,17 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-type">ExtractedSignature | null</span>
     <br>
-    <p class="param-description">객체가 서명된 경우 서명과 서명된 데이터를 포함하는 ExtractedSignature 객체를 반환하고, 객체가 서명되지 않은 경우 null을 반환해요.</p>
+    <p class="param-description">개체가 서명된 경우 서명과 서명된 데이터를 포함하는 ExtractedSignature 객체를 반환하고, 개체가 서명되지 않은 경우 null을 반환해요.</p>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">signature</span><span class="param-type">string</span>
         <br>
-        <p class="param-description">Git 객체의 GPG 서명이에요.</p>
+        <p class="param-description">Git 개체의 GPG 서명이에요.</p>
       </li>
       <li class="param-li">
         <span class="param-name">signedData</span><span class="param-type">string</span>
         <br>
-        <p class="param-description">Git 객체의 서명된 데이터예요.</p>
+        <p class="param-description">Git 개체의 서명된 데이터예요.</p>
       </li>
     </ul>
   </li>
