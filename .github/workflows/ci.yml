@@ -9,8 +9,10 @@ on:
       - '**/*.md'
       - LICENSE
       - '**/*.gitignore'
+      - '**/*.gitattributes'
       - justfile
       - 'docs/**'
+      - '**/CODEOWNERS'
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
