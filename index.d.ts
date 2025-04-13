@@ -20,6 +20,18 @@ export interface CommitOptions {
    */
   committer?: SignaturePayload
   parents?: Array<string>
+  /**
+   * GPG signature string for signed commits.
+   *
+   * If provided, this will create a signed commit.
+   */
+  signature?: string
+  /**
+   * Custom signature field name.
+   *
+   * If not provided, the default signature field (gpgsig) will be used.
+   */
+  signatureField?: string
 }
 /**
  * - `ProgramData` : System-wide on Windows, for compatibility with portable git.
@@ -1047,6 +1059,12 @@ export interface RepositoryCloneOptions {
   recursive?: boolean
   /** Options which can be specified to various fetch operations. */
   fetch?: FetchOptions
+}
+export interface ExtractedSignature {
+  /** GPG signature of the commit, or null if the commit is not signed. */
+  signature: string
+  /** Signed data of the commit. */
+  signedData: string
 }
 /**
  * Creates a new repository in the specified folder.
@@ -3730,6 +3748,25 @@ export declare class Repository {
    * @param {string} refname - Specified reference to point into `HEAD`.
    */
   setHead(refname: string): void
+  /**
+   * Extract a signature from an object identified by its ID.
+   *
+   * This method can be used for any object that may be signed, such as commits or tags.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   extractSignature(oid: string): ExtractedSignature | null;
+   * }
+   * ```
+   *
+   * @param {string} oid - Object ID (SHA1) of the signed object to extract the signature from.
+   * @returns An ExtractedSignature object containing the signature and signed data if the object is signed,
+   *          or null if the object is not signed.
+   */
+  extractSignature(oid: string): ExtractedSignature | null
   /**
    * Execute a rev-parse operation against the `spec` listed.
    *
