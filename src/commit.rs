@@ -21,6 +21,14 @@ pub struct CommitOptions {
   /// If there is no default signature set for the repository, an error will occur.
   pub committer: Option<SignaturePayload>,
   pub parents: Option<Vec<String>>,
+  /// GPG signature string for signed commits.
+  ///
+  /// If provided, this will create a signed commit.
+  pub signature: Option<String>,
+  /// Custom signature field name.
+  ///
+  /// If not provided, the default signature field (gpgsig) will be used.
+  pub signature_field: Option<String>,
 }
 
 pub(crate) enum CommitInner {
@@ -310,7 +318,7 @@ impl Repository {
   ///
   /// @returns ID(SHA1) of created commit.
   pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
-    let (update_ref, author, committer, parents) = match options {
+    let (update_ref, author, committer, parents, signature, signature_field) = match options {
       Some(opts) => {
         let update_ref = opts.update_ref;
         let author = opts.author.and_then(|x| Signature::try_from(x).ok());
@@ -325,9 +333,11 @@ impl Repository {
           }
           None => None,
         };
-        (update_ref, author, committer, parents)
+        let signature = opts.signature;
+        let signature_field = opts.signature_field;
+        (update_ref, author, committer, parents, signature, signature_field)
       }
-      None => (None, None, None, None),
+      None => (None, None, None, None, None, None),
     };
     let author = author
       .and_then(|x| git2::Signature::try_from(x).ok())
@@ -337,14 +347,32 @@ impl Repository {
       .and_then(|x| git2::Signature::try_from(x).ok())
       .or_else(|| self.inner.signature().ok())
       .ok_or(crate::Error::SignatureNotFound)?;
-    let oid = self.inner.commit(
-      update_ref.as_deref(),
-      &author,
-      &committer,
-      &message,
-      &tree.inner,
-      &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
-    )?;
+
+    let oid = if let Some(signature_str) = signature {
+      let commit_content = self.inner.commit_create_buffer(
+        &author,
+        &committer,
+        &message,
+        &tree.inner,
+        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+      )?;
+
+      let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
+
+      self
+        .inner
+        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?
+    } else {
+      self.inner.commit(
+        update_ref.as_deref(),
+        &author,
+        &committer,
+        &message,
+        &tree.inner,
+        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+      )?
+    };
+
     Ok(oid.to_string())
   }
 }

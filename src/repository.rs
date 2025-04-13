@@ -225,6 +225,14 @@ pub struct RepositoryCloneOptions {
   pub fetch: Option<FetchOptions>,
 }
 
+#[napi(object)]
+pub struct ExtractedSignature {
+  /// GPG signature of the commit, or null if the commit is not signed.
+  pub signature: String,
+  /// Signed data of the commit.
+  pub signed_data: String,
+}
+
 #[napi]
 /// An owned git repository, representing all state associated with the
 /// underlying filesystem.
@@ -402,6 +410,36 @@ impl Repository {
   pub fn set_head(&self, refname: String) -> crate::Result<()> {
     self.inner.set_head(&refname)?;
     Ok(())
+  }
+
+  #[napi]
+  /// Extract a signature from an object identified by its ID.
+  ///
+  /// This method can be used for any object that may be signed, such as commits or tags.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   extractSignature(oid: string): ExtractedSignature | null;
+  /// }
+  /// ```
+  ///
+  /// @param {string} oid - Object ID (SHA1) of the signed object to extract the signature from.
+  /// @returns An ExtractedSignature object containing the signature and signed data if the object is signed,
+  ///          or null if the object is not signed.
+  pub fn extract_signature(&self, oid: String) -> crate::Result<Option<ExtractedSignature>> {
+    let oid_obj = git2::Oid::from_str(&oid)?;
+    match self.inner.extract_signature(&oid_obj, None) {
+      Ok((sig, data)) => {
+        let signature = std::str::from_utf8(&sig)?.to_string();
+        let signed_data = std::str::from_utf8(&data)?.to_string();
+        Ok(Some(ExtractedSignature { signature, signed_data }))
+      }
+      Err(e) if e.code() == git2::ErrorCode::NotFound => Ok(None),
+      Err(e) => Err(crate::Error::from(e)),
+    }
   }
 }
 

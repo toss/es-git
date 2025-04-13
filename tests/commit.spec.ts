@@ -63,4 +63,57 @@ describe('commit', () => {
     const commit = repo.getCommit(oid);
     expect(commit.summary()).toEqual('test commit');
   });
+
+  it('create signed commit', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'signed'), 'signed');
+    const index = repo.index();
+    index.addPath('signed');
+    const treeSha = index.writeTree();
+    const tree = repo.getTree(treeSha);
+    const oid = repo.commit(tree, 'signed commit', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+      signature:
+        '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
+    });
+    expect(isValidOid(oid)).toBe(true);
+    const signatureInfo = repo.extractSignature(oid);
+    expect(signatureInfo).not.toBeNull();
+
+    const { signature: extractedSignature = '', signedData = '' } = signatureInfo || {};
+
+    expect(extractedSignature).toEqual(
+      '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+    );
+
+    expect(signedData).toContain('tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e');
+    expect(signedData).toContain('parent a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+    expect(signedData).toMatch(/author Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
+    expect(signedData).toMatch(/committer Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
+    expect(signedData).toContain('signed commit');
+  });
+
+  it('extract signature from unsigned commit', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'unsigned'), 'unsigned');
+    const index = repo.index();
+    index.addPath('unsigned');
+    const treeSha = index.writeTree();
+    const tree = repo.getTree(treeSha);
+    const oid = repo.commit(tree, 'unsigned commit', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+    expect(isValidOid(oid)).toBe(true);
+
+    const signatureInfo = repo.extractSignature(oid);
+    expect(signatureInfo).toBeNull();
+  });
 });
