@@ -9,54 +9,6 @@ use std::path::Path;
 
 const MAX_SCAN_LINES: u32 = 10000;
 
-#[derive(Clone)]
-/// How blame ranges should be interpreted when blaming a file
-pub enum BlameRangeMode {
-  /// No line range specified, blame the entire file
-  None,
-  /// Blame only the single specified line
-  SingleLine,
-  /// Blame a range of lines from min to max inclusive
-  Range,
-}
-
-impl Default for BlameRangeMode {
-  fn default() -> Self {
-    Self::None
-  }
-}
-
-/// Represents a range of lines for applying blame
-#[derive(Default, Clone)]
-pub struct BlameLineRange {
-  /// The type of line range
-  pub range_type: BlameRangeMode,
-  /// Start line of the range (1-based index)
-  pub start: u32,
-  /// End line of the range (1-based index), only used when range_type is Range
-  pub end: Option<u32>,
-}
-
-impl BlameLineRange {
-  /// Create a new line range for a single line
-  pub fn for_line(line: u32) -> Self {
-    Self {
-      range_type: BlameRangeMode::SingleLine,
-      start: line,
-      end: None,
-    }
-  }
-
-  /// Create a new line range from start to end (inclusive)
-  pub fn for_range(start: u32, end: u32) -> Self {
-    Self {
-      range_type: BlameRangeMode::Range,
-      start,
-      end: Some(end),
-    }
-  }
-}
-
 #[napi(object)]
 /// Represents a hunk of a blame operation, which is a range of lines
 /// and information about who last modified them.
@@ -101,32 +53,39 @@ pub struct BlameOptions {
 }
 
 impl BlameOptions {
+  /// Create a new empty BlameOptions
+  pub fn new() -> Self {
+    Self::default()
+  }
+
   /// Create new options for a single line
   pub fn for_line(line: u32) -> Self {
-    let mut options = Self::default();
-    options.line = Some(line);
-    options
+    Self {
+      line: Some(line),
+      range: None,
+      newest_commit: None,
+      oldest_commit: None,
+      path: None,
+      track_lines_movement: None,
+    }
   }
 
   /// Create new options for a range of lines
   pub fn for_range(start: u32, end: u32) -> Self {
-    let mut options = Self::default();
-    options.range = Some(vec![start, end]);
-    options
+    Self {
+      line: None,
+      range: Some(vec![start, end]),
+      newest_commit: None,
+      oldest_commit: None,
+      path: None,
+      track_lines_movement: None,
+    }
   }
 
-  fn get_effective_line_range(&self) -> Option<BlameLineRange> {
-    if let Some(range) = &self.range {
-      if range.len() >= 2 {
-        return Some(BlameLineRange::for_range(range[0], range[1]));
-      }
-    }
-
-    if let Some(line) = self.line {
-      return Some(BlameLineRange::for_line(line));
-    }
-
-    None
+  /// Set the path to the file
+  pub fn with_path(mut self, path: &str) -> Self {
+    self.path = Some(path.to_string());
+    self
   }
 
   /// Set the newest commit to consider
@@ -152,19 +111,14 @@ impl From<&BlameOptions> for git2::BlameOptions {
   fn from(options: &BlameOptions) -> Self {
     let mut git_opts = git2::BlameOptions::new();
 
-    if let Some(line_range) = options.get_effective_line_range() {
-      match line_range.range_type {
-        BlameRangeMode::SingleLine => {
-          git_opts.min_line(line_range.start as usize);
-          git_opts.max_line(line_range.start as usize);
-        }
-        BlameRangeMode::Range => {
-          git_opts.min_line(line_range.start as usize);
-          if let Some(end) = line_range.end {
-            git_opts.max_line(end as usize);
-          }
-        }
-        BlameRangeMode::None => {}
+    if let Some(line) = options.line {
+      git_opts.min_line(line as usize);
+      git_opts.max_line(line as usize);
+    } 
+    else if let Some(range) = &options.range {
+      if range.len() >= 2 {
+        git_opts.min_line(range[0] as usize);
+        git_opts.max_line(range[1] as usize);
       }
     }
 
@@ -189,7 +143,6 @@ impl From<&BlameOptions> for git2::BlameOptions {
 }
 
 #[napi]
-/// A class representing a git blame analysis result
 pub struct Blame {
   pub(crate) inner: BlameInner,
 }
