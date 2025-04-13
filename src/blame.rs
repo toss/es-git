@@ -121,11 +121,11 @@ impl BlameOptions {
         return Some(BlameLineRange::for_range(range[0], range[1]));
       }
     }
-    
+
     if let Some(line) = self.line {
       return Some(BlameLineRange::for_line(line));
     }
-    
+
     None
   }
 
@@ -274,29 +274,29 @@ impl Blame {
   /// @returns Array of blame hunks
   pub fn get_hunks(&self) -> Result<Vec<BlameHunk>> {
     let hunk_count = self.get_hunk_count() as usize;
-    
+
     if hunk_count == 0 {
       return Ok(Vec::new());
     }
-    
+
     let mut hunks = Vec::with_capacity(hunk_count);
     let mut seen_hunks = HashSet::new();
     let mut line = 1;
-    
+
     while hunks.len() < hunk_count && line < MAX_SCAN_LINES {
       if let Ok(hunk) = self.get_hunk_by_line(line) {
         let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
-        
+
         if seen_hunks.insert(hunk_key) {
           line += hunk.lines_in_hunk;
           hunks.push(hunk);
           continue;
         }
       }
-      
+
       line += 1;
     }
-    
+
     Ok(hunks)
   }
 }
@@ -318,16 +318,16 @@ impl Repository {
   /// ```ts
   /// // Blame the entire file
   /// const blame = repo.blameFile('path/to/file.js');
-  /// 
+  ///
   /// // Blame a single line (line 10)
   /// const lineBlame = repo.blameFile('path/to/file.js', { line: 10 });
-  /// 
+  ///
   /// // Blame a range of lines (lines 5-15)
   /// const rangeBlame = repo.blameFile('path/to/file.js', { range: [5, 15] });
   /// ```
   ///
   /// @param {string} path - Path to the file to blame. This path takes precedence over any path specified in options.
-  /// @param {BlameOptions} [options] - Options to control blame behavior. 
+  /// @param {BlameOptions} [options] - Options to control blame behavior.
   ///        You can specify line ranges in two ways:
   ///        1. `options.line`: A single line number to blame
   ///        2. `options.range`: An array of two numbers [start, end] to blame a range
