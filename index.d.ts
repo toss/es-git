@@ -1446,6 +1446,22 @@ export declare class Blame {
    */
   getHunkCount(): number
   /**
+   * Gets blame information for the specified index
+   *
+   * @category Blame/Methods
+   * @signature
+   * ```ts
+   * class Blame {
+   *   getHunkByIndex(index: number): BlameHunk;
+   * }
+   * ```
+   *
+   * @param {number} index - The index of the hunk to get (0-based)
+   * @returns Blame information for the specified index
+   * @throws If no hunk is found for the specified index
+   */
+  getHunkByIndex(index: number): BlameHunk
+  /**
    * Gets blame information for the specified line
    *
    * @category Blame/Methods
@@ -1475,6 +1491,37 @@ export declare class Blame {
    * @returns Array of blame hunks
    */
   getHunks(): Array<BlameHunk>
+  /**
+   * Generates blame information from an in-memory buffer
+   *
+   * This method allows generating blame information for content that exists in memory
+   * rather than in a file on disk.
+   *
+   * @category Blame/Methods
+   * @signature
+   * ```ts
+   * class Blame {
+   *   buffer(buffer: Buffer, buffer_len: number): Blame;
+   * }
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Get blame for a file
+   * const blame = repo.blameFile('path/to/file.js');
+   *
+   * // Then create a modified buffer with some changes
+   * const buffer = Buffer.from('modified content');
+   *
+   * // Get blame for the modified content
+   * const bufferBlame = blame.buffer(buffer, buffer.length);
+   * ```
+   *
+   * @param {Buffer} buffer - The buffer containing file content to blame
+   * @param {number} buffer_len - The length of the buffer in bytes
+   * @returns A new Blame object for the buffer content
+   */
+  buffer(buffer: Buffer, bufferLen: number): Blame
 }
 /**
  * A class to represent a git [blob][1].

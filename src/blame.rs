@@ -174,6 +174,48 @@ impl Blame {
   }
 
   #[napi]
+  /// Gets blame information for the specified index
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   getHunkByIndex(index: number): BlameHunk;
+  /// }
+  /// ```
+  ///
+  /// @param {number} index - The index of the hunk to get (0-based)
+  /// @returns Blame information for the specified index
+  /// @throws If no hunk is found for the specified index
+  pub fn get_hunk_by_index(&self, index: u32) -> Result<BlameHunk> {
+    let hunk = self
+      .inner
+      .get_index(index as usize)
+      .ok_or_else(|| Error::from_reason(format!("No blame hunk found at index {}", index)))?;
+
+    let commit_id = hunk.final_commit_id().to_string();
+    let is_zero_commit = commit_id == "0000000000000000000000000000000000000000";
+
+    let signature = if is_zero_commit {
+      None
+    } else {
+      Signature::try_from(hunk.final_signature()).ok()
+    };
+
+    let path = hunk.path().map(|p| p.to_string_lossy().to_string());
+
+    Ok(BlameHunk {
+      commit_id,
+      final_start_line_number: hunk.final_start_line() as u32,
+      lines_in_hunk: hunk.lines_in_hunk() as u32,
+      signature,
+      path,
+      orig_start_line_number: hunk.orig_start_line() as u32,
+      is_boundary: hunk.is_boundary(),
+    })
+  }
+
+  #[napi]
   /// Gets blame information for the specified line
   ///
   /// @category Blame/Methods
@@ -193,11 +235,19 @@ impl Blame {
       .get_line(line as usize)
       .ok_or_else(|| Error::from_reason(format!("No blame hunk found for line {}", line)))?;
 
-    let signature = Signature::try_from(hunk.final_signature()).ok();
+    let commit_id = hunk.final_commit_id().to_string();
+    let is_zero_commit = commit_id == "0000000000000000000000000000000000000000";
+
+    let signature = if is_zero_commit {
+      None
+    } else {
+      Signature::try_from(hunk.final_signature()).ok()
+    };
+
     let path = hunk.path().map(|p| p.to_string_lossy().to_string());
 
     Ok(BlameHunk {
-      commit_id: hunk.final_commit_id().to_string(),
+      commit_id,
       final_start_line_number: hunk.final_start_line() as u32,
       lines_in_hunk: hunk.lines_in_hunk() as u32,
       signature,
@@ -245,6 +295,56 @@ impl Blame {
     }
 
     Ok(hunks)
+  }
+
+  #[napi]
+  /// Generates blame information from an in-memory buffer
+  ///
+  /// This method allows generating blame information for content that exists in memory
+  /// rather than in a file on disk.
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   buffer(buffer: Buffer, buffer_len: number): Blame;
+  /// }
+  /// ```
+  ///
+  /// @example
+  /// ```ts
+  /// // Get blame for a file
+  /// const blame = repo.blameFile('path/to/file.js');
+  ///
+  /// // Then create a modified buffer with some changes
+  /// const buffer = Buffer.from('modified content');
+  ///
+  /// // Get blame for the modified content
+  /// const bufferBlame = blame.buffer(buffer, buffer.length);
+  /// ```
+  ///
+  /// @param {Buffer} buffer - The buffer containing file content to blame
+  /// @param {number} buffer_len - The length of the buffer in bytes
+  /// @returns A new Blame object for the buffer content
+  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> Result<Blame> {
+    let content = std::str::from_utf8(&buffer[..buffer_len as usize])
+      .map_err(|e| Error::from_reason(format!("Invalid UTF-8 in buffer: {}", e)))?;
+
+    let blame = match &self.inner {
+      BlameInner::Repo(shared_ref) => {
+        let cloned = shared_ref.clone(env)?;
+
+        cloned.share_with(env, |git_blame| {
+          git_blame
+            .blame_buffer(content.as_bytes())
+            .map_err(|e| Error::from(crate::Error::from(e)))
+        })?
+      }
+    };
+
+    Ok(Blame {
+      inner: BlameInner::Repo(blame),
+    })
   }
 }
 
