@@ -53,11 +53,6 @@ pub struct BlameOptions {
 }
 
 impl BlameOptions {
-  /// Create a new empty BlameOptions
-  pub fn new() -> Self {
-    Self::default()
-  }
-
   /// Create new options for a single line
   pub fn for_line(line: u32) -> Self {
     Self {
@@ -114,8 +109,7 @@ impl From<&BlameOptions> for git2::BlameOptions {
     if let Some(line) = options.line {
       git_opts.min_line(line as usize);
       git_opts.max_line(line as usize);
-    } 
-    else if let Some(range) = &options.range {
+    } else if let Some(range) = &options.range {
       if range.len() >= 2 {
         git_opts.min_line(range[0] as usize);
         git_opts.max_line(range[1] as usize);

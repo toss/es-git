@@ -1430,7 +1430,6 @@ export interface CreateLightweightTagOptions {
  * - `PostOrder` : Runs the traversal in post-order.
  */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
-/** A class representing a git blame analysis result */
 export declare class Blame {
   /**
    * Gets the number of hunks in the blame result
