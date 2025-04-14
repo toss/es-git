@@ -192,15 +192,15 @@ describe('blame', () => {
     const repo = await openRepository(p);
 
     const lineBlame = repo.blameFile('blame', { line: 2 });
-    
+
     expect(lineBlame.getHunkCount()).toBe(1);
-    
+
     const hunk = lineBlame.getHunkByIndex(0);
     expect(hunk.commitId).toBeTruthy();
     expect(hunk.finalStartLineNumber).toBe(2);
     expect(hunk.signature?.name).toBe('Seokju Me');
     expect(hunk.signature?.email).toBe('seokju.na@toss.im');
-    
+
     expect(() => lineBlame.getHunkByLine(1)).toThrow();
     expect(() => lineBlame.getHunkByLine(3)).toThrow();
   });
@@ -210,27 +210,27 @@ describe('blame', () => {
     const repo = await openRepository(p);
 
     const rangeBlame = repo.blameFile('blame', { range: [1, 3] });
-    
+
     const hunks = rangeBlame.getHunks();
     expect(hunks.length).toBeGreaterThan(0);
     expect(hunks.length).toBeLessThanOrEqual(3);
-    
+
     const firstLineHunk = rangeBlame.getHunkByLine(1);
     expect(firstLineHunk.commitId).toBeTruthy();
     expect(firstLineHunk.finalStartLineNumber).toBe(1);
     expect(firstLineHunk.signature?.name).toBe('Seokju Na');
     expect(firstLineHunk.signature?.email).toBe('seokju.na@gmail.com');
-    
+
     const secondLineHunk = rangeBlame.getHunkByLine(2);
     expect(secondLineHunk.commitId).toBeTruthy();
     expect(secondLineHunk.finalStartLineNumber).toBe(2);
     expect(secondLineHunk.signature?.name).toBe('Seokju Me');
     expect(secondLineHunk.signature?.email).toBe('seokju.na@toss.im');
-    
+
     const thirdLineHunk = rangeBlame.getHunkByLine(3);
     expect(thirdLineHunk.commitId).toBeTruthy();
     expect(thirdLineHunk.finalStartLineNumber).toBeLessThanOrEqual(3);
-    
+
     expect(() => rangeBlame.getHunkByLine(0)).toThrow();
     expect(() => rangeBlame.getHunkByLine(4)).toThrow();
   });
