@@ -130,4 +130,60 @@ describe('blame', () => {
 
     expect(() => repo.blameFile('non_existent_file')).toThrow();
   });
+
+  it('should collect hunks by line scanning with getHunksByLine', async () => {
+    const p = await useFixture('blame');
+    const repo = await openRepository(p);
+
+    const blame = repo.blameFile('blame');
+
+    const lineHunks = blame.getHunksByLine();
+
+    expect(lineHunks.length).toBeGreaterThan(0);
+
+    const firstLineHunk = blame.getHunkByLine(1);
+    expect(lineHunks[0]?.commitId).toBe(firstLineHunk.commitId);
+    expect(lineHunks[0]?.finalStartLineNumber).toBe(firstLineHunk.finalStartLineNumber);
+
+    for (let i = 0; i < lineHunks.length; i++) {
+      const hunk = lineHunks[i]!;
+      const startLine = hunk.finalStartLineNumber;
+      const endLine = startLine + hunk.linesInHunk - 1;
+
+      if (i > 0) {
+        const prevHunk = lineHunks[i - 1]!;
+        const prevEndLine = prevHunk.finalStartLineNumber + prevHunk.linesInHunk - 1;
+        expect(startLine).toBeGreaterThan(prevEndLine);
+      }
+
+      for (let line = startLine; line <= endLine; line++) {
+        if (line <= 10) {
+          const lineHunk = blame.getHunkByLine(line);
+          expect(lineHunk.commitId).toBe(hunk.commitId);
+        }
+      }
+    }
+  });
+
+  it('should handle different file types with getHunksByLine', async () => {
+    const p = await useFixture('blame');
+    const repo = await openRepository(p);
+
+    const textBlame = repo.blameFile('blame');
+    const textLineHunks = textBlame.getHunksByLine();
+    expect(textLineHunks.length).toBeGreaterThan(0);
+
+    const emptyBlame = repo.blameFile('empty_file');
+    const emptyLineHunks = emptyBlame.getHunksByLine();
+    expect(emptyLineHunks.length).toBe(0);
+
+    const binaryBlame = repo.blameFile('binary_file');
+    const binaryLineHunks = binaryBlame.getHunksByLine();
+    expect(binaryLineHunks.length).toBeGreaterThan(0);
+
+    const textBuffer = Buffer.from('Line 1\nLine 2\nLine 3\n');
+    const textBufferBlame = textBlame.buffer(textBuffer, textBuffer.length);
+    const textBufferHunks = textBufferBlame.getHunksByLine();
+    expect(textBufferHunks.length).toBeGreaterThan(0);
+  });
 });

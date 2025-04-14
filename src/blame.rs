@@ -2,9 +2,12 @@ use crate::repository::Repository;
 use crate::signature::Signature;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::ops::Deref;
 use std::path::Path;
+
+const MAX_SCAN_LINES: u32 = 10000;
 
 #[napi(object)]
 /// Represents a hunk of a blame operation, which is a range of lines
@@ -171,6 +174,56 @@ impl Blame {
   }
 
   #[napi]
+  /// Generates blame information from an in-memory buffer
+  ///
+  /// This method allows generating blame information for content that exists in memory
+  /// rather than in a file on disk.
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   buffer(buffer: Buffer, buffer_len: number): Blame;
+  /// }
+  /// ```
+  ///
+  /// @example
+  /// ```ts
+  /// // Get blame for a file
+  /// const blame = repo.blameFile('path/to/file.js');
+  ///
+  /// // Then create a modified buffer with some changes
+  /// const buffer = Buffer.from('modified content');
+  ///
+  /// // Get blame for the modified content
+  /// const bufferBlame = blame.buffer(buffer, buffer.length);
+  /// ```
+  ///
+  /// @param {Buffer} buffer - The buffer containing file content to blame
+  /// @param {number} buffer_len - The length of the buffer in bytes
+  /// @returns A new Blame object for the buffer content
+  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> Result<Blame> {
+    let content = std::str::from_utf8(&buffer[..buffer_len as usize])
+      .map_err(|e| Error::from_reason(format!("Invalid UTF-8 in buffer: {}", e)))?;
+
+    let blame = match &self.inner {
+      BlameInner::Repo(shared_ref) => {
+        let cloned = shared_ref.clone(env)?;
+
+        cloned.share_with(env, |git_blame| {
+          git_blame
+            .blame_buffer(content.as_bytes())
+            .map_err(|e| Error::from(crate::Error::from(e)))
+        })?
+      }
+    };
+
+    Ok(Blame {
+      inner: BlameInner::Repo(blame),
+    })
+  }
+
+  #[napi]
   /// Gets blame information for the specified index
   ///
   /// @category Blame/Methods
@@ -255,7 +308,7 @@ impl Blame {
   }
 
   #[napi]
-  /// Gets an array of blame hunks for all lines
+  /// Gets all blame hunks by index
   ///
   /// @category Blame/Methods
   /// @signature
@@ -265,7 +318,7 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @returns Array of blame hunks
+  /// @returns An array of all blame hunks
   pub fn get_hunks(&self) -> Result<Vec<BlameHunk>> {
     let hunk_count = self.get_hunk_count() as usize;
 
@@ -276,9 +329,8 @@ impl Blame {
     let mut hunks = Vec::with_capacity(hunk_count);
 
     for i in 0..hunk_count {
-      match self.get_hunk_by_index(i as u32) {
-        Ok(hunk) => hunks.push(hunk),
-        _ => {}
+      if let Ok(hunk) = self.get_hunk_by_index(i as u32) {
+        hunks.push(hunk);
       }
     }
 
@@ -286,53 +338,55 @@ impl Blame {
   }
 
   #[napi]
-  /// Generates blame information from an in-memory buffer
-  ///
-  /// This method allows generating blame information for content that exists in memory
-  /// rather than in a file on disk.
+  /// Scans through file lines to collect blame hunks
   ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   buffer(buffer: Buffer, buffer_len: number): Blame;
+  ///   getHunksByLine(): BlameHunk[];
   /// }
   /// ```
   ///
-  /// @example
-  /// ```ts
-  /// // Get blame for a file
-  /// const blame = repo.blameFile('path/to/file.js');
-  ///
-  /// // Then create a modified buffer with some changes
-  /// const buffer = Buffer.from('modified content');
-  ///
-  /// // Get blame for the modified content
-  /// const bufferBlame = blame.buffer(buffer, buffer.length);
-  /// ```
-  ///
-  /// @param {Buffer} buffer - The buffer containing file content to blame
-  /// @param {number} buffer_len - The length of the buffer in bytes
-  /// @returns A new Blame object for the buffer content
-  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> Result<Blame> {
-    let content = std::str::from_utf8(&buffer[..buffer_len as usize])
-      .map_err(|e| Error::from_reason(format!("Invalid UTF-8 in buffer: {}", e)))?;
+  /// @returns An array of blame hunks collected by scanning file lines
+  pub fn get_hunks_by_line(&self) -> Result<Vec<BlameHunk>> {
+    let hunk_count = self.get_hunk_count() as usize;
 
-    let blame = match &self.inner {
-      BlameInner::Repo(shared_ref) => {
-        let cloned = shared_ref.clone(env)?;
+    if hunk_count == 0 {
+      return Ok(Vec::new());
+    }
 
-        cloned.share_with(env, |git_blame| {
-          git_blame
-            .blame_buffer(content.as_bytes())
-            .map_err(|e| Error::from(crate::Error::from(e)))
-        })?
+    let mut hunks = Vec::new();
+    let mut seen_hunks = HashSet::new();
+    let mut line = 1;
+
+    while line < MAX_SCAN_LINES {
+      if let Ok(hunk) = self.get_hunk_by_line(line) {
+        let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
+
+        if seen_hunks.insert(hunk_key) {
+          hunks.push(BlameHunk {
+            commit_id: hunk.commit_id,
+            final_start_line_number: hunk.final_start_line_number,
+            lines_in_hunk: hunk.lines_in_hunk,
+            signature: hunk.signature,
+            path: hunk.path,
+            orig_start_line_number: hunk.orig_start_line_number,
+            is_boundary: hunk.is_boundary,
+          });
+          line = hunk.final_start_line_number + hunk.lines_in_hunk;
+          continue;
+        }
       }
-    };
 
-    Ok(Blame {
-      inner: BlameInner::Repo(blame),
-    })
+      line += 1;
+
+      if line >= MAX_SCAN_LINES || hunks.len() >= hunk_count {
+        break;
+      }
+    }
+
+    Ok(hunks)
   }
 }
 
