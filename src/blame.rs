@@ -2,12 +2,9 @@ use crate::repository::Repository;
 use crate::signature::Signature;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::ops::Deref;
 use std::path::Path;
-
-const MAX_SCAN_LINES: u32 = 10000;
 
 #[napi(object)]
 /// Represents a hunk of a blame operation, which is a range of lines
@@ -277,21 +274,12 @@ impl Blame {
     }
 
     let mut hunks = Vec::with_capacity(hunk_count);
-    let mut seen_hunks = HashSet::new();
-    let mut line = 1;
 
-    while hunks.len() < hunk_count && line < MAX_SCAN_LINES {
-      if let Ok(hunk) = self.get_hunk_by_line(line) {
-        let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
-
-        if seen_hunks.insert(hunk_key) {
-          line += hunk.lines_in_hunk;
-          hunks.push(hunk);
-          continue;
-        }
+    for i in 0..hunk_count {
+      match self.get_hunk_by_index(i as u32) {
+        Ok(hunk) => hunks.push(hunk),
+        _ => {}
       }
-
-      line += 1;
     }
 
     Ok(hunks)
