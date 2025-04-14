@@ -317,7 +317,7 @@ jobs:
         node:
           - '18'
           - '20'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Download artifacts
@@ -333,16 +333,5 @@ jobs:
           yarn config set supportedArchitectures.cpu "arm64"
           yarn config set supportedArchitectures.libc "glibc"
           yarn install
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      - name: Setup and run tests
-        uses: addnab/docker-run-action@v3
-        with:
-          image: node:${{ matrix.node }}-slim
-          options: '--user 0:0 --platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
-          run: |
-            set -e
-            yarn vitest run
+      - name: Test bindings
+        run: yarn vitest run
