@@ -28,10 +28,10 @@ export interface BlameHunk {
 }
 /** Options for controlling blame behavior */
 export interface BlameOptions {
-  /** A single line to blame (1-based index) */
-  line?: number
-  /** An array of two numbers [start, end] to blame a range of lines */
-  range?: Array<number>
+  /** The minimum line number to blame (1-based index) */
+  minLine?: number
+  /** The maximum line number to blame (1-based index) */
+  maxLine?: number
   /**
    * The oid of the newest commit to consider. The blame algorithm will stop
    * when this commit is reached.
@@ -1508,38 +1508,30 @@ export declare class Blame {
    * }
    * ```
    *
-   * @returns true if the blame result contains no hunks, false otherwise
+   * @returns True if the blame result contains no hunks
    */
   isEmpty(): boolean
   /**
    * Generates blame information from an in-memory buffer
    *
-   * This method allows generating blame information for content that exists in memory
-   * rather than in a file on disk.
-   *
    * @category Blame/Methods
    * @signature
    * ```ts
    * class Blame {
-   *   buffer(buffer: Buffer, buffer_len: number): Blame;
+   *   buffer(buffer: Buffer, bufferLen: number): Blame;
    * }
    * ```
    *
    * @example
    * ```ts
-   * // Get blame for a file
-   * const blame = repo.blameFile('path/to/file.js');
-   *
-   * // Then create a modified buffer with some changes
    * const buffer = Buffer.from('modified content');
-   *
-   * // Get blame for the modified content
    * const bufferBlame = blame.buffer(buffer, buffer.length);
    * ```
    *
-   * @param {Buffer} buffer - The buffer containing file content to blame
-   * @param {number} buffer_len - The length of the buffer in bytes
+   * @param {Buffer} buffer - Buffer containing file content to blame
+   * @param {number} buffer_len - Length of the buffer in bytes
    * @returns A new Blame object for the buffer content
+   * @throws If the buffer contains invalid UTF-8
    */
   buffer(buffer: Buffer, bufferLen: number): Blame
   /**
@@ -1553,9 +1545,9 @@ export declare class Blame {
    * }
    * ```
    *
-   * @param {number} index - The index of the hunk to get (0-based)
+   * @param {number} index - Index of the hunk to get (0-based)
    * @returns Blame information for the specified index
-   * @throws If no hunk is found for the specified index
+   * @throws If no hunk is found at the index
    */
   getHunkByIndex(index: number): BlameHunk
   /**
@@ -1569,13 +1561,13 @@ export declare class Blame {
    * }
    * ```
    *
-   * @param {number} line - The line number to get blame information for (1-based)
+   * @param {number} line - Line number to get blame information for (1-based)
    * @returns Blame information for the specified line
-   * @throws If no hunk is found for the specified line
+   * @throws If no hunk is found for the line
    */
   getHunkByLine(line: number): BlameHunk
   /**
-   * Gets all blame hunks by index
+   * Gets all blame hunks
    *
    * @category Blame/Methods
    * @signature
@@ -1585,12 +1577,11 @@ export declare class Blame {
    * }
    * ```
    *
-   * @returns An array of all blame hunks
+   * @returns Array of all blame hunks
    */
   getHunks(): Array<BlameHunk>
   /**
-   * Iterates through each hunk in the blame result and calls the callback function for each one.
-   * Returns true to continue iteration, false to stop.
+   * Iterates through each hunk and calls the callback function
    *
    * @category Blame/Methods
    * @signature
@@ -1602,20 +1593,18 @@ export declare class Blame {
    *
    * @example
    * ```ts
-   * // Process each hunk individually
    * blame.forEachHunk((hunk, index) => {
    *   console.log(`Hunk ${index}: ${hunk.commitId}`);
-   *   // Return true to continue, false to stop iteration
-   *   return true;
+   *   return true; // Continue iteration
    * });
    * ```
    *
-   * @param {Function} callback - A function to be called for each hunk.
-   *        Return true to continue iteration, false to stop.
+   * @param {Function} callback - Function called for each hunk
+   *   Return true to continue iteration, false to stop
    */
   forEachHunk(callback: (arg0: BlameHunk, arg1: number) => boolean): void
   /**
-   * Scans through file lines to collect blame hunks
+   * Collects blame hunks by scanning file lines
    *
    * @category Blame/Methods
    * @signature
@@ -1625,7 +1614,7 @@ export declare class Blame {
    * }
    * ```
    *
-   * @returns An array of blame hunks collected by scanning file lines
+   * @returns Array of blame hunks collected by line scanning
    */
   getHunksByLine(): Array<BlameHunk>
 }
@@ -3623,13 +3612,13 @@ export declare class Remote {
  */
 export declare class Repository {
   /**
-   * Get a blame object for the file at the given path with all configurable options
+   * Creates a blame object for the file at the given path
    *
    * @category Repository/Methods
    * @signature
    * ```ts
    * class Repository {
-   *   blameFile(path: string, options?: BlameOptions | null | undefined): Blame;
+   *   blameFile(path: string, options?: BlameOptions): Blame;
    * }
    * ```
    *
@@ -3638,19 +3627,17 @@ export declare class Repository {
    * // Blame the entire file
    * const blame = repo.blameFile('path/to/file.js');
    *
-   * // Blame a single line (line 10)
-   * const lineBlame = repo.blameFile('path/to/file.js', { line: 10 });
+   * // Blame a single line
+   * const lineBlame = repo.blameFile('path/to/file.js', { minLine: 10, maxLine: 10 });
    *
-   * // Blame a range of lines (lines 5-15)
-   * const rangeBlame = repo.blameFile('path/to/file.js', { range: [5, 15] });
+   * // Blame a range of lines
+   * const rangeBlame = repo.blameFile('path/to/file.js', { minLine: 5, maxLine: 15 });
    * ```
    *
-   * @param {string} path - Path to the file to blame. This path takes precedence over any path specified in options.
-   * @param {BlameOptions} [options] - Options to control blame behavior.
-   *        You can specify line ranges in two ways:
-   *        1. `options.line`: A single line number to blame
-   *        2. `options.range`: An array of two numbers [start, end] to blame a range
+   * @param {string} path - Path to the file to blame
+   * @param {BlameOptions} [options] - Options to control blame behavior
    * @returns Blame object for the specified file
+   * @throws If the file doesn't exist or can't be opened
    */
   blameFile(path: string, options?: BlameOptions | undefined | null): Blame
   /**

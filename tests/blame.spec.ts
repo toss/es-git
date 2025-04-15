@@ -51,19 +51,20 @@ describe('blame', () => {
     const p = await useFixture('blame');
     const repo = await openRepository(p);
 
-    const lineBlame = repo.blameFile('blame', { line: 2 });
+    const lineBlame = repo.blameFile('blame', { minLine: 2, maxLine: 2 });
     expect(lineBlame.getHunkCount()).toBe(1);
     const hunk = lineBlame.getHunkByIndex(0);
     expect(hunk.finalStartLineNumber).toBe(2);
     expect(hunk.signature?.name).toBe('Seokju Me');
 
-    const rangeBlame = repo.blameFile('blame', { range: [1, 3] });
+    const rangeBlame = repo.blameFile('blame', { minLine: 1, maxLine: 3 });
     expect(rangeBlame.getHunks().length).toBeGreaterThan(0);
     expect(rangeBlame.getHunks().length).toBeLessThanOrEqual(3);
     expect(() => rangeBlame.getHunkByLine(4)).toThrow();
 
     const advancedBlame = repo.blameFile('blame', {
-      range: [1, 5],
+      minLine: 1,
+      maxLine: 5,
       firstParent: true,
       ignoreWhitespace: true,
       trackCopiesAnyCommitCopies: true,

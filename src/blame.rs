@@ -34,10 +34,10 @@ pub struct BlameHunk {
 #[derive(Default)]
 /// Options for controlling blame behavior
 pub struct BlameOptions {
-  /// A single line to blame (1-based index)
-  pub line: Option<u32>,
-  /// An array of two numbers [start, end] to blame a range of lines
-  pub range: Option<Vec<u32>>,
+  /// The minimum line number to blame (1-based index)
+  pub min_line: Option<u32>,
+  /// The maximum line number to blame (1-based index)
+  pub max_line: Option<u32>,
   /// The oid of the newest commit to consider. The blame algorithm will stop
   /// when this commit is reached.
   pub newest_commit: Option<String>,
@@ -64,116 +64,16 @@ pub struct BlameOptions {
   pub use_mailmap: Option<bool>,
 }
 
-impl BlameOptions {
-  /// Create new options for a single line
-  pub fn for_line(line: u32) -> Self {
-    Self {
-      line: Some(line),
-      range: None,
-      newest_commit: None,
-      oldest_commit: None,
-      path: None,
-      track_lines_movement: None,
-      first_parent: None,
-      ignore_whitespace: None,
-      track_copies_any_commit_copies: None,
-      track_copies_same_commit_copies: None,
-      track_copies_same_commit_moves: None,
-      use_mailmap: None,
-    }
-  }
-
-  /// Create new options for a range of lines
-  pub fn for_range(start: u32, end: u32) -> Self {
-    Self {
-      line: None,
-      range: Some(vec![start, end]),
-      newest_commit: None,
-      oldest_commit: None,
-      path: None,
-      track_lines_movement: None,
-      first_parent: None,
-      ignore_whitespace: None,
-      track_copies_any_commit_copies: None,
-      track_copies_same_commit_copies: None,
-      track_copies_same_commit_moves: None,
-      use_mailmap: None,
-    }
-  }
-
-  /// Set the path to the file
-  pub fn with_path(mut self, path: &str) -> Self {
-    self.path = Some(path.to_string());
-    self
-  }
-
-  /// Set the newest commit to consider
-  pub fn with_newest_commit(mut self, commit: &str) -> Self {
-    self.newest_commit = Some(commit.to_string());
-    self
-  }
-
-  /// Set the oldest commit to consider
-  pub fn with_oldest_commit(mut self, commit: &str) -> Self {
-    self.oldest_commit = Some(commit.to_string());
-    self
-  }
-
-  /// Set whether to track line movements
-  pub fn with_track_lines_movement(mut self, track: bool) -> Self {
-    self.track_lines_movement = Some(track);
-    self
-  }
-
-  /// Set whether to restrict search to commits reachable following only first parents
-  pub fn with_first_parent(mut self, first_parent: bool) -> Self {
-    self.first_parent = Some(first_parent);
-    self
-  }
-
-  /// Set whether to ignore whitespace differences
-  pub fn with_ignore_whitespace(mut self, ignore_whitespace: bool) -> Self {
-    self.ignore_whitespace = Some(ignore_whitespace);
-    self
-  }
-
-  /// Set whether to track lines that have been copied from another file that exists in any commit
-  pub fn with_track_copies_any_commit_copies(mut self, track_copies_any_commit_copies: bool) -> Self {
-    self.track_copies_any_commit_copies = Some(track_copies_any_commit_copies);
-    self
-  }
-
-  /// Set whether to track lines that have been copied from another file that exists in the same commit
-  pub fn with_track_copies_same_commit_copies(mut self, track_copies_same_commit_copies: bool) -> Self {
-    self.track_copies_same_commit_copies = Some(track_copies_same_commit_copies);
-    self
-  }
-
-  /// Set whether to track lines that have moved across files in the same commit
-  pub fn with_track_copies_same_commit_moves(mut self, track_copies_same_commit_moves: bool) -> Self {
-    self.track_copies_same_commit_moves = Some(track_copies_same_commit_moves);
-    self
-  }
-
-  /// Set whether to use mailmap file to map author and committer names and email addresses
-  pub fn with_use_mailmap(mut self, use_mailmap: bool) -> Self {
-    self.use_mailmap = Some(use_mailmap);
-    self
-  }
-}
-
 impl From<&BlameOptions> for git2::BlameOptions {
   fn from(options: &BlameOptions) -> Self {
     let mut git_opts = git2::BlameOptions::new();
 
-    if let Some(line) = options.line {
-      git_opts.min_line(line as usize);
-      git_opts.max_line(line as usize);
-    } else if let Some(range) = &options.range {
-      if range.len() >= 2 {
-        git_opts.min_line(range[0] as usize);
-        git_opts.max_line(range[1] as usize);
-      }
+    if let Some(min_line) = options.min_line {
+      git_opts.min_line(min_line as usize);
+    }
+
+    if let Some(max_line) = options.max_line {
+      git_opts.max_line(max_line as usize);
     }
 
     if let Some(ref newest_commit) = options.newest_commit {
@@ -301,7 +201,7 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @returns true if the blame result contains no hunks, false otherwise
+  /// @returns True if the blame result contains no hunks
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
@@ -321,32 +221,24 @@ impl Blame {
   #[napi]
   /// Generates blame information from an in-memory buffer
   ///
-  /// This method allows generating blame information for content that exists in memory
-  /// rather than in a file on disk.
-  ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   buffer(buffer: Buffer, buffer_len: number): Blame;
+  ///   buffer(buffer: Buffer, bufferLen: number): Blame;
   /// }
   /// ```
   ///
   /// @example
   /// ```ts
-  /// // Get blame for a file
-  /// const blame = repo.blameFile('path/to/file.js');
-  ///
-  /// // Then create a modified buffer with some changes
   /// const buffer = Buffer.from('modified content');
-  ///
-  /// // Get blame for the modified content
   /// const bufferBlame = blame.buffer(buffer, buffer.length);
   /// ```
   ///
-  /// @param {Buffer} buffer - The buffer containing file content to blame
-  /// @param {number} buffer_len - The length of the buffer in bytes
+  /// @param {Buffer} buffer - Buffer containing file content to blame
+  /// @param {number} buffer_len - Length of the buffer in bytes
   /// @returns A new Blame object for the buffer content
+  /// @throws If the buffer contains invalid UTF-8
   pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> Result<Blame> {
     let content = std::str::from_utf8(&buffer[..buffer_len as usize])
       .map_err(|e| Error::from_reason(format!("Invalid UTF-8 in buffer: {}", e)))?;
@@ -379,9 +271,9 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @param {number} index - The index of the hunk to get (0-based)
+  /// @param {number} index - Index of the hunk to get (0-based)
   /// @returns Blame information for the specified index
-  /// @throws If no hunk is found for the specified index
+  /// @throws If no hunk is found at the index
   pub fn get_hunk_by_index(&self, index: u32) -> Result<BlameHunk> {
     let hunk = self
       .inner
@@ -421,9 +313,9 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @param {number} line - The line number to get blame information for (1-based)
+  /// @param {number} line - Line number to get blame information for (1-based)
   /// @returns Blame information for the specified line
-  /// @throws If no hunk is found for the specified line
+  /// @throws If no hunk is found for the line
   pub fn get_hunk_by_line(&self, line: u32) -> Result<BlameHunk> {
     let hunk = self
       .inner
@@ -453,7 +345,7 @@ impl Blame {
   }
 
   #[napi]
-  /// Gets all blame hunks by index
+  /// Gets all blame hunks
   ///
   /// @category Blame/Methods
   /// @signature
@@ -463,7 +355,7 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @returns An array of all blame hunks
+  /// @returns Array of all blame hunks
   pub fn get_hunks(&self) -> Result<Vec<BlameHunk>> {
     let hunk_count = self.get_hunk_count() as usize;
 
@@ -476,8 +368,7 @@ impl Blame {
   }
 
   #[napi]
-  /// Iterates through each hunk in the blame result and calls the callback function for each one.
-  /// Returns true to continue iteration, false to stop.
+  /// Iterates through each hunk and calls the callback function
   ///
   /// @category Blame/Methods
   /// @signature
@@ -489,16 +380,14 @@ impl Blame {
   ///
   /// @example
   /// ```ts
-  /// // Process each hunk individually
   /// blame.forEachHunk((hunk, index) => {
   ///   console.log(`Hunk ${index}: ${hunk.commitId}`);
-  ///   // Return true to continue, false to stop iteration
-  ///   return true;
+  ///   return true; // Continue iteration
   /// });
   /// ```
   ///
-  /// @param {Function} callback - A function to be called for each hunk.
-  ///        Return true to continue iteration, false to stop.
+  /// @param {Function} callback - Function called for each hunk
+  ///   Return true to continue iteration, false to stop
   pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
     let hunk_count = self.get_hunk_count();
 
@@ -514,7 +403,7 @@ impl Blame {
   }
 
   #[napi]
-  /// Scans through file lines to collect blame hunks
+  /// Collects blame hunks by scanning file lines
   ///
   /// @category Blame/Methods
   /// @signature
@@ -524,7 +413,7 @@ impl Blame {
   /// }
   /// ```
   ///
-  /// @returns An array of blame hunks collected by scanning file lines
+  /// @returns Array of blame hunks collected by line scanning
   pub fn get_hunks_by_line(&self) -> Result<Vec<BlameHunk>> {
     let hunk_count = self.get_hunk_count() as usize;
 
@@ -569,13 +458,13 @@ impl Blame {
 #[napi]
 impl Repository {
   #[napi]
-  /// Get a blame object for the file at the given path with all configurable options
+  /// Creates a blame object for the file at the given path
   ///
   /// @category Repository/Methods
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   blameFile(path: string, options?: BlameOptions | null | undefined): Blame;
+  ///   blameFile(path: string, options?: BlameOptions): Blame;
   /// }
   /// ```
   ///
@@ -584,19 +473,17 @@ impl Repository {
   /// // Blame the entire file
   /// const blame = repo.blameFile('path/to/file.js');
   ///
-  /// // Blame a single line (line 10)
-  /// const lineBlame = repo.blameFile('path/to/file.js', { line: 10 });
+  /// // Blame a single line
+  /// const lineBlame = repo.blameFile('path/to/file.js', { minLine: 10, maxLine: 10 });
   ///
-  /// // Blame a range of lines (lines 5-15)
-  /// const rangeBlame = repo.blameFile('path/to/file.js', { range: [5, 15] });
+  /// // Blame a range of lines
+  /// const rangeBlame = repo.blameFile('path/to/file.js', { minLine: 5, maxLine: 15 });
   /// ```
   ///
-  /// @param {string} path - Path to the file to blame. This path takes precedence over any path specified in options.
-  /// @param {BlameOptions} [options] - Options to control blame behavior.
-  ///        You can specify line ranges in two ways:
-  ///        1. `options.line`: A single line number to blame
-  ///        2. `options.range`: An array of two numbers [start, end] to blame a range
+  /// @param {string} path - Path to the file to blame
+  /// @param {BlameOptions} [options] - Options to control blame behavior
   /// @returns Blame object for the specified file
+  /// @throws If the file doesn't exist or can't be opened
   pub fn blame_file(
     &self,
     path: String,
