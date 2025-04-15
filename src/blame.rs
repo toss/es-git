@@ -497,11 +497,11 @@ impl Blame {
   /// });
   /// ```
   ///
-  /// @param {Function} callback - A function to be called for each hunk. 
+  /// @param {Function} callback - A function to be called for each hunk.
   ///        Return true to continue iteration, false to stop.
   pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
     let hunk_count = self.get_hunk_count();
-    
+
     for idx in 0..hunk_count {
       if let Ok(hunk) = self.get_hunk_by_index(idx) {
         if !callback.call((hunk, idx)).unwrap_or(false) {
@@ -509,7 +509,7 @@ impl Blame {
         }
       }
     }
-    
+
     Ok(())
   }
 
