@@ -50,6 +50,18 @@ pub struct BlameOptions {
   /// Track lines that have moved within a file. This is the git-blame -M
   /// option.
   pub track_lines_movement: Option<bool>,
+  /// Restrict search to commits reachable following only first parents.
+  pub first_parent: Option<bool>,
+  /// Ignore whitespace differences.
+  pub ignore_whitespace: Option<bool>,
+  /// Track lines that have been copied from another file that exists in any commit.
+  pub track_copies_any_commit_copies: Option<bool>,
+  /// Track lines that have been copied from another file that exists in the same commit.
+  pub track_copies_same_commit_copies: Option<bool>,
+  /// Track lines that have moved across files in the same commit.
+  pub track_copies_same_commit_moves: Option<bool>,
+  /// Use mailmap file to map author and committer names and email addresses to canonical real names and email addresses.
+  pub use_mailmap: Option<bool>,
 }
 
 impl BlameOptions {
@@ -62,6 +74,12 @@ impl BlameOptions {
       oldest_commit: None,
       path: None,
       track_lines_movement: None,
+      first_parent: None,
+      ignore_whitespace: None,
+      track_copies_any_commit_copies: None,
+      track_copies_same_commit_copies: None,
+      track_copies_same_commit_moves: None,
+      use_mailmap: None,
     }
   }
 
@@ -74,6 +92,12 @@ impl BlameOptions {
       oldest_commit: None,
       path: None,
       track_lines_movement: None,
+      first_parent: None,
+      ignore_whitespace: None,
+      track_copies_any_commit_copies: None,
+      track_copies_same_commit_copies: None,
+      track_copies_same_commit_moves: None,
+      use_mailmap: None,
     }
   }
 
@@ -98,6 +122,42 @@ impl BlameOptions {
   /// Set whether to track line movements
   pub fn with_track_lines_movement(mut self, track: bool) -> Self {
     self.track_lines_movement = Some(track);
+    self
+  }
+
+  /// Set whether to restrict search to commits reachable following only first parents
+  pub fn with_first_parent(mut self, first_parent: bool) -> Self {
+    self.first_parent = Some(first_parent);
+    self
+  }
+
+  /// Set whether to ignore whitespace differences
+  pub fn with_ignore_whitespace(mut self, ignore_whitespace: bool) -> Self {
+    self.ignore_whitespace = Some(ignore_whitespace);
+    self
+  }
+
+  /// Set whether to track lines that have been copied from another file that exists in any commit
+  pub fn with_track_copies_any_commit_copies(mut self, track_copies_any_commit_copies: bool) -> Self {
+    self.track_copies_any_commit_copies = Some(track_copies_any_commit_copies);
+    self
+  }
+
+  /// Set whether to track lines that have been copied from another file that exists in the same commit
+  pub fn with_track_copies_same_commit_copies(mut self, track_copies_same_commit_copies: bool) -> Self {
+    self.track_copies_same_commit_copies = Some(track_copies_same_commit_copies);
+    self
+  }
+
+  /// Set whether to track lines that have moved across files in the same commit
+  pub fn with_track_copies_same_commit_moves(mut self, track_copies_same_commit_moves: bool) -> Self {
+    self.track_copies_same_commit_moves = Some(track_copies_same_commit_moves);
+    self
+  }
+
+  /// Set whether to use mailmap file to map author and committer names and email addresses
+  pub fn with_use_mailmap(mut self, use_mailmap: bool) -> Self {
+    self.use_mailmap = Some(use_mailmap);
     self
   }
 }
@@ -132,6 +192,30 @@ impl From<&BlameOptions> for git2::BlameOptions {
       git_opts.track_copies_same_file(track_lines_movement);
     }
 
+    if let Some(first_parent) = options.first_parent {
+      git_opts.first_parent(first_parent);
+    }
+
+    if let Some(ignore_whitespace) = options.ignore_whitespace {
+      git_opts.ignore_whitespace(ignore_whitespace);
+    }
+
+    if let Some(track_copies_any_commit_copies) = options.track_copies_any_commit_copies {
+      git_opts.track_copies_any_commit_copies(track_copies_any_commit_copies);
+    }
+
+    if let Some(track_copies_same_commit_copies) = options.track_copies_same_commit_copies {
+      git_opts.track_copies_same_commit_copies(track_copies_same_commit_copies);
+    }
+
+    if let Some(track_copies_same_commit_moves) = options.track_copies_same_commit_moves {
+      git_opts.track_copies_same_commit_moves(track_copies_same_commit_moves);
+    }
+
+    if let Some(use_mailmap) = options.use_mailmap {
+      git_opts.use_mailmap(use_mailmap);
+    }
+
     git_opts
   }
 }
@@ -155,6 +239,39 @@ impl Deref for BlameInner {
   }
 }
 
+/// Iterator over blame hunks.
+pub struct BlameIter<'a> {
+  blame: &'a Blame,
+  idx: usize,
+  len: usize,
+}
+
+impl Iterator for BlameIter<'_> {
+  type Item = Result<BlameHunk>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.idx >= self.len {
+      return None;
+    }
+
+    let result = self.blame.get_hunk_by_index(self.idx as u32);
+    self.idx += 1;
+
+    Some(result)
+  }
+
+  fn size_hint(&self) -> (usize, Option<usize>) {
+    let remaining = self.len - self.idx;
+    (remaining, Some(remaining))
+  }
+}
+
+impl ExactSizeIterator for BlameIter<'_> {
+  fn len(&self) -> usize {
+    self.len - self.idx
+  }
+}
+
 #[napi]
 impl Blame {
   #[napi]
@@ -171,6 +288,34 @@ impl Blame {
   /// @returns The number of hunks in the blame result
   pub fn get_hunk_count(&self) -> u32 {
     self.inner.len() as u32
+  }
+
+  #[napi]
+  /// Checks if the blame result is empty
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   isEmpty(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns true if the blame result contains no hunks, false otherwise
+  pub fn is_empty(&self) -> bool {
+    self.inner.is_empty()
+  }
+
+  /// Returns an iterator over the hunks in this blame.
+  ///
+  /// This internal method is used to implement getHunks() and is not
+  /// directly exposed to JavaScript.
+  pub fn iter(&self) -> BlameIter {
+    BlameIter {
+      blame: self,
+      idx: 0,
+      len: self.get_hunk_count() as usize,
+    }
   }
 
   #[napi]
@@ -326,15 +471,46 @@ impl Blame {
       return Ok(Vec::new());
     }
 
-    let mut hunks = Vec::with_capacity(hunk_count);
+    // Use the iterator to collect hunks
+    self.iter().collect()
+  }
 
-    for i in 0..hunk_count {
-      if let Ok(hunk) = self.get_hunk_by_index(i as u32) {
-        hunks.push(hunk);
+  #[napi]
+  /// Iterates through each hunk in the blame result and calls the callback function for each one.
+  /// Returns true to continue iteration, false to stop.
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   forEachHunk(callback: (hunk: BlameHunk, index: number) => boolean): void;
+  /// }
+  /// ```
+  ///
+  /// @example
+  /// ```ts
+  /// // Process each hunk individually
+  /// blame.forEachHunk((hunk, index) => {
+  ///   console.log(`Hunk ${index}: ${hunk.commitId}`);
+  ///   // Return true to continue, false to stop iteration
+  ///   return true;
+  /// });
+  /// ```
+  ///
+  /// @param {Function} callback - A function to be called for each hunk. 
+  ///        Return true to continue iteration, false to stop.
+  pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
+    let hunk_count = self.get_hunk_count();
+    
+    for idx in 0..hunk_count {
+      if let Ok(hunk) = self.get_hunk_by_index(idx) {
+        if !callback.call((hunk, idx)).unwrap_or(false) {
+          break;
+        }
       }
     }
-
-    Ok(hunks)
+    
+    Ok(())
   }
 
   #[napi]

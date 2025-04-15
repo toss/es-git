@@ -52,6 +52,18 @@ export interface BlameOptions {
    * option.
    */
   trackLinesMovement?: boolean
+  /** Restrict search to commits reachable following only first parents. */
+  firstParent?: boolean
+  /** Ignore whitespace differences. */
+  ignoreWhitespace?: boolean
+  /** Track lines that have been copied from another file that exists in any commit. */
+  trackCopiesAnyCommitCopies?: boolean
+  /** Track lines that have been copied from another file that exists in the same commit. */
+  trackCopiesSameCommitCopies?: boolean
+  /** Track lines that have moved across files in the same commit. */
+  trackCopiesSameCommitMoves?: boolean
+  /** Use mailmap file to map author and committer names and email addresses to canonical real names and email addresses. */
+  useMailmap?: boolean
 }
 /**
  * Ensure the branch name is well-formed.
@@ -1486,6 +1498,20 @@ export declare class Blame {
    */
   getHunkCount(): number
   /**
+   * Checks if the blame result is empty
+   *
+   * @category Blame/Methods
+   * @signature
+   * ```ts
+   * class Blame {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns true if the blame result contains no hunks, false otherwise
+   */
+  isEmpty(): boolean
+  /**
    * Generates blame information from an in-memory buffer
    *
    * This method allows generating blame information for content that exists in memory
@@ -1562,6 +1588,32 @@ export declare class Blame {
    * @returns An array of all blame hunks
    */
   getHunks(): Array<BlameHunk>
+  /**
+   * Iterates through each hunk in the blame result and calls the callback function for each one.
+   * Returns true to continue iteration, false to stop.
+   *
+   * @category Blame/Methods
+   * @signature
+   * ```ts
+   * class Blame {
+   *   forEachHunk(callback: (hunk: BlameHunk, index: number) => boolean): void;
+   * }
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Process each hunk individually
+   * blame.forEachHunk((hunk, index) => {
+   *   console.log(`Hunk ${index}: ${hunk.commitId}`);
+   *   // Return true to continue, false to stop iteration
+   *   return true;
+   * });
+   * ```
+   *
+   * @param {Function} callback - A function to be called for each hunk.
+   *        Return true to continue iteration, false to stop.
+   */
+  forEachHunk(callback: (arg0: BlameHunk, arg1: number) => boolean): void
   /**
    * Scans through file lines to collect blame hunks
    *
