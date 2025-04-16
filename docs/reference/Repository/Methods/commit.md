@@ -106,6 +106,16 @@ class Repository {
         <span class="param-name">updateRef</span><span class="param-type">string</span>
         <br>
       </li>
+      <li class="param-li">
+        <span class="param-name">signature</span><span class="param-type">string</span>
+        <br>
+        <p class="param-description">GPG signature string for signed commits. If provided, this will create a signed commit.</p>
+      </li>
+      <li class="param-li">
+        <span class="param-name">signatureField</span><span class="param-type">string</span>
+        <br>
+        <p class="param-description">Custom signature field name. If not provided, the default signature field (gpgsig) will be used.</p>
+      </li>
     </ul>
   </li>
 </ul>

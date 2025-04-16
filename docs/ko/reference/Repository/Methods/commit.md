@@ -120,6 +120,16 @@ class Repository {
           `"HEAD"`를 전달하면 현재 브랜치의 HEAD를 업데이트해요.
         </p>
       </li>
+      <li class="param-li">
+        <span class="param-name">signature</span><span class="param-type">string</span>
+        <br>
+        <p class="param-description">서명된 커밋을 위한 GPG 서명 문자열이에요. 제공하면 서명된 커밋이 생성돼요.</p>
+      </li>
+      <li class="param-li">
+        <span class="param-name">signatureField</span><span class="param-type">string</span>
+        <br>
+        <p class="param-description">사용자 지정 서명 필드 이름이에요. 제공하지 않으면 기본 서명 필드(gpgsig)가 사용돼요.</p>
+      </li>
     </ul>
   </li>
 </ul>

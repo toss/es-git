@@ -310,9 +310,13 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Blob, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
+const { Blob, isValidBranchName, Branch, Branches, BranchType, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
 
 module.exports.Blob = Blob
+module.exports.isValidBranchName = isValidBranchName
+module.exports.Branch = Branch
+module.exports.Branches = Branches
+module.exports.BranchType = BranchType
 module.exports.Commit = Commit
 module.exports.ConfigLevel = ConfigLevel
 module.exports.ConfigEntries = ConfigEntries
