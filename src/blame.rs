@@ -83,7 +83,6 @@ pub struct BlameHunks {
   pub(crate) inner: Blame,
   pub(crate) current_index: u32,
   pub(crate) total_count: u32,
-  pub(crate) batch_size: u32,
 }
 
 /// Iterator over blame hunks collected line by line.
@@ -93,7 +92,6 @@ pub struct BlameHunksByLine {
   pub(crate) current_line: u32,
   pub(crate) processed_hunks: HashSet<(u32, u32)>,
   pub(crate) total_hunk_count: usize,
-  pub(crate) next_batch_size: u32,
 }
 
 impl From<&BlameOptions> for git2::BlameOptions {
@@ -219,30 +217,10 @@ impl Generator for BlameHunks {
       return None;
     }
 
-    let end_index = std::cmp::min(self.current_index + self.batch_size, self.total_count);
-    let mut batch = Vec::with_capacity((end_index - self.current_index) as usize);
-
-    for idx in self.current_index..end_index {
-      if let Ok(hunk) = self.inner.get_hunk_by_index(idx) {
-        batch.push(hunk);
-      }
-    }
-
-    if batch.is_empty() {
-      self.current_index = self.total_count;
-      return None;
-    }
-
-    let result = batch.remove(0);
+    let result = self.inner.get_hunk_by_index(self.current_index).ok();
     self.current_index += 1;
-
-    if batch.len() > 5 {
-      self.batch_size = std::cmp::min(self.batch_size * 2, 50);
-    } else if self.batch_size > 1 {
-      self.batch_size = std::cmp::max(self.batch_size / 2, 1);
-    }
-
-    Some(result)
+    
+    result
   }
 }
 
@@ -257,33 +235,24 @@ impl Generator for BlameHunksByLine {
       return None;
     }
 
-    let end_line = self.current_line + self.next_batch_size;
-    let mut next_hunk = None;
-
-    for line in self.current_line..end_line {
-      if let Ok(hunk) = self.inner.get_hunk_by_line(line) {
+    while self.processed_hunks.len() < self.total_hunk_count {
+      if let Ok(hunk) = self.inner.get_hunk_by_line(self.current_line) {
         let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
 
         if self.processed_hunks.insert(hunk_key) {
           self.current_line = hunk.final_start_line_number + hunk.lines_in_hunk;
-          next_hunk = Some(hunk);
-          break;
+          return Some(hunk);
         }
       }
-    }
 
-    if next_hunk.is_none() {
-      self.current_line = end_line;
-      self.next_batch_size = std::cmp::min(self.next_batch_size * 2, 100);
+      self.current_line += 1;
 
       if self.processed_hunks.len() >= self.total_hunk_count {
-        return None;
+        break;
       }
-
-      return self.next(None);
     }
 
-    next_hunk
+    None
   }
 }
 
@@ -398,7 +367,6 @@ impl Blame {
       inner,
       current_index: 0,
       total_count: self.get_hunk_count(),
-      batch_size: 5,
     })
   }
 
@@ -434,7 +402,6 @@ impl Blame {
       current_line: 1,
       processed_hunks: HashSet::new(),
       total_hunk_count: self.get_hunk_count() as usize,
-      next_batch_size: 10,
     })
   }
 
@@ -461,26 +428,13 @@ impl Blame {
   ///   Return true to continue iteration, false to stop
   pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
     let hunk_count = self.get_hunk_count();
-    let batch_size = 10;
-
-    let mut current_index = 0;
-    while current_index < hunk_count {
-      let end_index = std::cmp::min(current_index + batch_size, hunk_count);
-      let mut batch = Vec::with_capacity((end_index - current_index) as usize);
-
-      for idx in current_index..end_index {
-        if let Ok(hunk) = self.get_hunk_by_index(idx) {
-          batch.push((hunk, idx));
-        }
-      }
-
-      for (hunk, idx) in batch {
+    
+    for idx in 0..hunk_count {
+      if let Ok(hunk) = self.get_hunk_by_index(idx) {
         if !callback.call((hunk, idx)).unwrap_or(false) {
-          return Ok(());
+          break;
         }
       }
-
-      current_index = end_index;
     }
 
     Ok(())
