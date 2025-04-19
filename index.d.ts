@@ -1517,29 +1517,6 @@ export declare class Blame {
    */
   isEmpty(): boolean
   /**
-   * Generates blame information from an in-memory buffer
-   *
-   * @category Blame/Methods
-   * @signature
-   * ```ts
-   * class Blame {
-   *   buffer(buffer: Buffer, bufferLen: number): Blame;
-   * }
-   * ```
-   *
-   * @example
-   * ```ts
-   * const buffer = Buffer.from('modified content');
-   * const bufferBlame = blame.buffer(buffer, buffer.length);
-   * ```
-   *
-   * @param {Buffer} buffer - Buffer containing file content to blame
-   * @param {number} buffer_len - Length of the buffer in bytes
-   * @returns A new Blame object for the buffer content
-   * @throws If the buffer contains invalid UTF-8
-   */
-  buffer(buffer: Buffer, bufferLen: number): Blame
-  /**
    * Gets blame information for the specified index
    *
    * @category Blame/Methods
@@ -1578,7 +1555,7 @@ export declare class Blame {
    * @signature
    * ```ts
    * class Blame {
-   *   getHunks(): Generator<BlameHunk>;
+   *   iter(): Generator<BlameHunk>;
    * }
    * ```
    *
@@ -1586,15 +1563,39 @@ export declare class Blame {
    * @example
    * ```ts
    * // Using for...of loop
-   * for (const hunk of blame.getHunks()) {
+   * for (const hunk of blame.iter()) {
    *   console.log(hunk.finalCommitId);
    * }
    *
    * // Using spread operator to collect all hunks
-   * const hunks = [...blame.getHunks()];
+   * const hunks = [...blame.iter()];
    * ```
    */
-  getHunks(): BlameHunks
+  iter(): BlameHunks
+  /**
+   * Collects blame hunks by scanning file lines as an iterator
+   *
+   * @category Blame/Methods
+   * @signature
+   * ```ts
+   * class Blame {
+   *   iterByLine(): Generator<BlameHunk>;
+   * }
+   * ```
+   *
+   * @returns Iterator of blame hunks collected by line scanning
+   * @example
+   * ```ts
+   * // Using for...of loop
+   * for (const hunk of blame.iterByLine()) {
+   *   console.log(hunk.finalCommitId);
+   * }
+   *
+   * // Using spread operator to collect all hunks
+   * const hunks = [...blame.iterByLine()];
+   * ```
+   */
+  iterByLine(): BlameHunksByLine
   /**
    * Iterates through each hunk and calls the callback function
    *
@@ -1619,29 +1620,28 @@ export declare class Blame {
    */
   forEachHunk(callback: (arg0: BlameHunk, arg1: number) => boolean): void
   /**
-   * Collects blame hunks by scanning file lines as an iterator
+   * Generates blame information from an in-memory buffer
    *
    * @category Blame/Methods
    * @signature
    * ```ts
    * class Blame {
-   *   getHunksByLine(): Generator<BlameHunk>;
+   *   buffer(buffer: Buffer, bufferLen: number): Blame;
    * }
    * ```
    *
-   * @returns Iterator of blame hunks collected by line scanning
    * @example
    * ```ts
-   * // Using for...of loop
-   * for (const hunk of blame.getHunksByLine()) {
-   *   console.log(hunk.finalCommitId);
-   * }
-   *
-   * // Using spread operator to collect all hunks
-   * const hunks = [...blame.getHunksByLine()];
+   * const buffer = Buffer.from('modified content');
+   * const bufferBlame = blame.buffer(buffer, buffer.length);
    * ```
+   *
+   * @param {Buffer} buffer - Buffer containing file content to blame
+   * @param {number} buffer_len - Length of the buffer in bytes
+   * @returns A new Blame object for the buffer content
+   * @throws If the buffer contains invalid UTF-8
    */
-  getHunksByLine(): BlameHunksByLine
+  buffer(buffer: Buffer, bufferLen: number): Blame
 }
 /** An iterator over blame hunks. */
 export declare class BlameHunks {

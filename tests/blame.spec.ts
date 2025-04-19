@@ -8,7 +8,7 @@ describe('blame', () => {
     const repo = await openRepository(p);
 
     const blame = repo.blameFile('blame');
-    const hunks = [...blame.getHunks()];
+    const hunks = [...blame.iter()];
     expect(hunks.length).toBeGreaterThan(0);
 
     const line1Hunk = blame.getHunkByLine(1);
@@ -24,14 +24,9 @@ describe('blame', () => {
     const hunkByIndex = blame.getHunkByIndex(0);
     expect(hunkByIndex.finalCommitId).toBeTruthy();
 
-    const buffer = Buffer.from('Line 1\nblah blah blah\nLine 3\nLine 4\n');
+    const buffer = Buffer.from('Line 1\nLine 2\nLine 3\n');
     const bufferBlame = blame.buffer(buffer, buffer.length);
     expect(bufferBlame.getHunkCount()).toBeGreaterThan(0);
-
-    const bufferHunk = bufferBlame.getHunkByIndex(1);
-    expect(bufferHunk.finalCommitId).toBe('0000000000000000000000000000000000000000');
-    expect(bufferHunk.finalSignature).toBeUndefined();
-    expect(bufferHunk.origSignature).toBeUndefined();
   });
 
   it('should handle special files and error cases', async () => {
@@ -50,6 +45,14 @@ describe('blame', () => {
     expect(() => blame.getHunkByLine(9999)).toThrow();
     expect(() => blame.getHunkByIndex(9999)).toThrow();
     expect(() => repo.blameFile('non_existent_file')).toThrow();
+
+    const specialBuffer = Buffer.from('Line 1\nblah blah blah\nLine 3\nLine 4\n');
+    const specialBlame = blame.buffer(specialBuffer, specialBuffer.length);
+
+    const zeroCommitHunk = specialBlame.getHunkByIndex(1);
+    expect(zeroCommitHunk.finalCommitId).toBe('0000000000000000000000000000000000000000');
+    expect(zeroCommitHunk.finalSignature).toBeUndefined();
+    expect(zeroCommitHunk.origSignature).toBeUndefined();
   });
 
   it('should support blame options', async () => {
@@ -63,7 +66,7 @@ describe('blame', () => {
     expect(hunk.finalSignature?.name).toBe('Seokju Me');
 
     const rangeBlame = repo.blameFile('blame', { minLine: 1, maxLine: 3 });
-    const rangeHunks = [...rangeBlame.getHunks()];
+    const rangeHunks = [...rangeBlame.iter()];
     expect(rangeHunks.length).toBeGreaterThan(0);
     expect(rangeHunks.length).toBeLessThanOrEqual(3);
     expect(() => rangeBlame.getHunkByLine(4)).toThrow();
@@ -90,7 +93,7 @@ describe('blame', () => {
     const emptyBlame = blame.buffer(buffer, buffer.length);
     expect(emptyBlame.getHunkCount()).toBeGreaterThan(0);
 
-    const lineHunks = [...blame.getHunksByLine()];
+    const lineHunks = [...blame.iterByLine()];
     expect(lineHunks.length).toBeGreaterThan(0);
 
     const collectedHunks: BlameHunk[] = [];

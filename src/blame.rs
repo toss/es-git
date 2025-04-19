@@ -322,47 +322,6 @@ impl Blame {
   }
 
   #[napi]
-  /// Generates blame information from an in-memory buffer
-  ///
-  /// @category Blame/Methods
-  /// @signature
-  /// ```ts
-  /// class Blame {
-  ///   buffer(buffer: Buffer, bufferLen: number): Blame;
-  /// }
-  /// ```
-  ///
-  /// @example
-  /// ```ts
-  /// const buffer = Buffer.from('modified content');
-  /// const bufferBlame = blame.buffer(buffer, buffer.length);
-  /// ```
-  ///
-  /// @param {Buffer} buffer - Buffer containing file content to blame
-  /// @param {number} buffer_len - Length of the buffer in bytes
-  /// @returns A new Blame object for the buffer content
-  /// @throws If the buffer contains invalid UTF-8
-  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> crate::Result<Blame> {
-    let content = std::str::from_utf8(&buffer[..buffer_len as usize])?;
-
-    let blame = match &self.inner {
-      BlameInner::Repo(shared_ref) => {
-        let cloned = shared_ref.clone(env)?;
-
-        cloned.share_with(env, |git_blame| {
-          git_blame
-            .blame_buffer(content.as_bytes())
-            .map_err(|e| crate::Error::from(e).into())
-        })?
-      }
-    };
-
-    Ok(Blame {
-      inner: BlameInner::Repo(blame),
-    })
-  }
-
-  #[napi]
   /// Gets blame information for the specified index
   ///
   /// @category Blame/Methods
@@ -415,7 +374,7 @@ impl Blame {
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   getHunks(): Generator<BlameHunk>;
+  ///   iter(): Generator<BlameHunk>;
   /// }
   /// ```
   ///
@@ -423,14 +382,14 @@ impl Blame {
   /// @example
   /// ```ts
   /// // Using for...of loop
-  /// for (const hunk of blame.getHunks()) {
+  /// for (const hunk of blame.iter()) {
   ///   console.log(hunk.finalCommitId);
   /// }
   ///
   /// // Using spread operator to collect all hunks
-  /// const hunks = [...blame.getHunks()];
+  /// const hunks = [...blame.iter()];
   /// ```
-  pub fn get_hunks(&self, env: Env) -> crate::Result<BlameHunks> {
+  pub fn iter(&self, env: Env) -> crate::Result<BlameHunks> {
     let inner = Blame {
       inner: self.inner.clone_with_env(env)?,
     };
@@ -440,6 +399,42 @@ impl Blame {
       current_index: 0,
       total_count: self.get_hunk_count(),
       batch_size: 5,
+    })
+  }
+
+  #[napi(iterator)]
+  /// Collects blame hunks by scanning file lines as an iterator
+  ///
+  /// @category Blame/Methods
+  /// @signature
+  /// ```ts
+  /// class Blame {
+  ///   iterByLine(): Generator<BlameHunk>;
+  /// }
+  /// ```
+  ///
+  /// @returns Iterator of blame hunks collected by line scanning
+  /// @example
+  /// ```ts
+  /// // Using for...of loop
+  /// for (const hunk of blame.iterByLine()) {
+  ///   console.log(hunk.finalCommitId);
+  /// }
+  ///
+  /// // Using spread operator to collect all hunks
+  /// const hunks = [...blame.iterByLine()];
+  /// ```
+  pub fn iter_by_line(&self, env: Env) -> crate::Result<BlameHunksByLine> {
+    let inner = Blame {
+      inner: self.inner.clone_with_env(env)?,
+    };
+
+    Ok(BlameHunksByLine {
+      inner,
+      current_line: 1,
+      processed_hunks: HashSet::new(),
+      total_hunk_count: self.get_hunk_count() as usize,
+      next_batch_size: 10,
     })
   }
 
@@ -491,39 +486,44 @@ impl Blame {
     Ok(())
   }
 
-  #[napi(iterator)]
-  /// Collects blame hunks by scanning file lines as an iterator
+  #[napi]
+  /// Generates blame information from an in-memory buffer
   ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   getHunksByLine(): Generator<BlameHunk>;
+  ///   buffer(buffer: Buffer, bufferLen: number): Blame;
   /// }
   /// ```
   ///
-  /// @returns Iterator of blame hunks collected by line scanning
   /// @example
   /// ```ts
-  /// // Using for...of loop
-  /// for (const hunk of blame.getHunksByLine()) {
-  ///   console.log(hunk.finalCommitId);
-  /// }
-  ///
-  /// // Using spread operator to collect all hunks
-  /// const hunks = [...blame.getHunksByLine()];
+  /// const buffer = Buffer.from('modified content');
+  /// const bufferBlame = blame.buffer(buffer, buffer.length);
   /// ```
-  pub fn get_hunks_by_line(&self, env: Env) -> crate::Result<BlameHunksByLine> {
-    let inner = Blame {
-      inner: self.inner.clone_with_env(env)?,
+  ///
+  /// @param {Buffer} buffer - Buffer containing file content to blame
+  /// @param {number} buffer_len - Length of the buffer in bytes
+  /// @returns A new Blame object for the buffer content
+  /// @throws If the buffer contains invalid UTF-8
+  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> crate::Result<Blame> {
+    let content = std::str::from_utf8(&buffer[..buffer_len as usize])?;
+
+    let blame = match &self.inner {
+      BlameInner::Repo(shared_ref) => {
+        let cloned = shared_ref.clone(env)?;
+
+        cloned.share_with(env, |git_blame| {
+          git_blame
+            .blame_buffer(content.as_bytes())
+            .map_err(|e| crate::Error::from(e).into())
+        })?
+      }
     };
 
-    Ok(BlameHunksByLine {
-      inner,
-      current_line: 1,
-      processed_hunks: HashSet::new(),
-      total_hunk_count: self.get_hunk_count() as usize,
-      next_batch_size: 10,
+    Ok(Blame {
+      inner: BlameInner::Repo(blame),
     })
   }
 }
