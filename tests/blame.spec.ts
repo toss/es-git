@@ -8,21 +8,21 @@ describe('blame', () => {
     const repo = await openRepository(p);
 
     const blame = repo.blameFile('blame');
-    const hunks = blame.getHunks();
+    const hunks = [...blame.getHunks()];
     expect(hunks.length).toBeGreaterThan(0);
 
     const line1Hunk = blame.getHunkByLine(1);
-    expect(line1Hunk.commitId).toBeTruthy();
+    expect(line1Hunk.finalCommitId).toBeTruthy();
     expect(line1Hunk.finalStartLineNumber).toBe(1);
-    expect(line1Hunk.signature?.name).toBe('Seokju Na');
-    expect(line1Hunk.signature?.email).toBe('seokju.na@gmail.com');
+    expect(line1Hunk.finalSignature?.name).toBe('Seokju Na');
+    expect(line1Hunk.finalSignature?.email).toBe('seokju.na@gmail.com');
 
     const line2Hunk = blame.getHunkByLine(2);
-    expect(line2Hunk.signature?.name).toBe('Seokju Me');
-    expect(line2Hunk.signature?.email).toBe('seokju.na@toss.im');
+    expect(line2Hunk.finalSignature?.name).toBe('Seokju Me');
+    expect(line2Hunk.finalSignature?.email).toBe('seokju.na@toss.im');
 
     const hunkByIndex = blame.getHunkByIndex(0);
-    expect(hunkByIndex.commitId).toBeTruthy();
+    expect(hunkByIndex.finalCommitId).toBeTruthy();
 
     const buffer = Buffer.from('Line 1\nblah blah blah\nLine 3\nLine 4\n');
     const bufferBlame = blame.buffer(buffer, buffer.length);
@@ -55,11 +55,12 @@ describe('blame', () => {
     expect(lineBlame.getHunkCount()).toBe(1);
     const hunk = lineBlame.getHunkByIndex(0);
     expect(hunk.finalStartLineNumber).toBe(2);
-    expect(hunk.signature?.name).toBe('Seokju Me');
+    expect(hunk.finalSignature?.name).toBe('Seokju Me');
 
     const rangeBlame = repo.blameFile('blame', { minLine: 1, maxLine: 3 });
-    expect(rangeBlame.getHunks().length).toBeGreaterThan(0);
-    expect(rangeBlame.getHunks().length).toBeLessThanOrEqual(3);
+    const rangeHunks = [...rangeBlame.getHunks()];
+    expect(rangeHunks.length).toBeGreaterThan(0);
+    expect(rangeHunks.length).toBeLessThanOrEqual(3);
     expect(() => rangeBlame.getHunkByLine(4)).toThrow();
 
     const advancedBlame = repo.blameFile('blame', {
@@ -84,7 +85,7 @@ describe('blame', () => {
     const emptyBlame = blame.buffer(buffer, buffer.length);
     expect(emptyBlame.getHunkCount()).toBeGreaterThan(0);
 
-    const lineHunks = blame.getHunksByLine();
+    const lineHunks = [...blame.getHunksByLine()];
     expect(lineHunks.length).toBeGreaterThan(0);
 
     const collectedHunks: BlameHunk[] = [];

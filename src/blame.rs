@@ -7,32 +7,34 @@ use std::convert::TryFrom;
 use std::ops::Deref;
 use std::path::Path;
 
-const MAX_SCAN_LINES: u32 = 10000;
-
-#[napi(object)]
 /// Represents a hunk of a blame operation, which is a range of lines
 /// and information about who last modified them.
+#[napi(object)]
 pub struct BlameHunk {
   /// The oid of the commit where this line was last changed.
-  pub commit_id: String,
+  pub final_commit_id: String,
   /// The 1-based line number in the final file where this hunk starts.
   pub final_start_line_number: u32,
   /// The number of lines in this hunk.
   pub lines_in_hunk: u32,
   /// The signature of the commit where this line was last changed.
-  pub signature: Option<Signature>,
+  pub final_signature: Option<Signature>,
   /// The path to the file where this line was originally written.
   pub path: Option<String>,
   /// The 1-based line number in the original file where this hunk starts.
   pub orig_start_line_number: u32,
+  /// The oid of the commit where this line was originally written.
+  pub orig_commit_id: String,
+  /// The signature of the commit where this line was originally written.
+  pub orig_signature: Option<Signature>,
   /// True if the hunk has been determined to be a boundary commit (the commit
   /// when the file was first introduced to the repository).
   pub is_boundary: bool,
 }
 
+/// Options for controlling blame behavior
 #[napi(object)]
 #[derive(Default)]
-/// Options for controlling blame behavior
 pub struct BlameOptions {
   /// The minimum line number to blame (1-based index)
   pub min_line: Option<u32>,
@@ -62,6 +64,36 @@ pub struct BlameOptions {
   pub track_copies_same_commit_moves: Option<bool>,
   /// Use mailmap file to map author and committer names and email addresses to canonical real names and email addresses.
   pub use_mailmap: Option<bool>,
+}
+
+/// A wrapper around git2::Blame providing Node.js bindings
+#[napi]
+pub struct Blame {
+  pub(crate) inner: BlameInner,
+}
+
+/// Inner implementation of Blame that handles shared references
+pub(crate) enum BlameInner {
+  Repo(SharedReference<Repository, git2::Blame<'static>>),
+}
+
+/// An iterator over blame hunks.
+#[napi(iterator)]
+pub struct BlameHunks {
+  pub(crate) inner: Blame,
+  pub(crate) current_index: u32,
+  pub(crate) total_count: u32,
+  pub(crate) batch_size: u32,
+}
+
+/// Iterator over blame hunks collected line by line.
+#[napi(iterator)]
+pub struct BlameHunksByLine {
+  pub(crate) inner: Blame,
+  pub(crate) current_line: u32,
+  pub(crate) processed_hunks: HashSet<(u32, u32)>,
+  pub(crate) total_hunk_count: usize,
+  pub(crate) next_batch_size: u32,
 }
 
 impl From<&BlameOptions> for git2::BlameOptions {
@@ -120,15 +152,6 @@ impl From<&BlameOptions> for git2::BlameOptions {
   }
 }
 
-#[napi]
-pub struct Blame {
-  pub(crate) inner: BlameInner,
-}
-
-pub(crate) enum BlameInner {
-  Repo(SharedReference<Repository, git2::Blame<'static>>),
-}
-
 impl Deref for BlameInner {
   type Target = git2::Blame<'static>;
 
@@ -139,36 +162,128 @@ impl Deref for BlameInner {
   }
 }
 
-/// Iterator over blame hunks.
-pub struct BlameIter<'a> {
-  blame: &'a Blame,
-  idx: usize,
-  len: usize,
+impl BlameInner {
+  fn clone_with_env(&self, env: Env) -> crate::Result<Self> {
+    match self {
+      Self::Repo(repo) => Ok(Self::Repo(repo.clone(env)?)),
+    }
+  }
 }
 
-impl Iterator for BlameIter<'_> {
-  type Item = Result<BlameHunk>;
+impl<'a> From<&git2::BlameHunk<'a>> for BlameHunk {
+  fn from(hunk: &git2::BlameHunk<'a>) -> Self {
+    let final_oid = hunk.final_commit_id();
+    let final_commit_id = final_oid.to_string();
+    let is_final_zero_commit = final_oid.is_zero();
 
-  fn next(&mut self) -> Option<Self::Item> {
-    if self.idx >= self.len {
+    let final_signature = if is_final_zero_commit {
+      None
+    } else {
+      Signature::try_from(hunk.final_signature()).ok()
+    };
+
+    let orig_oid = hunk.orig_commit_id();
+    let orig_commit_id = orig_oid.to_string();
+    let is_orig_zero_commit = orig_oid.is_zero();
+
+    let orig_signature = if is_orig_zero_commit {
+      None
+    } else {
+      Signature::try_from(hunk.orig_signature()).ok()
+    };
+
+    let path = hunk.path().map(|p| p.to_string_lossy().to_string());
+
+    BlameHunk {
+      final_commit_id,
+      final_start_line_number: hunk.final_start_line() as u32,
+      lines_in_hunk: hunk.lines_in_hunk() as u32,
+      final_signature,
+      path,
+      orig_start_line_number: hunk.orig_start_line() as u32,
+      orig_commit_id,
+      orig_signature,
+      is_boundary: hunk.is_boundary(),
+    }
+  }
+}
+
+#[napi]
+impl Generator for BlameHunks {
+  type Yield = BlameHunk;
+  type Next = ();
+  type Return = ();
+
+  fn next(&mut self, _value: Option<Self::Next>) -> Option<Self::Yield> {
+    if self.current_index >= self.total_count {
       return None;
     }
 
-    let result = self.blame.get_hunk_by_index(self.idx as u32);
-    self.idx += 1;
+    let end_index = std::cmp::min(self.current_index + self.batch_size, self.total_count);
+    let mut batch = Vec::with_capacity((end_index - self.current_index) as usize);
+
+    for idx in self.current_index..end_index {
+      if let Ok(hunk) = self.inner.get_hunk_by_index(idx) {
+        batch.push(hunk);
+      }
+    }
+
+    if batch.is_empty() {
+      self.current_index = self.total_count;
+      return None;
+    }
+
+    let result = batch.remove(0);
+    self.current_index += 1;
+
+    if batch.len() > 5 {
+      self.batch_size = std::cmp::min(self.batch_size * 2, 50);
+    } else if self.batch_size > 1 {
+      self.batch_size = std::cmp::max(self.batch_size / 2, 1);
+    }
 
     Some(result)
   }
-
-  fn size_hint(&self) -> (usize, Option<usize>) {
-    let remaining = self.len - self.idx;
-    (remaining, Some(remaining))
-  }
 }
 
-impl ExactSizeIterator for BlameIter<'_> {
-  fn len(&self) -> usize {
-    self.len - self.idx
+#[napi]
+impl Generator for BlameHunksByLine {
+  type Yield = BlameHunk;
+  type Next = ();
+  type Return = ();
+
+  fn next(&mut self, _value: Option<Self::Next>) -> Option<Self::Yield> {
+    if self.processed_hunks.len() >= self.total_hunk_count {
+      return None;
+    }
+
+    let end_line = self.current_line + self.next_batch_size;
+    let mut next_hunk = None;
+
+    for line in self.current_line..end_line {
+      if let Ok(hunk) = self.inner.get_hunk_by_line(line) {
+        let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
+
+        if self.processed_hunks.insert(hunk_key) {
+          self.current_line = hunk.final_start_line_number + hunk.lines_in_hunk;
+          next_hunk = Some(hunk);
+          break;
+        }
+      }
+    }
+
+    if next_hunk.is_none() {
+      self.current_line = end_line;
+      self.next_batch_size = std::cmp::min(self.next_batch_size * 2, 100);
+
+      if self.processed_hunks.len() >= self.total_hunk_count {
+        return None;
+      }
+
+      return self.next(None);
+    }
+
+    next_hunk
   }
 }
 
@@ -206,18 +321,6 @@ impl Blame {
     self.inner.is_empty()
   }
 
-  /// Returns an iterator over the hunks in this blame.
-  ///
-  /// This internal method is used to implement getHunks() and is not
-  /// directly exposed to JavaScript.
-  pub fn iter(&self) -> BlameIter {
-    BlameIter {
-      blame: self,
-      idx: 0,
-      len: self.get_hunk_count() as usize,
-    }
-  }
-
   #[napi]
   /// Generates blame information from an in-memory buffer
   ///
@@ -239,9 +342,8 @@ impl Blame {
   /// @param {number} buffer_len - Length of the buffer in bytes
   /// @returns A new Blame object for the buffer content
   /// @throws If the buffer contains invalid UTF-8
-  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> Result<Blame> {
-    let content = std::str::from_utf8(&buffer[..buffer_len as usize])
-      .map_err(|e| Error::from_reason(format!("Invalid UTF-8 in buffer: {}", e)))?;
+  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> crate::Result<Blame> {
+    let content = std::str::from_utf8(&buffer[..buffer_len as usize])?;
 
     let blame = match &self.inner {
       BlameInner::Repo(shared_ref) => {
@@ -250,7 +352,7 @@ impl Blame {
         cloned.share_with(env, |git_blame| {
           git_blame
             .blame_buffer(content.as_bytes())
-            .map_err(|e| Error::from(crate::Error::from(e)))
+            .map_err(|e| crate::Error::from(e).into())
         })?
       }
     };
@@ -274,32 +376,13 @@ impl Blame {
   /// @param {number} index - Index of the hunk to get (0-based)
   /// @returns Blame information for the specified index
   /// @throws If no hunk is found at the index
-  pub fn get_hunk_by_index(&self, index: u32) -> Result<BlameHunk> {
+  pub fn get_hunk_by_index(&self, index: u32) -> crate::Result<BlameHunk> {
     let hunk = self
       .inner
       .get_index(index as usize)
-      .ok_or_else(|| Error::from_reason(format!("No blame hunk found at index {}", index)))?;
+      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found at index {}", index)))?;
 
-    let commit_id = hunk.final_commit_id().to_string();
-    let is_zero_commit = commit_id == "0000000000000000000000000000000000000000";
-
-    let signature = if is_zero_commit {
-      None
-    } else {
-      Signature::try_from(hunk.final_signature()).ok()
-    };
-
-    let path = hunk.path().map(|p| p.to_string_lossy().to_string());
-
-    Ok(BlameHunk {
-      commit_id,
-      final_start_line_number: hunk.final_start_line() as u32,
-      lines_in_hunk: hunk.lines_in_hunk() as u32,
-      signature,
-      path,
-      orig_start_line_number: hunk.orig_start_line() as u32,
-      is_boundary: hunk.is_boundary(),
-    })
+    Ok(BlameHunk::from(&hunk))
   }
 
   #[napi]
@@ -316,55 +399,48 @@ impl Blame {
   /// @param {number} line - Line number to get blame information for (1-based)
   /// @returns Blame information for the specified line
   /// @throws If no hunk is found for the line
-  pub fn get_hunk_by_line(&self, line: u32) -> Result<BlameHunk> {
+  pub fn get_hunk_by_line(&self, line: u32) -> crate::Result<BlameHunk> {
     let hunk = self
       .inner
       .get_line(line as usize)
-      .ok_or_else(|| Error::from_reason(format!("No blame hunk found for line {}", line)))?;
+      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found for line {}", line)))?;
 
-    let commit_id = hunk.final_commit_id().to_string();
-    let is_zero_commit = commit_id == "0000000000000000000000000000000000000000";
-
-    let signature = if is_zero_commit {
-      None
-    } else {
-      Signature::try_from(hunk.final_signature()).ok()
-    };
-
-    let path = hunk.path().map(|p| p.to_string_lossy().to_string());
-
-    Ok(BlameHunk {
-      commit_id,
-      final_start_line_number: hunk.final_start_line() as u32,
-      lines_in_hunk: hunk.lines_in_hunk() as u32,
-      signature,
-      path,
-      orig_start_line_number: hunk.orig_start_line() as u32,
-      is_boundary: hunk.is_boundary(),
-    })
+    Ok(BlameHunk::from(&hunk))
   }
 
-  #[napi]
-  /// Gets all blame hunks
+  #[napi(iterator)]
+  /// Gets all blame hunks as an iterator
   ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   getHunks(): BlameHunk[];
+  ///   getHunks(): Generator<BlameHunk>;
   /// }
   /// ```
   ///
-  /// @returns Array of all blame hunks
-  pub fn get_hunks(&self) -> Result<Vec<BlameHunk>> {
-    let hunk_count = self.get_hunk_count() as usize;
+  /// @returns Iterator of all blame hunks
+  /// @example
+  /// ```ts
+  /// // Using for...of loop
+  /// for (const hunk of blame.getHunks()) {
+  ///   console.log(hunk.finalCommitId);
+  /// }
+  ///
+  /// // Using spread operator to collect all hunks
+  /// const hunks = [...blame.getHunks()];
+  /// ```
+  pub fn get_hunks(&self, env: Env) -> crate::Result<BlameHunks> {
+    let inner = Blame {
+      inner: self.inner.clone_with_env(env)?,
+    };
 
-    if hunk_count == 0 {
-      return Ok(Vec::new());
-    }
-
-    // Use the iterator to collect hunks
-    self.iter().collect()
+    Ok(BlameHunks {
+      inner,
+      current_index: 0,
+      total_count: self.get_hunk_count(),
+      batch_size: 5,
+    })
   }
 
   #[napi]
@@ -381,7 +457,7 @@ impl Blame {
   /// @example
   /// ```ts
   /// blame.forEachHunk((hunk, index) => {
-  ///   console.log(`Hunk ${index}: ${hunk.commitId}`);
+  ///   console.log(`Hunk ${index}: ${hunk.finalCommitId}`);
   ///   return true; // Continue iteration
   /// });
   /// ```
@@ -390,68 +466,65 @@ impl Blame {
   ///   Return true to continue iteration, false to stop
   pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
     let hunk_count = self.get_hunk_count();
+    let batch_size = 10;
 
-    for idx in 0..hunk_count {
-      if let Ok(hunk) = self.get_hunk_by_index(idx) {
-        if !callback.call((hunk, idx)).unwrap_or(false) {
-          break;
+    let mut current_index = 0;
+    while current_index < hunk_count {
+      let end_index = std::cmp::min(current_index + batch_size, hunk_count);
+      let mut batch = Vec::with_capacity((end_index - current_index) as usize);
+
+      for idx in current_index..end_index {
+        if let Ok(hunk) = self.get_hunk_by_index(idx) {
+          batch.push((hunk, idx));
         }
       }
+
+      for (hunk, idx) in batch {
+        if !callback.call((hunk, idx)).unwrap_or(false) {
+          return Ok(());
+        }
+      }
+
+      current_index = end_index;
     }
 
     Ok(())
   }
 
-  #[napi]
-  /// Collects blame hunks by scanning file lines
+  #[napi(iterator)]
+  /// Collects blame hunks by scanning file lines as an iterator
   ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   getHunksByLine(): BlameHunk[];
+  ///   getHunksByLine(): Generator<BlameHunk>;
   /// }
   /// ```
   ///
-  /// @returns Array of blame hunks collected by line scanning
-  pub fn get_hunks_by_line(&self) -> Result<Vec<BlameHunk>> {
-    let hunk_count = self.get_hunk_count() as usize;
+  /// @returns Iterator of blame hunks collected by line scanning
+  /// @example
+  /// ```ts
+  /// // Using for...of loop
+  /// for (const hunk of blame.getHunksByLine()) {
+  ///   console.log(hunk.finalCommitId);
+  /// }
+  ///
+  /// // Using spread operator to collect all hunks
+  /// const hunks = [...blame.getHunksByLine()];
+  /// ```
+  pub fn get_hunks_by_line(&self, env: Env) -> crate::Result<BlameHunksByLine> {
+    let inner = Blame {
+      inner: self.inner.clone_with_env(env)?,
+    };
 
-    if hunk_count == 0 {
-      return Ok(Vec::new());
-    }
-
-    let mut hunks = Vec::new();
-    let mut seen_hunks = HashSet::new();
-    let mut line = 1;
-
-    while line < MAX_SCAN_LINES {
-      if let Ok(hunk) = self.get_hunk_by_line(line) {
-        let hunk_key = (hunk.final_start_line_number, hunk.lines_in_hunk);
-
-        if seen_hunks.insert(hunk_key) {
-          hunks.push(BlameHunk {
-            commit_id: hunk.commit_id,
-            final_start_line_number: hunk.final_start_line_number,
-            lines_in_hunk: hunk.lines_in_hunk,
-            signature: hunk.signature,
-            path: hunk.path,
-            orig_start_line_number: hunk.orig_start_line_number,
-            is_boundary: hunk.is_boundary,
-          });
-          line = hunk.final_start_line_number + hunk.lines_in_hunk;
-          continue;
-        }
-      }
-
-      line += 1;
-
-      if line >= MAX_SCAN_LINES || hunks.len() >= hunk_count {
-        break;
-      }
-    }
-
-    Ok(hunks)
+    Ok(BlameHunksByLine {
+      inner,
+      current_line: 1,
+      processed_hunks: HashSet::new(),
+      total_hunk_count: self.get_hunk_count() as usize,
+      next_batch_size: 10,
+    })
   }
 }
 
@@ -502,7 +575,7 @@ impl Repository {
         None => repo.inner.blame_file(file_path, None),
       };
 
-      result.map_err(|e| Error::from(crate::Error::from(e)))
+      result.map_err(|e| crate::Error::from(e).into())
     })?;
 
     Ok(Blame {

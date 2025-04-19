@@ -9,17 +9,21 @@
  */
 export interface BlameHunk {
   /** The oid of the commit where this line was last changed. */
-  commitId: string
+  finalCommitId: string
   /** The 1-based line number in the final file where this hunk starts. */
   finalStartLineNumber: number
   /** The number of lines in this hunk. */
   linesInHunk: number
   /** The signature of the commit where this line was last changed. */
-  signature?: Signature
+  finalSignature?: Signature
   /** The path to the file where this line was originally written. */
   path?: string
   /** The 1-based line number in the original file where this hunk starts. */
   origStartLineNumber: number
+  /** The oid of the commit where this line was originally written. */
+  origCommitId: string
+  /** The signature of the commit where this line was originally written. */
+  origSignature?: Signature
   /**
    * True if the hunk has been determined to be a boundary commit (the commit
    * when the file was first introduced to the repository).
@@ -1482,6 +1486,7 @@ export interface CreateLightweightTagOptions {
  * - `PostOrder` : Runs the traversal in post-order.
  */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
+/** A wrapper around git2::Blame providing Node.js bindings */
 export declare class Blame {
   /**
    * Gets the number of hunks in the blame result
@@ -1567,19 +1572,29 @@ export declare class Blame {
    */
   getHunkByLine(line: number): BlameHunk
   /**
-   * Gets all blame hunks
+   * Gets all blame hunks as an iterator
    *
    * @category Blame/Methods
    * @signature
    * ```ts
    * class Blame {
-   *   getHunks(): BlameHunk[];
+   *   getHunks(): Generator<BlameHunk>;
    * }
    * ```
    *
-   * @returns Array of all blame hunks
+   * @returns Iterator of all blame hunks
+   * @example
+   * ```ts
+   * // Using for...of loop
+   * for (const hunk of blame.getHunks()) {
+   *   console.log(hunk.finalCommitId);
+   * }
+   *
+   * // Using spread operator to collect all hunks
+   * const hunks = [...blame.getHunks()];
+   * ```
    */
-  getHunks(): Array<BlameHunk>
+  getHunks(): BlameHunks
   /**
    * Iterates through each hunk and calls the callback function
    *
@@ -1594,7 +1609,7 @@ export declare class Blame {
    * @example
    * ```ts
    * blame.forEachHunk((hunk, index) => {
-   *   console.log(`Hunk ${index}: ${hunk.commitId}`);
+   *   console.log(`Hunk ${index}: ${hunk.finalCommitId}`);
    *   return true; // Continue iteration
    * });
    * ```
@@ -1604,19 +1619,37 @@ export declare class Blame {
    */
   forEachHunk(callback: (arg0: BlameHunk, arg1: number) => boolean): void
   /**
-   * Collects blame hunks by scanning file lines
+   * Collects blame hunks by scanning file lines as an iterator
    *
    * @category Blame/Methods
    * @signature
    * ```ts
    * class Blame {
-   *   getHunksByLine(): BlameHunk[];
+   *   getHunksByLine(): Generator<BlameHunk>;
    * }
    * ```
    *
-   * @returns Array of blame hunks collected by line scanning
+   * @returns Iterator of blame hunks collected by line scanning
+   * @example
+   * ```ts
+   * // Using for...of loop
+   * for (const hunk of blame.getHunksByLine()) {
+   *   console.log(hunk.finalCommitId);
+   * }
+   *
+   * // Using spread operator to collect all hunks
+   * const hunks = [...blame.getHunksByLine()];
+   * ```
    */
-  getHunksByLine(): Array<BlameHunk>
+  getHunksByLine(): BlameHunksByLine
+}
+/** An iterator over blame hunks. */
+export declare class BlameHunks {
+  [Symbol.iterator](): Iterator<BlameHunk, void, void>
+}
+/** Iterator over blame hunks collected line by line. */
+export declare class BlameHunksByLine {
+  [Symbol.iterator](): Iterator<BlameHunk, void, void>
 }
 /**
  * A class to represent a git [blob][1].
