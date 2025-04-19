@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type BlameHunk, isZeroOid, openRepository } from '../index';
+import { type BlameHunk, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('blame', () => {
