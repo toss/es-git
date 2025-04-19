@@ -2,6 +2,7 @@ use crate::diff::DiffDelta;
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::ops::Deref;
 use std::path::Path;
 
 #[napi(object)]
@@ -212,7 +213,9 @@ impl Statuses {
           .ok_or(Error::new(napi::Status::GenericFailure, "not found"))
       })
       .ok()
-      .map(|inner| StatusEntry { inner })
+      .map(|entry| StatusEntry {
+        inner: StatusEntryInner::Statuses(entry),
+      })
   }
 
   #[napi]
@@ -245,11 +248,53 @@ impl Statuses {
   pub fn is_empty(&self) -> bool {
     self.inner.is_empty()
   }
+
+  #[napi]
+  /// Returns an iterator over the statuses in this list.
+  pub fn iter(&self, this: Reference<Statuses>, env: Env) -> crate::Result<StatusesIter> {
+    let inner = this.share_with(env, move |statuses| Ok(statuses.inner.iter()))?;
+    Ok(StatusesIter { inner })
+  }
+}
+
+#[napi(iterator)]
+pub struct StatusesIter {
+  pub(crate) inner: SharedReference<Statuses, git2::StatusIter<'static>>,
 }
 
 #[napi]
+impl Generator for StatusesIter {
+  type Yield = StatusEntry;
+  type Next = ();
+  type Return = ();
+
+  fn next(&mut self, _value: Option<Self::Next>) -> Option<Self::Yield> {
+    self.inner.next().map(|entry| StatusEntry {
+      inner: StatusEntryInner::Owned(entry),
+    })
+  }
+}
+
+pub(crate) enum StatusEntryInner {
+  Statuses(SharedReference<Statuses, git2::StatusEntry<'static>>),
+  Owned(git2::StatusEntry<'static>),
+}
+
+impl Deref for StatusEntryInner {
+  type Target = git2::StatusEntry<'static>;
+
+  fn deref(&self) -> &Self::Target {
+    match self {
+      Self::Statuses(statuses) => statuses.deref(),
+      Self::Owned(entry) => entry,
+    }
+  }
+}
+
+#[napi]
+/// A structure representing an entry in the `Statuses` structure.
 pub struct StatusEntry {
-  pub(crate) inner: SharedReference<Statuses, git2::StatusEntry<'static>>,
+  pub(crate) inner: StatusEntryInner,
 }
 
 #[napi]

@@ -4736,7 +4736,13 @@ export declare class Statuses {
    * @returns Return `true` if there is no status entry in this list.
    */
   isEmpty(): boolean
+  /** Returns an iterator over the statuses in this list. */
+  iter(): StatusesIter
 }
+export declare class StatusesIter {
+  [Symbol.iterator](): Iterator<StatusEntry, void, void>
+}
+/** A structure representing an entry in the `Statuses` structure. */
 export declare class StatusEntry {
   /**
    * Access this entry's path name as a string.
