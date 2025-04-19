@@ -9,7 +9,7 @@ const LANGUAGES = ['en', 'ko'] as const;
 
 export type Language = (typeof LANGUAGES)[number];
 
-export const LanguageOption = Option.String('--lang', 'en', {
+export const LanguageOption = Option.String('-l,--lang', 'en', {
   description: 'Language to generate documentation',
   validator: isEnum(LANGUAGES),
 });
