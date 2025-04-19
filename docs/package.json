@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "clipanion": "^4.0.0-rc.4",
+    "dotenv": "^16.5.0",
     "es-toolkit": "^1.32.0",
     "fast-glob": "^3.3.3",
     "micromatch": "^4.0.8",
+    "openai": "^4.95.1",
     "typanion": "^3.14.0",
     "typedoc": "0.28.0",
     "vitepress": "^1.6.3",
