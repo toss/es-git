@@ -24,4 +24,7 @@ just docs-gen reference --lang=ko
 
 # Generate specific reference documentations with glob pattern.
 just docs-gen reference --pattern='Tree/Methods/*'
+
+# Translate with OpenAI. Or pass api token with environment variables. (/docs/.env)
+just docs-gen reference --translate-ai-token="<OpenAI API Key>"
 ```

@@ -1,21 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Command, Option } from 'clipanion';
-import { isNotNil } from 'es-toolkit';
 import micromatch from 'micromatch';
+import OpenAI from 'openai';
 import type { DeclarationReflection } from 'typedoc';
+import { type ReferenceDoc, renderReferenceDoc } from '../doc';
 import { findRootDir } from '../fs';
 import { LanguageOption } from '../lang';
-import {
-  findCategory,
-  genErrors,
-  genExample,
-  genParameters,
-  genReturns,
-  genSignature,
-  genSummary,
-  runTypedoc,
-} from '../typedoc';
+import { translate } from '../translate';
+import { findCategory, getReferenceDoc, runTypedoc } from '../typedoc';
 
 export class ReferenceCommand extends Command {
   static paths = [['reference']];
@@ -23,6 +16,15 @@ export class ReferenceCommand extends Command {
   readonly patterns = Option.Array('-p,--pattern', []);
   readonly lang = LanguageOption;
   readonly withOutput = Option.Boolean('--with-output', true);
+  readonly translateAiToken = Option.String('--translate-ai-token', {
+    description:
+      'Translate documentation with OpenAI when the token is given. Only works when language options is not "en".',
+    env: 'TRANSLATE_AI_TOKEN',
+  });
+  readonly translateAiModel = Option.String('--translate-ai-model', {
+    description: 'AI model for when translating documentation with OpenAI. Default model is "gpt-4o".',
+    env: 'TRANSLATE_AI_MODEL',
+  });
 
   async execute() {
     const rootDir = await findRootDir();
@@ -36,7 +38,7 @@ export class ReferenceCommand extends Command {
     const references: Array<{
       name: string;
       category: string[];
-      doc: string;
+      doc: ReferenceDoc;
     }> = [];
     this.traverseReflections(project.children!, reflection => {
       const category = findCategory(reflection);
@@ -53,9 +55,13 @@ export class ReferenceCommand extends Command {
       references.push({
         name: reflection.name,
         category,
-        doc: this.genReferenceDoc(reflection),
+        doc: getReferenceDoc(reflection),
       });
     });
+
+    const ai =
+      this.translateAiToken != null && this.lang !== 'en' ? new OpenAI({ apiKey: this.translateAiToken }) : null;
+
     for (let i = 0; i < references.length; i += 1) {
       const reference = references[i]!;
       const filename =
@@ -64,7 +70,11 @@ export class ReferenceCommand extends Command {
           : path.join(this.lang, 'reference', ...reference.category, `${reference.name}.md`);
       const filepath = path.join(rootDir, 'docs', filename);
       await fs.mkdir(path.dirname(filepath), { recursive: true });
-      await fs.writeFile(filepath, reference.doc, 'utf8');
+      const doc =
+        ai != null
+          ? await translate(ai, reference.doc, this.lang, { model: this.translateAiModel as OpenAI.ChatModel })
+          : reference.doc;
+      await fs.writeFile(filepath, renderReferenceDoc(doc, this.lang), 'utf8');
       console.log(`[${i + 1}/${references.length}] ${filename} generated`);
     }
   }
@@ -82,24 +92,5 @@ export class ReferenceCommand extends Command {
         this.traverseReflections(child.children, callback);
       }
     }
-  }
-
-  private genReferenceDoc(reflection: DeclarationReflection) {
-    const sig = reflection.signatures?.[0];
-    if (sig == null) {
-      throw new Error(`Signature not found: ${reflection.name}`);
-    }
-
-    const summary = genSummary(sig);
-    const signature = genSignature(sig, { lang: this.lang });
-    const parameters = genParameters(sig, { lang: this.lang });
-    const returns = genReturns(sig, { lang: this.lang });
-    const errors = genErrors(sig, { lang: this.lang });
-    const example = genExample(sig, { lang: this.lang });
-
-    return [`# ${reflection.name}`, summary, signature, parameters, returns, errors, example]
-      .flat()
-      .filter(isNotNil)
-      .join('\n\n');
   }
 }

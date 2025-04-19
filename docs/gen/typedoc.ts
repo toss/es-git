@@ -1,8 +1,6 @@
 import assert from 'node:assert';
 import type { DeclarationReflection, ParameterReflection, Reflection, SignatureReflection, SomeType } from 'typedoc';
-import { escapeHtml, paramLIHtml, paramULHtml } from './html';
-import type { Language } from './lang';
-import { t } from './texts';
+import type { ParameterDoc, ReferenceDoc, ReturnsDoc } from './doc';
 
 const ReflectionKind = {
   Enum: 8,
@@ -10,19 +8,18 @@ const ReflectionKind = {
   TypeAlias: 2097152,
 } as const;
 
-export function genSummary(reflection: Reflection): string | undefined {
+function getSummary(reflection: Reflection): string | undefined {
   return reflection.comment?.summary.map(x => x.text).join('');
 }
 
-export function genSignature(reflection: SignatureReflection, options: { lang: Language }): string {
-  const { lang } = options;
+function getSignature(reflection: SignatureReflection): string {
   const signatureTag = reflection.comment?.blockTags?.find(x => x.tag === '@signature');
   assert(signatureTag != null, '`@signature` tag not exists');
 
-  return [`## ${t('singature', lang)}`, '', ...signatureTag.content.map(x => x.text)].join('\n');
+  return signatureTag.content.map(x => x.text).join('\n');
 }
 
-export function genType(type?: SomeType): string {
+function formatType(type?: SomeType): string {
   if (type == null) {
     return 'any';
   }
@@ -35,10 +32,10 @@ export function genType(type?: SomeType): string {
       if (type.reflection != null || type.typeArguments == null || type.typeArguments.length === 0) {
         return type.name;
       }
-      return `${type.name}<${type.typeArguments.map(genType).join(', ')}>`;
+      return `${type.name}<${type.typeArguments.map(formatType).join(', ')}>`;
     }
     case 'union':
-      return type.types.map(genType).join(' | ');
+      return type.types.map(formatType).join(' | ');
     case 'unknown':
       return 'unknown';
     case 'array': {
@@ -47,7 +44,7 @@ export function genType(type?: SomeType): string {
         type.elementType.type === 'literal' ||
         type.elementType.type === 'reference' ||
         type.elementType.type === 'unknown';
-      return single ? `${genType(type.elementType)}[]` : `(${genType(type.elementType)})[]`;
+      return single ? `${formatType(type.elementType)}[]` : `(${formatType(type.elementType)})[]`;
     }
     case 'reflection': {
       if (type.declaration.variant === 'declaration') {
@@ -55,8 +52,8 @@ export function genType(type?: SomeType): string {
         if (sig == null) {
           return '';
         }
-        const params = (sig.parameters ?? []).map(x => `${x.name}: ${genType(x.type)}`).join(', ');
-        const returns = genType(sig.type);
+        const params = (sig.parameters ?? []).map(x => `${x.name}: ${formatType(x.type)}`).join(', ');
+        const returns = formatType(sig.type);
         return `(${params}) => ${returns}`;
       }
       throw new Error('supports only declaration variant');
@@ -66,11 +63,11 @@ export function genType(type?: SomeType): string {
   }
 }
 
-export function isDeclarationReflection(reflection: Reflection): reflection is DeclarationReflection {
+function isDeclarationReflection(reflection: Reflection): reflection is DeclarationReflection {
   return reflection.variant === 'declaration';
 }
 
-export function getChildReflectionOfParameter(type?: SomeType): Reflection | undefined {
+function getChildReflectionOfParameter(type?: SomeType): Reflection | undefined {
   if (type == null) {
     return undefined;
   }
@@ -87,43 +84,26 @@ export function getChildReflectionOfParameter(type?: SomeType): Reflection | und
   return undefined;
 }
 
-export function genParameter(
-  reflection: ParameterReflection | DeclarationReflection,
-  options: { lang: Language; root?: boolean }
-): string {
+function getParameterDoc(reflection: ParameterReflection | DeclarationReflection): ParameterDoc {
   const child = getChildReflectionOfParameter(reflection.type);
   const children =
     child != null && isDeclarationReflection(child) ? (child.children?.filter(isDeclarationReflection) ?? []) : [];
-  const html = paramLIHtml({
+  const doc: ParameterDoc = {
     name: reflection.name,
-    type: genType(reflection.type),
+    type: formatType(reflection.type),
     required: !reflection.flags.isOptional,
-    description: genSummary(reflection)?.replaceAll('\n', ' '),
+    description: getSummary(reflection)?.replaceAll('\n', ' '),
     children:
-      child != null && child.kind === ReflectionKind.TypeAlias
-        ? `<p class="param-description">${escapeHtml(genSummary(child))}</p>`
+      child?.kind === ReflectionKind.TypeAlias
+        ? getSummary(child)
         : children.length > 0
-          ? paramULHtml(children.map(x => genParameter(x, { ...options, root: false })))
+          ? children.map(x => getParameterDoc(x))
           : undefined,
-    root: options.root,
-    lang: options.lang,
-  });
-  return html;
+  };
+  return doc;
 }
 
-export function genParameters(reflection: SignatureReflection, options: { lang: Language }): string | undefined {
-  const parameters = reflection.parameters;
-  if (parameters == null || parameters.length === 0) {
-    return undefined;
-  }
-  return [
-    `### ${t('parameters', options.lang)}`,
-    '',
-    paramULHtml(parameters.map(x => genParameter(x, { ...options, root: true }))),
-  ].join('\n');
-}
-
-export function genReturns(reflection: SignatureReflection, options: { lang: Language }): string | undefined {
+function getReturnsDoc(reflection: SignatureReflection): ReturnsDoc | undefined {
   const returnsTag = reflection.comment?.blockTags?.find(x => x.tag === '@returns');
   if (returnsTag == null) {
     return undefined;
@@ -132,55 +112,49 @@ export function genReturns(reflection: SignatureReflection, options: { lang: Lan
   const children =
     child != null && isDeclarationReflection(child) ? (child.children?.filter(isDeclarationReflection) ?? []) : [];
   const returnsText = returnsTag.content.map(x => x.text).join(' ');
-  return [
-    `### ${t('returns', options.lang)}`,
-    '',
-    paramULHtml(
-      paramLIHtml({
-        required: false,
-        type: genType(reflection.type),
-        description: returnsText,
-        children:
-          child != null && child.kind === ReflectionKind.TypeAlias
-            ? `<p class="param-description">${escapeHtml(genSummary(child))}</p>`
-            : children.length > 0
-              ? paramULHtml(children.map(x => genParameter(x, options)))
-              : undefined,
-        root: true,
-        lang: options.lang,
-      })
-    ),
-  ].join('\n');
+  const doc: ReturnsDoc = {
+    type: formatType(reflection.type),
+    description: returnsText,
+    children:
+      child?.kind === ReflectionKind.TypeAlias
+        ? getSummary(child)
+        : children.length > 0
+          ? children.map(x => getParameterDoc(x))
+          : undefined,
+  };
+  return doc;
 }
 
-export function genErrors(reflection: SignatureReflection, options: { lang: Language }): string | undefined {
-  const throwsTag = reflection.comment?.blockTags?.find(x => x.tag === '@throws');
-  if (throwsTag == null) {
-    return undefined;
-  }
-  const errorsText = throwsTag.content.map(x => x.text).join(' ');
-  return [
-    `### ${t('errors', options.lang)}`,
-    '',
-    paramULHtml(
-      paramLIHtml({
-        required: false,
-        type: 'Error',
-        description: errorsText,
-        root: true,
-        lang: options.lang,
-      })
-    ),
-  ].join('\n');
+function getErrors(reflection: SignatureReflection): string[] | undefined {
+  return reflection.comment?.blockTags
+    ?.filter(tag => tag.tag === '@throws')
+    .map(tag => tag.content.map(x => x.text).join(' '));
 }
 
-export function genExample(reflection: SignatureReflection, options: { lang: Language }): string | undefined {
-  const exampleTag = reflection.comment?.blockTags?.find(x => x.tag === '@example');
-  if (exampleTag == null) {
+function getExamples(reflection: SignatureReflection): string | undefined {
+  const examples = reflection.comment?.blockTags?.filter(x => x.tag === '@example');
+  if (examples == null || examples.length === 0) {
     return undefined;
   }
-  const exampleText = exampleTag.content.map(x => x.text).join('');
-  return [`## ${t('example', options.lang)}`, '', exampleText].join('\n');
+  return examples.map(tag => tag.content.map(x => x.text).join('')).join('\n---\n');
+}
+
+export function getReferenceDoc(reflection: DeclarationReflection): ReferenceDoc {
+  const sig = reflection.signatures?.[0];
+  if (sig == null) {
+    throw new Error(`Signature not found: ${reflection.name}`);
+  }
+
+  const doc: ReferenceDoc = {
+    name: sig.name,
+    summary: getSummary(sig),
+    signature: getSignature(sig),
+    parameters: sig.parameters?.map(x => getParameterDoc(x)),
+    returns: getReturnsDoc(sig),
+    errors: getErrors(sig),
+    examples: getExamples(sig),
+  };
+  return doc;
 }
 
 export function findCategory(reflection: DeclarationReflection): string[] | undefined {

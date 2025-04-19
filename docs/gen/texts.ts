@@ -1,7 +1,7 @@
 import type { Language } from './lang';
 
 const texts = {
-  singature: {
+  signature: {
     en: 'Signature',
     ko: '시그니처',
   },
@@ -13,7 +13,7 @@ const texts = {
     en: 'Returns',
     ko: '반환 값',
   },
-  example: {
+  examples: {
     en: 'Examples',
     ko: '예제',
   },
