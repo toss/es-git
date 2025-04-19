@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type BlameHunk, openRepository } from '../index';
+import { type BlameHunk, isZeroOid, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('blame', () => {
@@ -27,6 +27,11 @@ describe('blame', () => {
     const buffer = Buffer.from('Line 1\nblah blah blah\nLine 3\nLine 4\n');
     const bufferBlame = blame.buffer(buffer, buffer.length);
     expect(bufferBlame.getHunkCount()).toBeGreaterThan(0);
+
+    const bufferHunk = bufferBlame.getHunkByIndex(1);
+    expect(bufferHunk.finalCommitId).toBe('0000000000000000000000000000000000000000');
+    expect(bufferHunk.finalSignature).toBeUndefined();
+    expect(bufferHunk.origSignature).toBeUndefined();
   });
 
   it('should handle special files and error cases', async () => {
