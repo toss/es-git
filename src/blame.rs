@@ -219,7 +219,7 @@ impl Generator for BlameHunks {
 
     let result = self.inner.get_hunk_by_index(self.current_index).ok();
     self.current_index += 1;
-    
+
     result
   }
 }
@@ -428,7 +428,7 @@ impl Blame {
   ///   Return true to continue iteration, false to stop
   pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
     let hunk_count = self.get_hunk_count();
-    
+
     for idx in 0..hunk_count {
       if let Ok(hunk) = self.get_hunk_by_index(idx) {
         if !callback.call((hunk, idx)).unwrap_or(false) {
