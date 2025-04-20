@@ -60,6 +60,25 @@ describe('mailmap', () => {
     expect(mailmap).not.toBeNull();
   });
 
+  it('should get mailmap file from the dedicated mailmap fixture', async () => {
+    const p = await useFixture('mailmap');
+    const repo = await openRepository(p);
+
+    const mailmap = repo.mailmap();
+    expect(mailmap).not.toBeNull();
+
+    const originalSignature = createSignature('Seokju Na', 'seokju.me@gmail.com');
+    const mappedSignature = mailmap!.resolveSignature({
+      name: originalSignature.name,
+      email: originalSignature.email,
+      timeOptions: { timestamp: originalSignature.timestamp },
+    });
+
+    expect(mappedSignature).not.toBeNull();
+    expect(mappedSignature!.name).toBe('Seokju Me');
+    expect(mappedSignature!.email).toBe('seokju.me@toss.im');
+  });
+
   it('should apply mailmap to commit authors', async () => {
     const p = await useFixture('commits');
     const repo = await openRepository(p);
