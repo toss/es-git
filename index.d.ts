@@ -2050,6 +2050,38 @@ export declare class Commit {
    * @returns `GitObject` that casted from this commit.
    */
   asObject(): GitObject
+  /**
+   * Get the author of this commit, using the mailmap to map it to the canonical name and email.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   authorWithMailmap(mailmap: Mailmap): Signature;
+   * }
+   * ```
+   *
+   * @param {Mailmap} mailmap - The mailmap to use for mapping
+   * @returns Author signature of this commit with mapping applied
+   */
+  authorWithMailmap(mailmap: Mailmap): Signature
+  /**
+   * Get the committer of this commit, using the mailmap to map it to the canonical name and email.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   committerWithMailmap(mailmap: Mailmap): Signature;
+   * }
+   * ```
+   *
+   * @param {Mailmap} mailmap - The mailmap to use for mapping
+   * @returns Committer signature of this commit with mapping applied
+   */
+  committerWithMailmap(mailmap: Mailmap): Signature
 }
 /** An iterator over the `ConfigEntry` values of a config. */
 export declare class ConfigEntries {
@@ -3139,6 +3171,55 @@ export declare class IndexEntries {
   [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
 /**
+ * A structure to represent a repository's .mailmap file.
+ *
+ * The mailmap is used to map author/committer names and emails to canonical real names and emails.
+ */
+export declare class Mailmap {
+  /**
+   * Create a mailmap from the contents of a string.
+   *
+   * The format of the string should follow the rules of the mailmap file:
+   * ```
+   * # Comment line (ignored)
+   * Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>
+   * ```
+   *
+   * @param {string} content - Content of the mailmap file
+   * @returns A new mailmap object or null if operation failed
+   */
+  static fromBuffer(content: string): Mailmap | null
+  /**
+   * Add a new Mailmap entry.
+   *
+   * Maps an author/committer (specified by `replace_name` and `replace_email`)
+   * to the specified real name and email. The `replace_email` is required but
+   * the other parameters can be null.
+   *
+   * If both `replace_name` and `replace_email` are provided, then the entry will
+   * apply to those who match both. If only `replace_name` is provided,
+   * it will apply to anyone with that name, regardless of email. If only
+   * `replace_email` is provided, it will apply to anyone with that email,
+   * regardless of name.
+   *
+   * @param {string} [real_name] - The real name to use, or null
+   * @param {string} [real_email] - The real email to use, or null
+   * @param {string} [replace_name] - The name to replace, or null
+   * @param {string} replace_email - The email to replace
+   * @returns true if the operation succeeded, false otherwise
+   */
+  addEntry(realName: string | undefined | null, realEmail: string | undefined | null, replaceName: string | undefined | null, replaceEmail: string): boolean
+  /**
+   * Resolve a signature to its canonical form using a mailmap.
+   *
+   * Returns a new signature with the canonical name and email.
+   *
+   * @param {SignaturePayload} signature - Signature to resolve
+   * @returns The resolved signature with canonical name and email
+   */
+  resolveSignature(signature: SignaturePayload): Signature
+}
+/**
  * A class to represent a git [object][1].
  *
  * [1]: https://git-scm.com/book/en/Git-Internals-Git-Objects
@@ -4014,6 +4095,21 @@ export declare class Repository {
    * @returns The index file for this repository.
    */
   index(): Index
+  /**
+   * Gets this repository's mailmap.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   mailmap(): Mailmap | null;
+   * }
+   * ```
+   *
+   * @returns The mailmap object if it exists, null otherwise
+   */
+  mailmap(): Mailmap | null
   /**
    * Lookup a reference to one of the objects in a repository.
    *

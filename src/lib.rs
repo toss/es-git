@@ -8,6 +8,7 @@ pub mod config;
 pub mod diff;
 mod error;
 pub mod index;
+pub mod mailmap;
 pub mod object;
 pub mod oid;
 pub mod reference;
