@@ -1442,6 +1442,66 @@ export interface SignaturePayload {
   email: string
   timeOptions?: SignatureTimeOptions
 }
+export interface Status {
+  current: boolean
+  indexNew: boolean
+  indexModified: boolean
+  indexDeleted: boolean
+  indexRenamed: boolean
+  indexTypechange: boolean
+  wtNew: boolean
+  wtModified: boolean
+  wtDeleted: boolean
+  wtTypechange: boolean
+  wtRenamed: boolean
+  ignored: boolean
+  conflicted: boolean
+}
+/**
+ * - `Index` : Only gives status based on HEAD to index comparison, not looking at
+ * working directory changes.
+ * - `Workdir` : Only gives status based on index to working directory comparison, not
+ * comparing the index to the HEAD.
+ * - `IndexAndWorkdi` : The default, this roughly matches `git status --porcelain` regarding
+ * which files are included and in what order.
+ */
+export type StatusShow = 'Index' | 'Workdir' | 'IndexAndWorkdir';
+export interface StatusOptions {
+  /**
+   * Select the files on which to report status.
+   * The default, if unspecified, is to show the index and the working directory.
+   */
+  show?: StatusShow
+  /**
+   * Path patterns to match (using fnmatch-style matching).
+   * If the `disablePathspecMatch` option is given, then this is a literal
+   * path to match. If this is not called, then there will be no patterns to
+   * match and the entire directory will be used.
+   */
+  pathspecs?: Array<string>
+  /**
+   * Flag whether untracked files will be included.
+   * Untracked files will only be included if the workdir files are included
+   * in the status "show" option.
+   */
+  includeUntracked?: boolean
+  includeIgnored?: boolean
+  includeUnmodified?: boolean
+  excludeSubmodules?: boolean
+  recurseUntrackedDirs?: boolean
+  disablePathspecMatch?: boolean
+  recurseIgnoredDirs?: boolean
+  renamesHeadToIndex?: boolean
+  renamesIndexToWorkdir?: boolean
+  sortCaseSensitively?: boolean
+  sortCaseInsensitively?: boolean
+  renamesFromRewrites?: boolean
+  noRefresh?: boolean
+  updateIndex?: boolean
+  includeUnreadable?: boolean
+  includeUnreadableAsUntracked?: boolean
+  renameThreshold?: number
+}
 /**
  * Determine whether a tag name is valid, meaning that (when prefixed with refs/tags/) that
  * it is a valid reference name, and that any additional tag name restrictions are imposed
@@ -4315,6 +4375,108 @@ export declare class Repository {
    */
   revwalk(): Revwalk
   /**
+   * Test if the ignore rules apply to a given file.
+   *
+   * This function checks the ignore rules to see if they would apply to the
+   * given file. This indicates if the file would be ignored regardless of
+   * whether the file is already in the index or committed to the repository.
+   *
+   * One way to think of this is if you were to do "git add ." on the
+   * directory containing the file, would it be added or not?
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   statusShouldIgnore(path: string): boolean;
+   * }
+   * ```
+   *
+   * @param {string} path - A given file path.
+   * @returns Returns `true` if the ignore rules apply to a given file.
+   */
+  statusShouldIgnore(path: string): boolean
+  /**
+   * Get file status for a single file.
+   *
+   * This tries to get status for the filename that you give. If no files
+   * match that name (in either the HEAD, index, or working directory), this
+   * returns NotFound.
+   *
+   * If the name matches multiple files (for example, if the path names a
+   * directory or if running on a case- insensitive filesystem and yet the
+   * HEAD has two entries that both match the path), then this returns
+   * Ambiguous because it cannot give correct results.
+   *
+   * This does not do any sort of rename detection. Renames require a set of
+   * targets and because of the path filtering, there is not enough
+   * information to check renames correctly. To check file status with rename
+   * detection, there is no choice but to do a full `statuses` and scan
+   * through looking for the path that you are interested in.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getStatusFile(path: string): Status;
+   * }
+   * ```
+   *
+   * @param {string} path - A single file path.
+   * @returns The `Status` of this single file.
+   * @throws Throws error if the status file does not exist.
+   */
+  getStatusFile(path: string): Status
+  /**
+   * Get file status for a single file.
+   *
+   * This tries to get status for the filename that you give. If no files
+   * match that name (in either the HEAD, index, or working directory), this
+   * returns NotFound.
+   *
+   * If the name matches multiple files (for example, if the path names a
+   * directory or if running on a case- insensitive filesystem and yet the
+   * HEAD has two entries that both match the path), then this returns
+   * Ambiguous because it cannot give correct results.
+   *
+   * This does not do any sort of rename detection. Renames require a set of
+   * targets and because of the path filtering, there is not enough
+   * information to check renames correctly. To check file status with rename
+   * detection, there is no choice but to do a full `statuses` and scan
+   * through looking for the path that you are interested in.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findStatusFile(path: string): Status | null;
+   * }
+   * ```
+   *
+   * @param {string} path - A single file path.
+   * @returns The `Status` of this single file. If the status file does not exists, returns `null`.
+   */
+  findStatusFile(path: string): Status | null
+  /**
+   * Gather file status information and populate the returned structure.
+   *
+   * Note that if a pathspec is given in the options to filter the
+   * status, then the results from rename detection (if you enable it) may
+   * not be accurate. To do rename detection properly, this must be called
+   * with no pathspec so that all files can be considered.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   statuses(): Statuses;
+   * }
+   * ```
+   *
+   * @returns A container for a list of status information about a repository.
+   */
+  statuses(): Statuses
+  /**
    * Lookup a tag object by prefix hash from the repository.
    *
    * @category Repository/Methods
@@ -4758,6 +4920,123 @@ export declare class Revwalk {
    * @param {string} reference - The reference must point to a commitish.
    */
   hideRef(reference: string): this
+}
+/**
+ * A container for a list of status information about a repository.
+ *
+ * Each instance appears as if it were a collection, having a length and
+ * allowing indexing, as well as providing an iterator.
+ */
+export declare class Statuses {
+  /**
+   * Gets a status entry from this list at the specified index.
+   *
+   * @category Status/Statuses
+   * @signature
+   * ```ts
+   * class Statuses {
+   *   get(index: number): StatusEntry | null;
+   * }
+   * ```
+   *
+   * @param {number} index - Index of the status entry to get.
+   * @returns A status entry from this list at the specified index. Returns `null` if the status
+   * entry does not exist.
+   */
+  get(index: number): StatusEntry | null
+  /**
+   * Gets the count of status entries in this list.
+   *
+   * @category Status/Statuses
+   * @signature
+   * ```ts
+   * class Statuses {
+   *   len(): number;
+   * }
+   * ```
+   *
+   * @returns If there are no changes in status (according to the options given
+   * when the status list was created), this should return 0.
+   */
+  len(): bigint
+  /**
+   * @category Status/Statuses
+   * @signature
+   * ```ts
+   * class Statuses {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns Return `true` if there is no status entry in this list.
+   */
+  isEmpty(): boolean
+  /** Returns an iterator over the statuses in this list. */
+  iter(): StatusesIter
+}
+export declare class StatusesIter {
+  [Symbol.iterator](): Iterator<StatusEntry, void, void>
+}
+/** A structure representing an entry in the `Statuses` structure. */
+export declare class StatusEntry {
+  /**
+   * Access this entry's path name as a string.
+   *
+   * @category Status/StatusEntry
+   * @signature
+   * ```ts
+   * class StatusEntry {
+   *   path(): string;
+   * }
+   * ```
+   *
+   * @returns The path of this entry.
+   */
+  path(): string
+  /**
+   * Access the status for this file.
+   *
+   * @category Status/StatusEntry
+   * @signature
+   * ```ts
+   * class StatusEntry {
+   *   status(): Status;
+   * }
+   * ```
+   *
+   * @returns Status data for this entry.
+   */
+  status(): Status
+  /**
+   * Access detailed information about the differences between the file in
+   * `HEAD` and the file in the index.
+   *
+   * @category Status/StatusEntry
+   * @signature
+   * ```ts
+   * class StatusEntry {
+   *   headToIndex(): DiffDelta | null;
+   * }
+   * ```
+   *
+   * @returns The differences between the file in `HEAD` and the file in the index.
+   */
+  headToIndex(): DiffDelta | null
+  /**
+   * Access detailed information about the differences between the file in
+   * the index and the file in the working directory.
+   *
+   * @category Status/StatusEntry
+   * @signature
+   * ```ts
+   * class StatusEntry {
+   *   indexToWorkdir(): DiffDelta | null;
+   * }
+   * ```
+   *
+   * @returns Differences between the file in the index and the file in the working directory.
+   */
+  indexToWorkdir(): DiffDelta | null
 }
 /**
  * A class to represent a git [tag][1].
