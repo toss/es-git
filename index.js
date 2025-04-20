@@ -310,8 +310,11 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Blob, isValidBranchName, Branch, Branches, BranchType, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, StatusShow, Statuses, StatusesIter, StatusEntry, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
+const { Blame, BlameHunks, BlameHunksByLine, Blob, isValidBranchName, Branch, Branches, BranchType, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, StatusShow, Statuses, StatusesIter, StatusEntry, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
 
+module.exports.Blame = Blame
+module.exports.BlameHunks = BlameHunks
+module.exports.BlameHunksByLine = BlameHunksByLine
 module.exports.Blob = Blob
 module.exports.isValidBranchName = isValidBranchName
 module.exports.Branch = Branch
