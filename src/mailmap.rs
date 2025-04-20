@@ -3,9 +3,7 @@ use crate::repository::Repository;
 use crate::signature::{Signature, SignaturePayload};
 use napi_derive::napi;
 
-/// A structure to represent a repository's .mailmap file.
-///
-/// The mailmap is used to map author/committer names and emails to canonical real names and emails.
+/// A wrapper around git2::Mailmap providing Node.js bindings
 #[napi]
 pub struct Mailmap {
   pub(crate) inner: git2::Mailmap,
