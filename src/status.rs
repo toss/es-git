@@ -201,7 +201,7 @@ impl Statuses {
   /// }
   /// ```
   ///
-  /// @param {number} index -
+  /// @param {number} index - Index of the status entry to get.
   /// @returns A status entry from this list at the specified index. Returns `null` if the status
   /// entry does not exist.
   pub fn get(&self, index: u32, this: Reference<Statuses>, env: Env) -> Option<StatusEntry> {
@@ -309,6 +309,8 @@ impl StatusEntry {
   ///   path(): string;
   /// }
   /// ```
+  ///
+  /// @returns The path of this entry.
   pub fn path(&self) -> crate::Result<String> {
     let path = std::str::from_utf8(self.inner.path_bytes())?;
     Ok(path.to_string())
@@ -324,13 +326,15 @@ impl StatusEntry {
   ///   status(): Status;
   /// }
   /// ```
+  ///
+  /// @returns Status data for this entry.
   pub fn status(&self) -> Status {
     Status::from(self.inner.status())
   }
 
   #[napi]
   /// Access detailed information about the differences between the file in
-  /// HEAD and the file in the index.
+  /// `HEAD` and the file in the index.
   ///
   /// @category Status/StatusEntry
   /// @signature
@@ -340,7 +344,7 @@ impl StatusEntry {
   /// }
   /// ```
   ///
-  /// @returns todo
+  /// @returns The differences between the file in `HEAD` and the file in the index.
   pub fn head_to_index(&self) -> Option<DiffDelta> {
     self.inner.head_to_index().map(|inner| DiffDelta { inner })
   }
@@ -357,7 +361,7 @@ impl StatusEntry {
   /// }
   /// ```
   ///
-  /// @returns todo
+  /// @returns Differences between the file in the index and the file in the working directory.
   pub fn index_to_workdir(&self) -> Option<DiffDelta> {
     self.inner.index_to_workdir().map(|inner| DiffDelta { inner })
   }

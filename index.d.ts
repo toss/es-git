@@ -4704,7 +4704,7 @@ export declare class Statuses {
    * }
    * ```
    *
-   * @param {number} index -
+   * @param {number} index - Index of the status entry to get.
    * @returns A status entry from this list at the specified index. Returns `null` if the status
    * entry does not exist.
    */
@@ -4754,6 +4754,8 @@ export declare class StatusEntry {
    *   path(): string;
    * }
    * ```
+   *
+   * @returns The path of this entry.
    */
   path(): string
   /**
@@ -4766,11 +4768,13 @@ export declare class StatusEntry {
    *   status(): Status;
    * }
    * ```
+   *
+   * @returns Status data for this entry.
    */
   status(): Status
   /**
    * Access detailed information about the differences between the file in
-   * HEAD and the file in the index.
+   * `HEAD` and the file in the index.
    *
    * @category Status/StatusEntry
    * @signature
@@ -4780,7 +4784,7 @@ export declare class StatusEntry {
    * }
    * ```
    *
-   * @returns todo
+   * @returns The differences between the file in `HEAD` and the file in the index.
    */
   headToIndex(): DiffDelta | null
   /**
@@ -4795,7 +4799,7 @@ export declare class StatusEntry {
    * }
    * ```
    *
-   * @returns todo
+   * @returns Differences between the file in the index and the file in the working directory.
    */
   indexToWorkdir(): DiffDelta | null
 }
