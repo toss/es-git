@@ -406,71 +406,32 @@ impl Blame {
   }
 
   #[napi]
-  /// Iterates through each hunk and calls the callback function
-  ///
-  /// @category Blame/Methods
-  /// @signature
-  /// ```ts
-  /// class Blame {
-  ///   forEachHunk(callback: (hunk: BlameHunk, index: number) => boolean): void;
-  /// }
-  /// ```
-  ///
-  /// @example
-  /// ```ts
-  /// blame.forEachHunk((hunk, index) => {
-  ///   console.log(`Hunk ${index}: ${hunk.finalCommitId}`);
-  ///   return true; // Continue iteration
-  /// });
-  /// ```
-  ///
-  /// @param {Function} callback - Function called for each hunk
-  ///   Return true to continue iteration, false to stop
-  pub fn for_each_hunk(&self, callback: Function<(BlameHunk, u32), bool>) -> crate::Result<()> {
-    let hunk_count = self.get_hunk_count();
-
-    for idx in 0..hunk_count {
-      if let Ok(hunk) = self.get_hunk_by_index(idx) {
-        if !callback.call((hunk, idx)).unwrap_or(false) {
-          break;
-        }
-      }
-    }
-
-    Ok(())
-  }
-
-  #[napi]
   /// Generates blame information from an in-memory buffer
   ///
   /// @category Blame/Methods
   /// @signature
   /// ```ts
   /// class Blame {
-  ///   buffer(buffer: Buffer, bufferLen: number): Blame;
+  ///   buffer(buffer: Buffer): Blame;
   /// }
   /// ```
   ///
   /// @example
   /// ```ts
   /// const buffer = Buffer.from('modified content');
-  /// const bufferBlame = blame.buffer(buffer, buffer.length);
+  /// const bufferBlame = blame.buffer(buffer);
   /// ```
   ///
   /// @param {Buffer} buffer - Buffer containing file content to blame
-  /// @param {number} buffer_len - Length of the buffer in bytes
   /// @returns A new Blame object for the buffer content
-  /// @throws If the buffer contains invalid UTF-8
-  pub fn buffer(&self, buffer: Buffer, buffer_len: u32, env: Env) -> crate::Result<Blame> {
-    let content = std::str::from_utf8(&buffer[..buffer_len as usize])?;
-
+  pub fn buffer(&self, buffer: Buffer, env: Env) -> crate::Result<Blame> {
     let blame = match &self.inner {
       BlameInner::Repo(shared_ref) => {
         let cloned = shared_ref.clone(env)?;
 
         cloned.share_with(env, |git_blame| {
           git_blame
-            .blame_buffer(content.as_bytes())
+            .blame_buffer(buffer.as_ref())
             .map_err(|e| crate::Error::from(e).into())
         })?
       }

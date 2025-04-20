@@ -1597,51 +1597,26 @@ export declare class Blame {
    */
   iterByLine(): BlameHunksByLine
   /**
-   * Iterates through each hunk and calls the callback function
-   *
-   * @category Blame/Methods
-   * @signature
-   * ```ts
-   * class Blame {
-   *   forEachHunk(callback: (hunk: BlameHunk, index: number) => boolean): void;
-   * }
-   * ```
-   *
-   * @example
-   * ```ts
-   * blame.forEachHunk((hunk, index) => {
-   *   console.log(`Hunk ${index}: ${hunk.finalCommitId}`);
-   *   return true; // Continue iteration
-   * });
-   * ```
-   *
-   * @param {Function} callback - Function called for each hunk
-   *   Return true to continue iteration, false to stop
-   */
-  forEachHunk(callback: (arg0: BlameHunk, arg1: number) => boolean): void
-  /**
    * Generates blame information from an in-memory buffer
    *
    * @category Blame/Methods
    * @signature
    * ```ts
    * class Blame {
-   *   buffer(buffer: Buffer, bufferLen: number): Blame;
+   *   buffer(buffer: Buffer): Blame;
    * }
    * ```
    *
    * @example
    * ```ts
    * const buffer = Buffer.from('modified content');
-   * const bufferBlame = blame.buffer(buffer, buffer.length);
+   * const bufferBlame = blame.buffer(buffer);
    * ```
    *
    * @param {Buffer} buffer - Buffer containing file content to blame
-   * @param {number} buffer_len - Length of the buffer in bytes
    * @returns A new Blame object for the buffer content
-   * @throws If the buffer contains invalid UTF-8
    */
-  buffer(buffer: Buffer, bufferLen: number): Blame
+  buffer(buffer: Buffer): Blame
 }
 /** An iterator over blame hunks. */
 export declare class BlameHunks {

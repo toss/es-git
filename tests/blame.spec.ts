@@ -25,7 +25,7 @@ describe('blame', () => {
     expect(hunkByIndex.finalCommitId).toBeTruthy();
 
     const buffer = Buffer.from('Line 1\nLine 2\nLine 3\n');
-    const bufferBlame = blame.buffer(buffer, buffer.length);
+    const bufferBlame = blame.buffer(buffer);
     expect(bufferBlame.getHunkCount()).toBeGreaterThan(0);
   });
 
@@ -47,7 +47,7 @@ describe('blame', () => {
     expect(() => repo.blameFile('non_existent_file')).toThrow();
 
     const specialBuffer = Buffer.from('Line 1\nblah blah blah\nLine 3\nLine 4\n');
-    const specialBlame = blame.buffer(specialBuffer, specialBuffer.length);
+    const specialBlame = blame.buffer(specialBuffer);
 
     const zeroCommitHunk = specialBlame.getHunkByIndex(1);
     expect(zeroCommitHunk.finalCommitId).toBe('0000000000000000000000000000000000000000');
@@ -90,25 +90,13 @@ describe('blame', () => {
     expect(blame.isEmpty()).toBe(false);
 
     const buffer = Buffer.from(' ');
-    const emptyBlame = blame.buffer(buffer, buffer.length);
+    const emptyBlame = blame.buffer(buffer);
     expect(emptyBlame.getHunkCount()).toBeGreaterThan(0);
 
     const lineHunks = [...blame.iterByLine()];
     expect(lineHunks.length).toBeGreaterThan(0);
 
-    const collectedHunks: BlameHunk[] = [];
-    blame.forEachHunk((hunk, index) => {
-      expect(index).toBe(collectedHunks.length);
-      collectedHunks.push(hunk);
-      return true;
-    });
+    const collectedHunks: BlameHunk[] = [...blame.iter()];
     expect(collectedHunks.length).toBe(blame.getHunkCount());
-
-    const limitedHunks: BlameHunk[] = [];
-    blame.forEachHunk((hunk, index) => {
-      limitedHunks.push(hunk);
-      return index < 2;
-    });
-    expect(limitedHunks.length).toBe(3);
   });
 });
