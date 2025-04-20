@@ -68,11 +68,7 @@ describe('mailmap', () => {
     expect(mailmap).not.toBeNull();
 
     const originalSignature = createSignature('Seokju Na', 'seokju.me@gmail.com');
-    const mappedSignature = mailmap!.resolveSignature({
-      name: originalSignature.name,
-      email: originalSignature.email,
-      timeOptions: { timestamp: originalSignature.timestamp },
-    });
+    const mappedSignature = mailmap!.resolveSignature(originalSignature);
 
     expect(mappedSignature).not.toBeNull();
     expect(mappedSignature!.name).toBe('Seokju Me');
