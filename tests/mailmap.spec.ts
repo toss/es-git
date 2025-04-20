@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Mailmap, createSignature, openRepository } from '../index';
+import { Mailmap, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('mailmap', () => {
@@ -23,11 +23,9 @@ describe('mailmap', () => {
     const mailmap = Mailmap.fromBuffer(content);
     expect(mailmap).not.toBeNull();
 
-    const originalSig = createSignature('Seokju Na', 'seokju.me@gmail.com');
     const resolvedSig = mailmap!.resolveSignature({
-      name: originalSig.name,
-      email: originalSig.email,
-      timeOptions: { timestamp: originalSig.timestamp },
+      name: 'Seokju Na',
+      email: 'seokju.me@gmail.com',
     });
 
     expect(resolvedSig).not.toBeNull();
@@ -40,11 +38,9 @@ describe('mailmap', () => {
     const mailmap = Mailmap.fromBuffer(content);
     expect(mailmap).not.toBeNull();
 
-    const unmappedSig = createSignature('Another Seokju', 'another.seokju.me@gmail.com');
     const unmappedResolvedSig = mailmap!.resolveSignature({
-      name: unmappedSig.name,
-      email: unmappedSig.email,
-      timeOptions: { timestamp: unmappedSig.timestamp },
+      name: 'Another Seokju',
+      email: 'another.seokju.me@gmail.com',
     });
 
     expect(unmappedResolvedSig).not.toBeNull();
@@ -67,8 +63,10 @@ describe('mailmap', () => {
     const mailmap = repo.mailmap();
     expect(mailmap).not.toBeNull();
 
-    const originalSignature = createSignature('Seokju Na', 'seokju.me@gmail.com');
-    const mappedSignature = mailmap!.resolveSignature(originalSignature);
+    const mappedSignature = mailmap!.resolveSignature({
+      name: 'Seokju Na',
+      email: 'seokju.me@gmail.com',
+    });
 
     expect(mappedSignature).not.toBeNull();
     expect(mappedSignature!.name).toBe('Seokju Me');
