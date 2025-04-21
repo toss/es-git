@@ -1,12 +1,39 @@
 use crate::commit::Commit;
 use crate::repository::Repository;
 use crate::signature::{Signature, SignaturePayload};
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::ops::{Deref, DerefMut};
+
+pub(crate) enum MailmapInner {
+  Repo(SharedReference<Repository, git2::Mailmap>),
+  Owned(git2::Mailmap),
+}
+
+impl Deref for MailmapInner {
+  type Target = git2::Mailmap;
+
+  fn deref(&self) -> &Self::Target {
+    match self {
+      Self::Repo(repo) => repo.deref(),
+      Self::Owned(mailmap) => mailmap,
+    }
+  }
+}
+
+impl DerefMut for MailmapInner {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    match self {
+      Self::Repo(repo) => repo.deref_mut(),
+      Self::Owned(mailmap) => mailmap,
+    }
+  }
+}
 
 /// A wrapper around git2::Mailmap providing Node.js bindings
 #[napi]
 pub struct Mailmap {
-  pub(crate) inner: git2::Mailmap,
+  pub(crate) inner: MailmapInner,
 }
 
 #[napi]
@@ -23,9 +50,10 @@ impl Mailmap {
   /// @returns A new mailmap object or null if operation failed
   #[napi]
   pub fn from_buffer(content: String) -> crate::Result<Option<Mailmap>> {
-    let result = git2::Mailmap::from_buffer(&content);
-    match result {
-      Ok(mailmap) => Ok(Some(Mailmap { inner: mailmap })),
+    match git2::Mailmap::from_buffer(&content) {
+      Ok(mailmap) => Ok(Some(Mailmap {
+        inner: MailmapInner::Owned(mailmap),
+      })),
       Err(e) => Err(e.into()),
     }
   }
@@ -55,15 +83,24 @@ impl Mailmap {
     replace_name: Option<String>,
     replace_email: String,
   ) -> bool {
-    self
-      .inner
-      .add_entry(
-        real_name.as_deref(),
-        real_email.as_deref(),
-        replace_name.as_deref(),
-        &replace_email,
-      )
-      .is_ok()
+    match &mut self.inner {
+      MailmapInner::Repo(repo) => repo
+        .add_entry(
+          real_name.as_deref(),
+          real_email.as_deref(),
+          replace_name.as_deref(),
+          &replace_email,
+        )
+        .is_ok(),
+      MailmapInner::Owned(mailmap) => mailmap
+        .add_entry(
+          real_name.as_deref(),
+          real_email.as_deref(),
+          replace_name.as_deref(),
+          &replace_email,
+        )
+        .is_ok(),
+    }
   }
 
   /// Resolve a signature to its canonical form using a mailmap.
@@ -83,7 +120,11 @@ impl Mailmap {
       None => git2::Signature::now(&signature.name, &signature.email),
     }?;
 
-    let resolved = self.inner.resolve_signature(&git_signature)?;
+    let resolved = match &self.inner {
+      MailmapInner::Repo(repo) => repo.resolve_signature(&git_signature)?,
+      MailmapInner::Owned(owned) => owned.resolve_signature(&git_signature)?,
+    };
+
     Signature::try_from(resolved)
   }
 }
@@ -105,7 +146,10 @@ impl Commit {
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Author signature of this commit with mapping applied
   pub fn author_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
-    let git_signature = self.inner.author_with_mailmap(&mailmap.inner)?;
+    let git_signature = match &mailmap.inner {
+      MailmapInner::Repo(repo) => self.inner.author_with_mailmap(repo)?,
+      MailmapInner::Owned(owned) => self.inner.author_with_mailmap(owned)?,
+    };
     let signature = Signature::try_from(git_signature)?;
     Ok(signature)
   }
@@ -125,7 +169,10 @@ impl Commit {
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Committer signature of this commit with mapping applied
   pub fn committer_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
-    let git_signature = self.inner.committer_with_mailmap(&mailmap.inner)?;
+    let git_signature = match &mailmap.inner {
+      MailmapInner::Repo(repo) => self.inner.committer_with_mailmap(repo)?,
+      MailmapInner::Owned(owned) => self.inner.committer_with_mailmap(owned)?,
+    };
     let signature = Signature::try_from(git_signature)?;
     Ok(signature)
   }
@@ -146,7 +193,15 @@ impl Repository {
   ///
   /// @returns The mailmap object if it exists, null otherwise
   #[napi]
-  pub fn mailmap(&self) -> Option<Mailmap> {
-    self.inner.mailmap().ok().map(|mailmap| Mailmap { inner: mailmap })
+  pub fn mailmap(&self, this: Reference<Repository>, env: Env) -> Option<Mailmap> {
+    let inner = this
+      .share_with(env, |repo| {
+        repo.inner.mailmap().map_err(crate::Error::from).map_err(|e| e.into())
+      })
+      .ok()?;
+
+    Some(Mailmap {
+      inner: MailmapInner::Repo(inner),
+    })
   }
 }

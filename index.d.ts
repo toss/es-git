@@ -3170,11 +3170,7 @@ export declare class Index {
 export declare class IndexEntries {
   [Symbol.iterator](): Iterator<IndexEntry, void, void>
 }
-/**
- * A structure to represent a repository's .mailmap file.
- *
- * The mailmap is used to map author/committer names and emails to canonical real names and emails.
- */
+/** A wrapper around git2::Mailmap providing Node.js bindings */
 export declare class Mailmap {
   /**
    * Create a mailmap from the contents of a string.
