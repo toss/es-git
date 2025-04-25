@@ -25,15 +25,15 @@ export function exec(command: string, cwd: string): Promise<string> {
   });
 }
 
-type BenchmarkOptions = Omit<BenchOptions, "setup">;
-
 export function createBenchmark(gitDir: string) {
   const benchESGit = (
     name: string,
     operation: (repo: Repository) => unknown | Promise<unknown>,
-    options?: BenchmarkOptions
+    options?: BenchOptions
   ) => {
     let esGitRepo: Repository;
+    const { setup: userSetup, ...restOptions } = options || {};
+
     bench(
       name,
       async () => {
@@ -41,10 +41,13 @@ export function createBenchmark(gitDir: string) {
         await operation(esGitRepo);
       },
       {
-        setup: async () => {
+        setup: async (task, mode) => {
           esGitRepo = await openRepository(gitDir);
+          if (userSetup) {
+            await userSetup(task, mode);
+          }
         },
-        ...options,
+        ...restOptions,
       }
     );
   };
@@ -52,9 +55,11 @@ export function createBenchmark(gitDir: string) {
   const benchNodeGit = (
     name: string,
     operation: (repo: NodeGitRepository) => unknown | Promise<unknown>,
-    options?: BenchmarkOptions
+    options?: BenchOptions
   ) => {
     let nodeGitRepo: NodeGitRepository;
+    const { setup: userSetup, ...restOptions } = options || {};
+
     bench(
       name,
       async () => {
@@ -62,10 +67,13 @@ export function createBenchmark(gitDir: string) {
         await operation(nodeGitRepo);
       },
       {
-        setup: async () => {
+        setup: async (task, mode) => {
           nodeGitRepo = await NodeGitRepository.open(gitDir);
+          if (userSetup) {
+            await userSetup(task, mode);
+          }
         },
-        ...options,
+        ...restOptions,
       }
     );
   };
@@ -73,20 +81,25 @@ export function createBenchmark(gitDir: string) {
   const benchSimpleGit = (
     name: string,
     operation: (repo: SimpleGitRepository) => unknown | Promise<unknown>,
-    options?: BenchmarkOptions
+    options?: BenchOptions
   ) => {
     let simpleGitRepo: SimpleGitRepository;
+    const { setup: userSetup, ...restOptions } = options || {};
+
     bench(
       name,
-      () => {
+      async () => {
         if (!simpleGitRepo) throw new Error('Setup failed for simple-git benchmark');
-        operation(simpleGitRepo);
+        await Promise.resolve(operation(simpleGitRepo));
       },
       {
-        setup: () => {
+        setup: async (task, mode) => {
           simpleGitRepo = new SimpleGitRepository(gitDir);
+          if (userSetup) {
+            await userSetup(task, mode);
+          }
         },
-        ...options,
+        ...restOptions,
       }
     );
   };
