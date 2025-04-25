@@ -25,11 +25,13 @@ export function exec(command: string, cwd: string): Promise<string> {
   });
 }
 
+type BenchmarkOptions = Omit<BenchOptions, "setup">;
+
 export function createBenchmark(gitDir: string) {
   const benchESGit = (
     name: string,
     operation: (repo: Repository) => unknown | Promise<unknown>,
-    options?: BenchOptions
+    options?: BenchmarkOptions
   ) => {
     let esGitRepo: Repository;
     bench(
@@ -50,7 +52,7 @@ export function createBenchmark(gitDir: string) {
   const benchNodeGit = (
     name: string,
     operation: (repo: NodeGitRepository) => unknown | Promise<unknown>,
-    options?: BenchOptions
+    options?: BenchmarkOptions
   ) => {
     let nodeGitRepo: NodeGitRepository;
     bench(
@@ -71,7 +73,7 @@ export function createBenchmark(gitDir: string) {
   const benchSimpleGit = (
     name: string,
     operation: (repo: SimpleGitRepository) => unknown | Promise<unknown>,
-    options?: BenchOptions
+    options?: BenchmarkOptions
   ) => {
     let simpleGitRepo: SimpleGitRepository;
     bench(
