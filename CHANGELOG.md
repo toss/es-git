@@ -1,5 +1,18 @@
 # Changelog
 
+## Version v0.3.0
+
+Released on April 26th, 2025.
+
+- Add commit signature feature.
+- Add git branch feature.
+- Add git blame feature.
+- Add git ignore feature.
+- Add git mailmap feature.
+- Benchmark added: `@napi-rs/simple-git`
+
+We sincerely thank @nnnnoel, @other-yuka for their contributions. We appreciate your great efforts!
+
 ## Version v0.2.0
 
 Released on April 6th, 2025.

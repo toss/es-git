@@ -2091,6 +2091,7 @@ export declare class Commit {
    *
    * @param {Mailmap} mailmap - The mailmap to use for mapping
    * @returns Author signature of this commit with mapping applied
+   * @throws An error if the operation failed.
    */
   authorWithMailmap(mailmap: Mailmap): Signature
   /**
@@ -2107,6 +2108,7 @@ export declare class Commit {
    *
    * @param {Mailmap} mailmap - The mailmap to use for mapping
    * @returns Committer signature of this commit with mapping applied
+   * @throws An error if the operation failed.
    */
   committerWithMailmap(mailmap: Mailmap): Signature
 }
@@ -3233,6 +3235,7 @@ export declare class Mailmap {
    *
    * @param {SignaturePayload} signature - Signature to resolve
    * @returns The resolved signature with canonical name and email
+   * @throws An error if the operation failed.
    *
    * @category Mailmap/Methods
    *
