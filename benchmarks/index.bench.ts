@@ -21,7 +21,7 @@ describe('open', () => {
   });
 
   bench('@napi-rs/simple-git', () => {
-    SimpleGitRepository.init(gitDir);
+    new SimpleGitRepository(gitDir);
   });
 });
 
