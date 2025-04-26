@@ -149,10 +149,7 @@ impl Commit {
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Committer signature of this commit with mapping applied
   pub fn committer_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
-    let git_signature = match &mailmap.inner {
-      MailmapInner::Repo(repo) => self.inner.committer_with_mailmap(repo)?,
-      MailmapInner::Owned(owned) => self.inner.committer_with_mailmap(owned)?,
-    };
+    let git_signature = self.inner.committer_with_mailmap(&mailmap.inner)?;
     let signature = Signature::try_from(git_signature)?;
     Ok(signature)
   }
@@ -198,11 +195,11 @@ impl Repository {
 /// @returns A new mailmap object
 /// @throws An error if operation failed
 ///
-/// @category Mailmap/Methods
+/// @category Mailmap
 ///
 /// @signature
 /// ```ts
-/// static createMailmapFromBuffer(content: string): Mailmap;
+/// function createMailmapFromBuffer(content: string): Mailmap;
 /// ```
 #[napi]
 pub fn create_mailmap_from_buffer(content: String) -> crate::Result<Mailmap> {
