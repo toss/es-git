@@ -126,10 +126,7 @@ impl Commit {
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Author signature of this commit with mapping applied
   pub fn author_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
-    let git_signature = match &mailmap.inner {
-      MailmapInner::Repo(repo) => self.inner.author_with_mailmap(repo)?,
-      MailmapInner::Owned(owned) => self.inner.author_with_mailmap(owned)?,
-    };
+    let git_signature = self.inner.committer_with_mailmap(&mailmap.inner)?;
     let signature = Signature::try_from(git_signature)?;
     Ok(signature)
   }

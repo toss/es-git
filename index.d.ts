@@ -675,11 +675,11 @@ export interface AddMailmapEntryData {
  * @returns A new mailmap object
  * @throws An error if operation failed
  *
- * @category Mailmap/Methods
+ * @category Mailmap
  *
  * @signature
  * ```ts
- * static createMailmapFromBuffer(content: string): Mailmap;
+ * function createMailmapFromBuffer(content: string): Mailmap;
  * ```
  */
 export declare function createMailmapFromBuffer(content: string): Mailmap
@@ -4114,7 +4114,7 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   addIgnoreRule(rules: string): boolean;
+   *   addIgnoreRule(rules: string): void;
    * }
    * ```
    *
