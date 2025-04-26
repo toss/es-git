@@ -30,6 +30,14 @@ impl DerefMut for MailmapInner {
   }
 }
 
+#[napi(object)]
+pub struct AddMailmapEntryData {
+  pub real_name: Option<String>,
+  pub real_email: Option<String>,
+  pub replace_name: Option<String>,
+  pub replace_email: String,
+}
+
 /// A wrapper around git2::Mailmap providing Node.js bindings
 #[napi]
 pub struct Mailmap {
@@ -38,26 +46,6 @@ pub struct Mailmap {
 
 #[napi]
 impl Mailmap {
-  /// Create a mailmap from the contents of a string.
-  ///
-  /// The format of the string should follow the rules of the mailmap file:
-  /// ```
-  /// # Comment line (ignored)
-  /// Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>
-  /// ```
-  ///
-  /// @param {string} content - Content of the mailmap file
-  /// @returns A new mailmap object or null if operation failed
-  #[napi]
-  pub fn from_buffer(content: String) -> crate::Result<Option<Mailmap>> {
-    match git2::Mailmap::from_buffer(&content) {
-      Ok(mailmap) => Ok(Some(Mailmap {
-        inner: MailmapInner::Owned(mailmap),
-      })),
-      Err(e) => Err(e.into()),
-    }
-  }
-
   /// Add a new Mailmap entry.
   ///
   /// Maps an author/committer (specified by `replace_name` and `replace_email`)
@@ -70,37 +58,27 @@ impl Mailmap {
   /// `replace_email` is provided, it will apply to anyone with that email,
   /// regardless of name.
   ///
-  /// @param {string} [real_name] - The real name to use, or null
-  /// @param {string} [real_email] - The real email to use, or null
-  /// @param {string} [replace_name] - The name to replace, or null
-  /// @param {string} replace_email - The email to replace
-  /// @returns true if the operation succeeded, false otherwise
+  /// @param {AddMailmapEntryData} entry - The mailmap entry data.
+  /// @returns {void}
+  /// @throws An error if the operation failed.
+  ///
+  /// @category Mailmap/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Mailmap {
+  ///   addEntry(entry: AddMailmapEntryData): void;
+  /// }
+  /// ```
   #[napi]
-  pub fn add_entry(
-    &mut self,
-    real_name: Option<String>,
-    real_email: Option<String>,
-    replace_name: Option<String>,
-    replace_email: String,
-  ) -> bool {
-    match &mut self.inner {
-      MailmapInner::Repo(repo) => repo
-        .add_entry(
-          real_name.as_deref(),
-          real_email.as_deref(),
-          replace_name.as_deref(),
-          &replace_email,
-        )
-        .is_ok(),
-      MailmapInner::Owned(mailmap) => mailmap
-        .add_entry(
-          real_name.as_deref(),
-          real_email.as_deref(),
-          replace_name.as_deref(),
-          &replace_email,
-        )
-        .is_ok(),
-    }
+  pub fn add_entry(&mut self, entry: AddMailmapEntryData) -> crate::Result<()> {
+    self.inner.add_entry(
+      entry.real_name.as_deref(),
+      entry.real_email.as_deref(),
+      entry.replace_name.as_deref(),
+      &entry.replace_email,
+    )?;
+    Ok(())
   }
 
   /// Resolve a signature to its canonical form using a mailmap.
@@ -109,16 +87,20 @@ impl Mailmap {
   ///
   /// @param {SignaturePayload} signature - Signature to resolve
   /// @returns The resolved signature with canonical name and email
+  ///
+  /// @category Mailmap/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Mailmap {
+  ///   resolveSignature(signature: SignaturePayload): Signature;
+  /// }
+  /// ```
   #[napi]
   pub fn resolve_signature(&self, signature: SignaturePayload) -> crate::Result<Signature> {
-    let git_signature = match &signature.time_options {
-      Some(opts) => git2::Signature::new(
-        &signature.name,
-        &signature.email,
-        &git2::Time::new(opts.timestamp, opts.offset.unwrap_or(0)),
-      ),
-      None => git2::Signature::now(&signature.name, &signature.email),
-    }?;
+    let git_signature = git2::Signature::try_from(
+      Signature::try_from(signature)?
+    )?;
 
     let resolved = match &self.inner {
       MailmapInner::Repo(repo) => repo.resolve_signature(&git_signature)?,
@@ -203,5 +185,33 @@ impl Repository {
     Some(Mailmap {
       inner: MailmapInner::Repo(inner),
     })
+  }
+}
+
+/// Create a mailmap from the contents of a string.
+///
+/// The format of the string should follow the rules of the mailmap file:
+/// ```
+/// # Comment line (ignored)
+/// Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>
+/// ```
+///
+/// @param {string} content - Content of the mailmap file
+/// @returns A new mailmap object
+/// @throws An error if operation failed
+///
+/// @category Mailmap/Methods
+///
+/// @signature
+/// ```ts
+/// static createMailmapFromBuffer(content: string): Mailmap;
+/// ```
+#[napi]
+pub fn create_mailmap_from_buffer(content: String) -> crate::Result<Mailmap> {
+  match git2::Mailmap::from_buffer(&content) {
+    Ok(mailmap) => Ok(Mailmap {
+      inner: MailmapInner::Owned(mailmap),
+    }),
+    Err(e) => Err(e.into()),
   }
 }

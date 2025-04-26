@@ -1,26 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { Mailmap, openRepository } from '../index';
+import { createMailmapFromBuffer, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('mailmap', () => {
   it('should create mailmap from buffer', () => {
     const content = '# Comment line (ignored)\nSeokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>';
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
     expect(mailmap).not.toBeNull();
   });
 
   it('should add entries to mailmap', () => {
     const content = '# Comment line (ignored)';
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
     expect(mailmap).not.toBeNull();
 
-    const result = mailmap!.addEntry('Seokju Me', 'seokju.me@toss.im', 'Seokju Na', 'seokju.me@gmail.com');
-    expect(result).toBe(true);
+    mailmap!.addEntry({
+      realName: 'Seokju Me',
+      realEmail: 'seokju.me@toss.im',
+      replaceName: 'Seokju Na',
+      replaceEmail: 'seokju.me@gmail.com',
+    });
   });
 
   it('should resolve mapped signatures with mailmap', () => {
     const content = 'Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>';
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
     expect(mailmap).not.toBeNull();
 
     const resolvedSig = mailmap!.resolveSignature({
@@ -35,7 +39,7 @@ describe('mailmap', () => {
 
   it('should return original signature when not mapped', () => {
     const content = 'Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>';
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
     expect(mailmap).not.toBeNull();
 
     const unmappedResolvedSig = mailmap!.resolveSignature({
@@ -86,7 +90,7 @@ describe('mailmap', () => {
     const mappedName = 'Seokju Me';
     const mappedEmail = 'seokju.me@toss.im';
     const content = `${mappedName} <${mappedEmail}> ${originalAuthor.name} <${originalAuthor.email}>`;
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
 
     const mappedAuthor = commit.authorWithMailmap(mailmap!);
     expect(mappedAuthor.name).toBe(mappedName);
@@ -108,7 +112,7 @@ describe('mailmap', () => {
     const mappedName = 'Seokju Mapped';
     const mappedEmail = 'seokju.mapped@gmail.com';
     const content = `${mappedName} <${mappedEmail}> ${originalCommitter.name} <${originalCommitter.email}>`;
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
 
     const mappedCommitter = commit.committerWithMailmap(mailmap!);
     expect(mappedCommitter.name).toBe(mappedName);
@@ -127,7 +131,7 @@ describe('mailmap', () => {
     const originalTimestamp = originalAuthor.timestamp;
 
     const content = `Seokju Mapped <seokju.mapped@gmail.com> ${originalAuthor.name} <${originalAuthor.email}>`;
-    const mailmap = Mailmap.fromBuffer(content);
+    const mailmap = createMailmapFromBuffer(content);
 
     const mappedAuthor = commit.authorWithMailmap(mailmap!);
     expect(mappedAuthor.timestamp).toBe(originalTimestamp);

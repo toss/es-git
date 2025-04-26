@@ -656,6 +656,33 @@ export interface IndexUpdateAllOptions {
    */
   onMatch?: (args: IndexOnMatchCallbackArgs) => number
 }
+export interface AddMailmapEntryData {
+  realName?: string
+  realEmail?: string
+  replaceName?: string
+  replaceEmail: string
+}
+/**
+ * Create a mailmap from the contents of a string.
+ *
+ * The format of the string should follow the rules of the mailmap file:
+ * ```
+ * # Comment line (ignored)
+ * Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>
+ * ```
+ *
+ * @param {string} content - Content of the mailmap file
+ * @returns A new mailmap object
+ * @throws An error if operation failed
+ *
+ * @category Mailmap/Methods
+ *
+ * @signature
+ * ```ts
+ * static createMailmapFromBuffer(content: string): Mailmap;
+ * ```
+ */
+export declare function createMailmapFromBuffer(content: string): Mailmap
 /**
  * - `Any` : Any kind of git object
  * - `Commit` : An object which corresponds to a git commit
@@ -3173,19 +3200,6 @@ export declare class IndexEntries {
 /** A wrapper around git2::Mailmap providing Node.js bindings */
 export declare class Mailmap {
   /**
-   * Create a mailmap from the contents of a string.
-   *
-   * The format of the string should follow the rules of the mailmap file:
-   * ```
-   * # Comment line (ignored)
-   * Seokju Me <seokju.me@toss.im> Seokju Na <seokju.me@gmail.com>
-   * ```
-   *
-   * @param {string} content - Content of the mailmap file
-   * @returns A new mailmap object or null if operation failed
-   */
-  static fromBuffer(content: string): Mailmap | null
-  /**
    * Add a new Mailmap entry.
    *
    * Maps an author/committer (specified by `replace_name` and `replace_email`)
@@ -3198,13 +3212,20 @@ export declare class Mailmap {
    * `replace_email` is provided, it will apply to anyone with that email,
    * regardless of name.
    *
-   * @param {string} [real_name] - The real name to use, or null
-   * @param {string} [real_email] - The real email to use, or null
-   * @param {string} [replace_name] - The name to replace, or null
-   * @param {string} replace_email - The email to replace
-   * @returns true if the operation succeeded, false otherwise
+   * @param {AddMailmapEntryData} entry - The mailmap entry data.
+   * @returns {void}
+   * @throws An error if the operation failed.
+   *
+   * @category Mailmap/Methods
+   *
+   * @signature
+   * ```ts
+   * class Mailmap {
+   *   addEntry(entry: AddMailmapEntryData): void;
+   * }
+   * ```
    */
-  addEntry(realName: string | undefined | null, realEmail: string | undefined | null, replaceName: string | undefined | null, replaceEmail: string): boolean
+  addEntry(entry: AddMailmapEntryData): void
   /**
    * Resolve a signature to its canonical form using a mailmap.
    *
@@ -3212,6 +3233,15 @@ export declare class Mailmap {
    *
    * @param {SignaturePayload} signature - Signature to resolve
    * @returns The resolved signature with canonical name and email
+   *
+   * @category Mailmap/Methods
+   *
+   * @signature
+   * ```ts
+   * class Mailmap {
+   *   resolveSignature(signature: SignaturePayload): Signature;
+   * }
+   * ```
    */
   resolveSignature(signature: SignaturePayload): Signature
 }
