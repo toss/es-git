@@ -87,6 +87,7 @@ impl Mailmap {
   ///
   /// @param {SignaturePayload} signature - Signature to resolve
   /// @returns The resolved signature with canonical name and email
+  /// @throws An error if the operation failed.
   ///
   /// @category Mailmap/Methods
   ///
@@ -125,6 +126,7 @@ impl Commit {
   ///
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Author signature of this commit with mapping applied
+  /// @throws An error if the operation failed.
   pub fn author_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
     let git_signature = self.inner.author_with_mailmap(&mailmap.inner)?;
     let signature = Signature::try_from(git_signature)?;
@@ -145,6 +147,7 @@ impl Commit {
   ///
   /// @param {Mailmap} mailmap - The mailmap to use for mapping
   /// @returns Committer signature of this commit with mapping applied
+  /// @throws An error if the operation failed.
   pub fn committer_with_mailmap(&self, mailmap: &Mailmap) -> crate::Result<Signature> {
     let git_signature = self.inner.committer_with_mailmap(&mailmap.inner)?;
     let signature = Signature::try_from(git_signature)?;
@@ -170,7 +173,7 @@ impl Repository {
   pub fn mailmap(&self, this: Reference<Repository>, env: Env) -> Option<Mailmap> {
     let inner = this
       .share_with(env, |repo| {
-        repo.inner.mailmap().map_err(crate::Error::from).map_err(|e| e.into())
+        repo.inner.mailmap().map_err(|e| crate::Error::from(e).into())
       })
       .ok()?;
 
