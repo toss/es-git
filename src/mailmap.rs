@@ -98,9 +98,7 @@ impl Mailmap {
   /// ```
   #[napi]
   pub fn resolve_signature(&self, signature: SignaturePayload) -> crate::Result<Signature> {
-    let git_signature = git2::Signature::try_from(
-      Signature::try_from(signature)?
-    )?;
+    let git_signature = git2::Signature::try_from(Signature::try_from(signature)?)?;
 
     let resolved = match &self.inner {
       MailmapInner::Repo(repo) => repo.resolve_signature(&git_signature)?,
