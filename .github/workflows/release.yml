@@ -121,12 +121,8 @@ jobs:
       deployments: write
     needs:
       - build
-    outputs:
-      published: ${{ steps.check-publish.outputs.published }}
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch git tags
-        run: git fetch origin 'refs/tags/*:refs/tags/*'
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -188,25 +184,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Check if publish happened and is latest
-        id: check-publish
-        run: |
-          if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
-            # Check if this is the latest version
-            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-            if [[ "$GITHUB_REF_NAME" == "$LATEST_TAG" ]]; then
-              echo "published=true" >> $GITHUB_OUTPUT
-            else
-              echo "published=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "published=false" >> $GITHUB_OUTPUT
-          fi
-  publish-documentation-site:
+  publish-docs:
     runs-on: ubuntu-latest
     needs:
       - release
-    if: needs.release.outputs.published == 'true'
+    if: github.ref_type == 'tag'
     steps:
       - uses: actions/checkout@v4
       - name: Setup node
