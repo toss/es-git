@@ -14,7 +14,7 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   addIgnoreRule(rules: string): boolean;
+  ///   addIgnoreRule(rules: string): void;
   /// }
   /// ```
   ///
