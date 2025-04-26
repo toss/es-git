@@ -7,6 +7,7 @@ pub mod commit;
 pub mod config;
 pub mod diff;
 mod error;
+pub mod ignore;
 pub mod index;
 pub mod object;
 pub mod oid;
