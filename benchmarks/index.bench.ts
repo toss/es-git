@@ -4,10 +4,12 @@ import { Repository as SimpleGitRepository } from '@napi-rs/simple-git';
 import { Repository as NodeGitRepository, Revparse as NodeGitRevparse } from 'nodegit';
 import { bench, describe } from 'vitest';
 import { openRepository } from '../index';
-import { exec } from './util';
+import { createBenchmark, exec } from './util';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const gitDir = path.resolve(dirname, '..');
+
+const benchmark = createBenchmark(gitDir);
 
 describe('open', () => {
   bench('es-git', async () => {
@@ -24,70 +26,46 @@ describe('open', () => {
 });
 
 describe('rev-parse', () => {
-  bench('es-git', async () => {
-    const repo = await openRepository(gitDir);
-    repo.revparse('HEAD');
-  });
+  benchmark.esGit('es-git', repo => repo.revparse('HEAD'));
 
-  bench('nodegit', async () => {
-    const repo = await NodeGitRepository.open(gitDir);
-    await NodeGitRevparse.single(repo, 'HEAD');
-  });
+  benchmark.nodegit('nodegit', repo => NodeGitRevparse.single(repo, 'HEAD'));
 
-  bench('@napi-rs/simple-git', () => {
-    const repo = SimpleGitRepository.init(gitDir);
-    repo.head().resolve();
-  });
+  benchmark.simpleGit('@napi-rs/simple-git', repo => repo.head().resolve());
 
-  bench('child_process', async () => {
-    await exec('git rev-parse HEAD', gitDir);
-  });
+  benchmark.childProcess('child_process', () => exec('git rev-parse HEAD', gitDir));
 });
 
 describe('revwalk', () => {
-  bench('es-git', async () => {
-    const repo = await openRepository(gitDir);
+  benchmark.esGit('es-git', repo => {
     const revwalk = repo.revwalk().pushRange('b597cf0b..d47af3b0');
-    console.assert([...revwalk].length === 103);
+    const oids = [...revwalk];
+    console.assert(oids.length === 103);
   });
 
-  bench('nodegit', async () => {
-    const repo = await NodeGitRepository.open(gitDir);
+  benchmark.nodegit('nodegit', async repo => {
     const revwalk = repo.createRevWalk();
     revwalk.pushRange('b597cf0b..d47af3b0');
     const oids = await revwalk.fastWalk(200);
     console.assert(oids.length === 103);
   });
 
-  bench('@napi-rs/simple-git', () => {
-    const repo = SimpleGitRepository.init(gitDir);
+  benchmark.simpleGit('@napi-rs/simple-git', repo => {
     const revwalk = repo.revWalk();
     const oids = [...revwalk.pushRange('b597cf0b..d47af3b0')];
     console.assert(oids.length === 103);
   });
 
-  bench('child_process', async () => {
+  benchmark.childProcess('child_process', async () => {
     await exec('git log b597cf0b..d47af3b0', gitDir);
   });
 });
 
 describe('get commit', () => {
-  bench('es-git', async () => {
-    const repo = await openRepository(gitDir);
-    repo.getCommit('d47af3b02b36834dcde1b60afb64547460f5abc0');
-  });
+  benchmark.esGit('es-git', repo => repo.getCommit('d47af3b02b36834dcde1b60afb64547460f5abc0'));
 
-  bench('nodegit', async () => {
-    const repo = await NodeGitRepository.open(gitDir);
-    await repo.getCommit('d47af3b02b36834dcde1b60afb64547460f5abc0');
-  });
+  benchmark.nodegit('nodegit', repo => repo.getCommit('d47af3b02b36834dcde1b60afb64547460f5abc0'));
 
-  bench('@napi-rs/simple-git', () => {
-    const repo = SimpleGitRepository.init(gitDir);
-    repo.findCommit('d47af3b02b36834dcde1b60afb64547460f5abc0');
-  });
+  benchmark.simpleGit('@napi-rs/simple-git', repo => repo.findCommit('d47af3b02b36834dcde1b60afb64547460f5abc0'));
 
-  bench('child_process', async () => {
-    await exec('git log d47af3b02b36834dcde1b60afb64547460f5abc0', gitDir);
-  });
+  benchmark.childProcess('child_process', () => exec('git log d47af3b02b36834dcde1b60afb64547460f5abc0', gitDir));
 });
