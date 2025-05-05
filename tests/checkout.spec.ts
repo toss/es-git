@@ -14,12 +14,15 @@ describe('checkout', () => {
   it('checkout branches', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
+    const sig = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
 
     let index = repo.index();
     const treeId = index.writeTree();
     const tree = repo.getTree(treeId);
     const firstOid = repo.commit(tree, '1', {
       updateRef: 'HEAD',
+      author: sig,
+      committer: sig,
       parents: [repo.head().target()!],
     });
     const firstCommit = repo.getCommit(firstOid);
@@ -34,6 +37,8 @@ describe('checkout', () => {
     const treeA = repo.getTree(treeAId);
     const aOid = repo.commit(treeA, 'A', {
       updateRef: 'refs/heads/branch-a',
+      author: sig,
+      committer: sig,
       parents: [firstOid],
     });
     repo.setHead('refs/heads/branch-a');
@@ -47,6 +52,8 @@ describe('checkout', () => {
     const treeB = repo.getTree(treeBId);
     const bOid = repo.commit(treeB, 'B', {
       updateRef: 'refs/heads/branch-b',
+      author: sig,
+      committer: sig,
       parents: [firstOid],
     });
     repo.setHead('refs/heads/branch-b');
