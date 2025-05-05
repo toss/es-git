@@ -4,6 +4,7 @@ _default:
 alias f := format
 alias t := test
 alias l := lint
+alias b := build
 alias bench := benchmarks
 
 # Setup development environment

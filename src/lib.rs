@@ -3,6 +3,7 @@
 pub mod blame;
 pub mod blob;
 pub mod branch;
+pub mod checkout;
 pub mod commit;
 pub mod config;
 pub mod diff;
