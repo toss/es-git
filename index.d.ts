@@ -109,6 +109,148 @@ export interface BranchesFilter {
   /** Branch type to filter. */
   type?: BranchType
 }
+export interface CheckoutOptions {
+  /**
+   * Indicate that this checkout should perform a dry run by checking for
+   * conflicts but not make any actual changes.
+   */
+  dryRun?: boolean
+  /**
+   * Take any action necessary to get the working directory to match the
+   * target including potentially discarding modified files.
+   */
+  force?: boolean
+  /**
+   * Indicate that the checkout should be performed safely, allowing new
+   * files to be created but not overwriting existing files or changes.
+   *
+   * This is the default.
+   */
+  safe?: boolean
+  /**
+   * In safe mode, create files that don't exist.
+   *
+   * Defaults to false.
+   */
+  recreateMissing?: boolean
+  /**
+   * In safe mode, apply safe file updates even when there are conflicts
+   * instead of canceling the checkout.
+   *
+   * Defaults to false.
+   */
+  allowConflicts?: boolean
+  /**
+   * Remove untracked files from the working dir.
+   *
+   * Defaults to false.
+   */
+  removeUntracked?: boolean
+  /**
+   * Remove ignored files from the working dir.
+   *
+   * Defaults to false.
+   */
+  removeIgnored?: boolean
+  /**
+   * Only update the contents of files that already exist.
+   *
+   * If set, files will not be created or deleted.
+   *
+   * Defaults to false.
+   */
+  updateOnly?: boolean
+  /**
+   * Prevents checkout from writing the updated files' information to the
+   * index.
+   *
+   * Defaults to true.
+   */
+  updateIndex?: boolean
+  /**
+   * Indicate whether the index and git attributes should be refreshed from
+   * disk before any operations.
+   *
+   * Defaults to true,
+   */
+  refresh?: boolean
+  /**
+   * Skip files with unmerged index entries.
+   *
+   * Defaults to false.
+   */
+  skipUnmerged?: boolean
+  /**
+   * Indicate whether the checkout should proceed on conflicts by using the
+   * stage 2 version of the file ("ours").
+   *
+   * Defaults to false.
+   */
+  useOurs?: boolean
+  /**
+   * Indicate whether the checkout should proceed on conflicts by using the
+   * stage 3 version of the file ("theirs").
+   *
+   * Defaults to false.
+   */
+  useTheirs?: boolean
+  /**
+   * Indicate whether ignored files should be overwritten during the checkout.
+   *
+   * Defaults to true.
+   */
+  overwriteIgnored?: boolean
+  /**
+   * Indicate whether a normal merge file should be written for conflicts.
+   *
+   * Defaults to false.
+   */
+  conflictStyleMerge?: boolean
+  /**
+   * Indicates whether to include common ancestor data in diff3 format files
+   * for conflicts.
+   *
+   * Defaults to false.
+   */
+  conflictStyleDiff3?: boolean
+  /**
+   * Treat paths specified in `path` as exact file paths
+   * instead of as pathspecs.
+   */
+  disablePathspecMatch?: boolean
+  /** Indicate whether to apply filters like CRLF conversion. */
+  disableFilters?: boolean
+  /**
+   * Set the mode with which new directories are created.
+   *
+   * Default is 0755
+   */
+  dirPerm?: number
+  /**
+   * Set the mode with which new files are created.
+   *
+   * The default is 0644 or 0755 as dictated by the blob.
+   */
+  filePerm?: number
+  /**
+   * Add a path to be checked out.
+   *
+   * The path is a [pathspec](https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefpathspecapathspec) pattern, unless
+   * `disablePathspecMatch` is set.
+   *
+   * If no paths are specified, then all files are checked out. Otherwise
+   * only these specified paths are checked out.
+   */
+  path?: string
+  /** Set the directory to check out to */
+  targetDir?: string
+  /** The name of the common ancestor side of conflicts */
+  ancestorLabel?: string
+  /** The name of the common our side of conflicts */
+  ourLabel?: string
+  /** The name of the common their side of conflicts */
+  theirLabel?: string
+}
 export interface CommitOptions {
   updateRef?: string
   /**
@@ -3900,6 +4042,55 @@ export declare class Repository {
    * ```
    */
   branches(filter?: BranchesFilter | undefined | null): Branches
+  /**
+   * Updates files in the index and the working tree to match the content of
+   * the commit pointed at by HEAD.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   checkoutHead(options?: CheckoutOptions | undefined | null): void;
+   * }
+   * ```
+   *
+   * @param {CheckoutOptions} [options] - Options for checkout.
+   */
+  checkoutHead(options?: CheckoutOptions | undefined | null): void
+  /**
+   * Updates files in the working tree to match the content of the index.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   checkoutIndex(
+   *     index?: Index | undefined | null,
+   *     options?: CheckoutOptions | undefined | null,
+   *   ): void;
+   * }
+   * ```
+   *
+   * @param {Index} [index] - Index to checkout. If not given, the repository's index will be used.
+   * @param {CheckoutOptions} [options] - Options for checkout.
+   */
+  checkoutIndex(index?: Index | undefined | null, options?: CheckoutOptions | undefined | null): void
+  /**
+   * Updates files in the index and working tree to match the content of the
+   * tree pointed at by the treeish.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   checkoutTree(treeish: GitObject, options?: CheckoutOptions | undefined | null): void;
+   * }
+   * ```
+   *
+   * @param {GitObject} treeish - Git object which tree pointed.
+   * @param {CheckoutOptions} [options] - Options for checkout.
+   */
+  checkoutTree(treeish: GitObject, options?: CheckoutOptions | undefined | null): void
   /**
    * Lookup a reference to one of the commits in a repository.
    *
