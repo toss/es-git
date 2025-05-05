@@ -4,14 +4,20 @@ import { t } from './texts';
 import { indent } from './util';
 
 export function escapeHtml(text = ''): string {
-  return text
-    .replaceAll(/&/g, '&amp;')
-    .replaceAll(/</g, '&lt;')
-    .replaceAll(/>/g, '&gt;')
-    .replaceAll(/"/g, '&quot;')
-    .replaceAll(/'/g, '&#39;')
-    .replaceAll(/\n/g, '<br>')
-    .replaceAll(/`([^`]+)`/g, '<code>$1</code>');
+  return (
+    text
+      // change `[text](link)` into `<a href="link">{text}</a>`
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, url) => {
+        return `<a href="${url}">${text}</a>`;
+      })
+      .replaceAll(/&/g, '&amp;')
+      .replaceAll(/</g, '&lt;')
+      .replaceAll(/>/g, '&gt;')
+      .replaceAll(/"/g, '&quot;')
+      .replaceAll(/'/g, '&#39;')
+      .replaceAll(/\n/g, '<br>')
+      .replaceAll(/`([^`]+)`/g, '<code>$1</code>')
+  );
 }
 
 export function paramULHtml(children: string | string[]): string {
