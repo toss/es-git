@@ -1,3 +1,5 @@
+use crate::annotated_commit::AnnotatedCommit;
+use crate::commit::Commit;
 use crate::remote::FetchOptions;
 use crate::util;
 use napi::{bindgen_prelude::*, JsString};
@@ -409,6 +411,75 @@ impl Repository {
   /// @param {string} refname - Specified reference to point into `HEAD`.
   pub fn set_head(&self, refname: String) -> crate::Result<()> {
     self.inner.set_head(&refname)?;
+    Ok(())
+  }
+
+  #[napi]
+  /// Determines whether the repository `HEAD` is detached.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   headDetached(): boolean;
+  /// }
+  /// ```
+  ///
+  /// @returns Returns `true` if the repository `HEAD` is detached.
+  pub fn head_detached(&self) -> crate::Result<bool> {
+    Ok(self.inner.head_detached()?)
+  }
+
+  #[napi]
+  /// Make the repository HEAD directly point to the commit.
+  ///
+  /// If the provided commitish cannot be found in the repository, the HEAD
+  /// is unaltered and an error is returned.
+  ///
+  /// If the provided commitish cannot be peeled into a commit, the HEAD is
+  /// unaltered and an error is returned.
+  ///
+  /// Otherwise, the HEAD will eventually be detached and will directly point
+  /// to the peeled commit.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   setHeadDetached(commitish: Commit): void;
+  /// }
+  /// ```
+  ///
+  /// @param {Commit} commitish - A Commit which the HEAD should point to.
+  pub fn set_head_detached(&self, commit: &Commit) -> crate::Result<()> {
+    let oid = commit.inner.id();
+    self.inner.set_head_detached(oid)?;
+    Ok(())
+  }
+
+  #[napi]
+  /// Make the repository HEAD directly point to the commit.
+  ///
+  /// If the provided commitish cannot be found in the repository, the HEAD
+  /// is unaltered and an error is returned.
+  /// If the provided commitish cannot be peeled into a commit, the HEAD is
+  /// unaltered and an error is returned.
+  /// Otherwise, the HEAD will eventually be detached and will directly point
+  /// to the peeled commit.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   setHeadDetachedFromAnnotated(commitish: AnnotatedCommit): void;
+  /// }
+  /// ```
+  ///
+  /// @param {AnnotatedCommit} commitish - An Annotated Commit which the HEAD should point to.
+  pub fn set_head_detached_from_annotated(&self, commitish: &AnnotatedCommit) -> crate::Result<()> {
+    let oid = commitish.inner.id();
+    let annotated = self.inner.find_annotated_commit(oid)?;
+    self.inner.set_head_detached_from_annotated(annotated)?;
     Ok(())
   }
 
