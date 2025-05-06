@@ -1715,6 +1715,45 @@ export interface CreateLightweightTagOptions {
  * - `PostOrder` : Runs the traversal in post-order.
  */
 export type TreeWalkMode = 'PreOrder' | 'PostOrder';
+/**
+ * A structure to represent an annotated commit, the input to merge and rebase.
+ *
+ * An annotated commit contains information about how it was looked up, which
+ * may be useful for functions like merge or rebase to provide context to the
+ * operation.
+ */
+export declare class AnnotatedCommit {
+  /**
+   * Gets the commit ID that the given Annotated Commit refers to.
+   *
+   * @category AnnotatedCommit/Methods
+   * @signature
+   * ```ts
+   * class AnnotatedCommit {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns The commit ID that this Annotated Commit refers to.
+   */
+  id(): string
+  /**
+   * Get the refname that the given Annotated Commit refers to.
+   *
+   * @category AnnotatedCommit/Methods
+   * @signature
+   * ```ts
+   * class AnnotatedCommit {
+   *   refname(): string | null;
+   * }
+   * ```
+   *
+   * @returns The refname that this Annotated Commit refers to. If this created from a reference,
+   * the return value is `null`.
+   * @throws Throws error if the refname is not valid utf-8.
+   */
+  refname(): string | null
+}
 /** A wrapper around git2::Blame providing Node.js bindings */
 export declare class Blame {
   /**
@@ -3932,6 +3971,57 @@ export declare class Remote {
  */
 export declare class Repository {
   /**
+   * Creates an Annotated Commit from the given commit.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getAnnotatedCommit(commit: Commit): AnnotatedCommit;
+   * }
+   * ```
+   *
+   * @param {Commit} commit - Commit to creates a Annotated Commit.
+   * @returns An Annotated Commit created from commit.
+   */
+  getAnnotatedCommit(commit: Commit): AnnotatedCommit
+  /**
+   * Creates a Annotated Commit from the given reference.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getAnnotatedCommitFromReference(reference: Reference): AnnotatedCommit;
+   * }
+   * ```
+   *
+   * @param {Reference} reference - Reference to creates a Annotated Commit.
+   * @returns An Annotated Commit created from reference.
+   */
+  getAnnotatedCommitFromReference(reference: GitReference): AnnotatedCommit
+  /**
+   * Creates a Annotated Commit from `FETCH_HEAD`.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getAnnotatedCommitFromFetchHead(
+   *     branchName: string,
+   *     remoteUrl: string,
+   *     id: string,
+   *   ): AnnotatedCommit;
+   * }
+   * ```
+   *
+   * @param {String} branchName - Name of the remote branch.
+   * @param {String} remoteUrl - Url of the remote.
+   * @param {String} id - The commit object id of the remote branch.
+   * @returns An Annotated Commit created from `FETCH_HEAD`.
+   */
+  getAnnotatedCommitFromFetchHead(branchName: string, remoteUrl: string, id: string): AnnotatedCommit
+  /**
    * Creates a blame object for the file at the given path
    *
    * @category Repository/Methods
@@ -4701,6 +4791,64 @@ export declare class Repository {
    * @param {string} refname - Specified reference to point into `HEAD`.
    */
   setHead(refname: string): void
+  /**
+   * Determines whether the repository `HEAD` is detached.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   headDetached(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if the repository `HEAD` is detached.
+   */
+  headDetached(): boolean
+  /**
+   * Make the repository HEAD directly point to the commit.
+   *
+   * If the provided commitish cannot be found in the repository, the HEAD
+   * is unaltered and an error is returned.
+   *
+   * If the provided commitish cannot be peeled into a commit, the HEAD is
+   * unaltered and an error is returned.
+   *
+   * Otherwise, the HEAD will eventually be detached and will directly point
+   * to the peeled commit.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   setHeadDetached(commitish: Commit): void;
+   * }
+   * ```
+   *
+   * @param {Commit} commitish - A Commit which the HEAD should point to.
+   */
+  setHeadDetached(commit: Commit): void
+  /**
+   * Make the repository HEAD directly point to the commit.
+   *
+   * If the provided commitish cannot be found in the repository, the HEAD
+   * is unaltered and an error is returned.
+   * If the provided commitish cannot be peeled into a commit, the HEAD is
+   * unaltered and an error is returned.
+   * Otherwise, the HEAD will eventually be detached and will directly point
+   * to the peeled commit.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   setHeadDetachedFromAnnotated(commitish: AnnotatedCommit): void;
+   * }
+   * ```
+   *
+   * @param {AnnotatedCommit} commitish - An Annotated Commit which the HEAD should point to.
+   */
+  setHeadDetachedFromAnnotated(commitish: AnnotatedCommit): void
   /**
    * Extract a signature from an object identified by its ID.
    *
