@@ -1,5 +1,6 @@
 #![deny(clippy::all)]
 
+pub mod annotated_commit;
 pub mod blame;
 pub mod blob;
 pub mod branch;
