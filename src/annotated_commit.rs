@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::commit::Commit;
 use crate::reference::Reference as GitReference;
 use crate::repository::Repository;
@@ -13,6 +14,13 @@ use napi_derive::napi;
 pub struct AnnotatedCommit {
   pub(crate) from_ref: bool,
   pub(crate) inner: SharedReference<Repository, git2::AnnotatedCommit<'static>>,
+}
+
+impl Deref for AnnotatedCommit {
+  type Target = git2::AnnotatedCommit<'static>;
+  fn deref(&self) -> &Self::Target {
+    &self.inner
+  }
 }
 
 #[napi]

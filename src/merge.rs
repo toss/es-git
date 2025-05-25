@@ -1,5 +1,12 @@
+use crate::annotated_commit::AnnotatedCommit;
+use crate::checkout::CheckoutOptions;
+use crate::commit::Commit;
+use crate::index::Index;
+use crate::reference::Reference;
 use crate::repository::Repository;
+use crate::tree::Tree;
 use napi_derive::napi;
+use std::ops::Deref;
 
 #[napi(string_enum)]
 pub enum FileFavor {
@@ -132,10 +139,238 @@ impl From<MergeOptions> for git2::MergeOptions {
   }
 }
 
+#[napi(object)]
+pub struct MergeAnalysis {
+  /// No merge is possible.
+  pub none: bool,
+  /// A "normal" merge; both HEAD and the given merge input have diverged
+  /// from their common ancestor. The divergent commits must be merged.
+  pub normal: bool,
+  /// All given merge inputs are reachable from HEAD, meaning the
+  /// repository is up-to-date and no merge needs to be performed.
+  pub up_to_date: bool,
+  /// The given merge input is a fast-forward from HEAD and no merge
+  /// needs to be performed.  Instead, the client can check out the
+  /// given merge input.
+  pub fast_forward: bool,
+  /// The HEAD of the current repository is "unborn" and does not point to
+  /// a valid commit.  No merge can be performed, but the caller may wish
+  /// to simply set HEAD to the target commit(s).
+  pub unborn: bool,
+}
+
+impl From<git2::MergeAnalysis> for MergeAnalysis {
+  fn from(value: git2::MergeAnalysis) -> Self {
+    let none = value.is_none();
+    let normal = value.is_normal();
+    let up_to_date = value.is_up_to_date();
+    let fast_forward = value.is_fast_forward();
+    let unborn = value.is_unborn();
+    Self {
+      none,
+      normal,
+      up_to_date,
+      fast_forward,
+      unborn,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct MergePreference {
+  /// No configuration was found that suggests a preferred behavior for
+  /// merge.
+  pub none: bool,
+  /// There is a `merge.ff=false` configuration setting, suggesting that
+  /// the user does not want to allow a fast-forward merge.
+  pub no_fast_forward: bool,
+  /// There is a `merge.ff=only` configuration setting, suggesting that
+  /// the user only wants fast-forward merges.
+  pub fast_forward_only: bool,
+}
+
+impl From<git2::MergePreference> for MergePreference {
+  fn from(value: git2::MergePreference) -> Self {
+    let none = value.is_none();
+    let no_fast_forward = value.is_no_fast_forward();
+    let fast_forward_only = value.is_fastforward_only();
+    Self {
+      none,
+      no_fast_forward,
+      fast_forward_only,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct MergeAnalysisResult {
+  pub analysis: MergeAnalysis,
+  pub preference: MergePreference,
+}
+
 #[napi]
 impl Repository {
   #[napi]
-  pub fn merge(&self) -> crate::Result<()> {
-    todo!()
+  /// Merges the given commit(s) into HEAD, writing the results into the
+  /// working directory. Any changes are staged for commit and any conflicts
+  /// are written to the index. Callers should inspect the repository's index
+  /// after this completes, resolve any conflicts and prepare a commit.
+  ///
+  /// For compatibility with git, the repository is put into a merging state.
+  /// Once the commit is done (or if the user wishes to abort), you should
+  /// clear this state by calling `cleanupState()`.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   merge(
+  ///     annotatedCommits: AnnotatedCommit[],
+  ///     mergeOptions?: MergeOptions | undefined | null,
+  ///     checkoutOptions?: CheckoutOptions | undefined | null,
+  ///   ): void;
+  /// }
+  /// ```
+  ///
+  /// @param {AnnotatedCommit[]} annotatedCommits -
+  /// @param {MergeOptions} [mergeOptions] -
+  /// @param {CheckoutOptions} [checkoutOptions] -
+  pub fn merge(
+    &self,
+    annotated_commits: Vec<&AnnotatedCommit>,
+    merge_options: Option<MergeOptions>,
+    checkout_options: Option<CheckoutOptions>,
+  ) -> crate::Result<()> {
+    let commits = annotated_commits.iter().map(|x| x.inner.deref()).collect::<Vec<_>>();
+    let mut merge_opts = merge_options.map(git2::MergeOptions::from);
+    let mut checkout_opts = checkout_options.map(git2::build::CheckoutBuilder::from);
+    self
+      .inner
+      .merge(commits.as_slice(), merge_opts.as_mut(), checkout_opts.as_mut())?;
+    Ok(())
+  }
+
+  #[napi]
+  /// Merge two commits, producing an index that reflects the result of
+  /// the merge. The index may be written as-is to the working directory or
+  /// checked out. If the index is to be converted to a tree, the caller
+  /// should resolve any conflicts that arose as part of the merge.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   mergeCommits(
+  ///     ourCommit: Commit,
+  ///     theirCommit: Commit,
+  ///     options?: MergeOptions | undefined | null,
+  ///   ): Index;
+  /// }
+  /// ```
+  ///
+  /// @param {Commit} outCommit -
+  /// @param {Commit} theirCommit -
+  /// @param {MergeOptions} [options] -
+  /// @returns
+  pub fn merge_commits(
+    &self,
+    our_commit: &Commit,
+    their_commit: &Commit,
+    options: Option<MergeOptions>,
+  ) -> crate::Result<Index> {
+    let opts = options.map(git2::MergeOptions::from);
+    let inner = self
+      .inner
+      .merge_commits(&our_commit.inner, &their_commit.inner, opts.as_ref())?;
+    Ok(Index { inner })
+  }
+
+  #[napi]
+  /// Merge two trees, producing an index that reflects the result of
+  /// the merge. The index may be written as-is to the working directory or
+  /// checked out. If the index is to be converted to a tree, the caller
+  /// should resolve any conflicts that arose as part of the merge.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   mergeTrees(
+  ///     ancestorTree: Tree,
+  ///     ourTree: Tree,
+  ///     theirTree: Tree,
+  ///     options?: MergeOptions | undefined | null,
+  ///   ): Index;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} ancestorTree -
+  /// @param {Tree} outTree -
+  /// @param {Tree} theirTree -
+  /// @param {MergeOptions} [options] -
+  /// @returns
+  pub fn merge_trees(
+    &self,
+    ancestor_tree: &Tree,
+    our_tree: &Tree,
+    their_tree: &Tree,
+    options: Option<MergeOptions>,
+  ) -> crate::Result<Index> {
+    let opts = options.map(git2::MergeOptions::from);
+    let inner = self
+      .inner
+      .merge_trees(&ancestor_tree.inner, &our_tree.inner, &their_tree.inner, opts.as_ref())?;
+    Ok(Index { inner })
+  }
+
+  #[napi]
+  /// Analyzes the given branch(es) and determines the opportunities for
+  /// merging them into the HEAD of the repository.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   mergeAnalysis(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+  /// }
+  /// ```
+  ///
+  /// @param {AnnotatedCommit[]} theirHeads -
+  /// @returns
+  pub fn merge_analysis(&self, their_heads: Vec<&AnnotatedCommit>) -> crate::Result<MergeAnalysisResult> {
+    let commits = their_heads.iter().map(|x| x.inner.deref()).collect::<Vec<_>>();
+    let (analysis, preference) = self.inner.merge_analysis(commits.as_slice())?;
+    Ok(MergeAnalysisResult {
+      analysis: analysis.into(),
+      preference: preference.into(),
+    })
+  }
+
+  #[napi]
+  /// Analyzes the given branch(es) and determines the opportunities for
+  /// merging them into a reference.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   mergeAnalysisForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+  /// }
+  /// ```
+  ///
+  /// @param {Reference} ourRef -
+  /// @param {AnnotatedCommit[]} theirHeads -
+  /// @returns
+  pub fn merge_analysis_for_ref(
+    &self,
+    our_ref: &Reference,
+    their_heads: Vec<&AnnotatedCommit>,
+  ) -> crate::Result<MergeAnalysisResult> {
+    let commits = their_heads.iter().map(|x| x.inner.deref()).collect::<Vec<_>>();
+    let (analysis, preference) = self.inner.merge_analysis_for_ref(&our_ref.inner, commits.as_slice())?;
+    Ok(MergeAnalysisResult {
+      analysis: analysis.into(),
+      preference: preference.into(),
+    })
   }
 }
