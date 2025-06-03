@@ -512,6 +512,22 @@ impl Repository {
       Err(e) => Err(crate::Error::from(e)),
     }
   }
+
+  #[napi]
+  /// Remove all the metadata associated with an ongoing command like merge,
+  /// revert, cherry-pick, etc. For example: `MERGE_HEAD`, `MERGE_MSG`, etc.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   cleanupState(): void;
+  /// }
+  /// ```
+  pub fn cleanup_state(&self) -> crate::Result<()> {
+    self.inner.cleanup_state()?;
+    Ok(())
+  }
 }
 
 fn update_submodules(repo: &git2::Repository) -> crate::Result<()> {

@@ -825,6 +825,125 @@ export interface AddMailmapEntryData {
  * ```
  */
 export declare function createMailmapFromBuffer(content: string): Mailmap
+export type FileFavor = /**
+ * When a region of a file is changed in both branches, a conflict will be
+ * recorded in the index so that git_checkout can produce a merge file with
+ * conflict markers in the working directory. This is the default.
+ */
+'Normal' | /**
+ * When a region of a file is changed in both branches, the file created
+ * in the index will contain the "ours" side of any conflicting region.
+ * The index will not record a conflict.
+ */
+'Ours' | /**
+ * When a region of a file is changed in both branches, the file created
+ * in the index will contain the "theirs" side of any conflicting region.
+ * The index will not record a conflict.
+ */
+'Theirs' | /**
+ * When a region of a file is changed in both branches, the file created
+ * in the index will contain each unique line from each side, which has
+ * the result of combining both files. The index will not record a conflict.
+ */
+'Union';
+export interface MergeOptions {
+  /** Detect file renames */
+  findRenames?: boolean
+  /**
+   * If a conflict occurs, exit immediately instead of attempting to continue
+   * resolving conflicts
+   */
+  failOnConflict?: boolean
+  /** Do not write the REUC extension on the generated index */
+  skipReuc?: boolean
+  /**
+   * If the commits being merged have multiple merge bases, do not build a
+   * recursive merge base (by merging the multiple merge bases), instead
+   * simply use the first base.
+   */
+  noRecursive?: boolean
+  /** Similarity to consider a file renamed (default 50) */
+  renameThreshold?: number
+  /**
+   *  Maximum similarity sources to examine for renames (default 200).
+   * If the number of rename candidates (add / delete pairs) is greater
+   * than this value, inexact rename detection is aborted. This setting
+   * overrides the `merge.renameLimit` configuration value.
+   */
+  targetLimit?: number
+  /**
+   * Maximum number of times to merge common ancestors to build a
+   * virtual merge base when faced with criss-cross merges.  When
+   * this limit is reached, the next ancestor will simply be used
+   * instead of attempting to merge it.  The default is unlimited.
+   */
+  recursionLimit?: number
+  /** Specify a side to favor for resolving conflicts */
+  filFavor?: FileFavor
+  /** Create standard conflicted merge files */
+  standardStyle?: boolean
+  /** Create diff3-style file */
+  diff3Style?: boolean
+  /** Condense non-alphanumeric regions for simplified diff file */
+  simplifyAlnum?: boolean
+  /** Ignore all whitespace */
+  ignoreWhitespace?: boolean
+  /** Ignore changes in amount of whitespace */
+  ignoreWhitespaceChange?: boolean
+  /** Ignore whitespace at end of line */
+  ignoreWhitespaceEol?: boolean
+  /** Use the "patience diff" algorithm */
+  patience?: boolean
+  /** Take extra time to find minimal diff */
+  minimal?: boolean
+}
+export interface MergeAnalysis {
+  /** No merge is possible. */
+  none: boolean
+  /**
+   * A "normal" merge; both HEAD and the given merge input have diverged
+   * from their common ancestor. The divergent commits must be merged.
+   */
+  normal: boolean
+  /**
+   * All given merge inputs are reachable from HEAD, meaning the
+   * repository is up-to-date and no merge needs to be performed.
+   */
+  upToDate: boolean
+  /**
+   * The given merge input is a fast-forward from HEAD and no merge
+   * needs to be performed.  Instead, the client can check out the
+   * given merge input.
+   */
+  fastForward: boolean
+  /**
+   * The HEAD of the current repository is "unborn" and does not point to
+   * a valid commit.  No merge can be performed, but the caller may wish
+   * to simply set HEAD to the target commit(s).
+   */
+  unborn: boolean
+}
+export interface MergePreference {
+  /**
+   * No configuration was found that suggests a preferred behavior for
+   * merge.
+   */
+  none: boolean
+  /**
+   * There is a `merge.ff=false` configuration setting, suggesting that
+   * the user does not want to allow a fast-forward merge.
+   */
+  noFastForward: boolean
+  /**
+   * There is a `merge.ff=only` configuration setting, suggesting that
+   * the user only wants fast-forward merges.
+   */
+  fastForwardOnly: boolean
+}
+export interface MergeAnalysisResult {
+  analysis: MergeAnalysis
+  preference: MergePreference
+}
 /**
  * - `Any` : Any kind of git object
  * - `Commit` : An object which corresponds to a git commit
@@ -4499,6 +4618,225 @@ export declare class Repository {
    */
   mailmap(): Mailmap | null
   /**
+   * Find a merge base between two commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   mergeBase(one: string, two: string): string;
+   * }
+   * ```
+   *
+   * @param {string} one - One of the commits OID.
+   * @param {string} two - The other commit OID.
+   * @returns The OID of a merge base between 'one' and 'two'.
+   */
+  getMergeBase(one: string, two: string): string
+  /**
+   * Find a merge base given a list of commits
+   *
+   * This behaves similar to [`git merge-base`](https://git-scm.com/docs/git-merge-base#_discussion).
+   * Given three commits `a`, `b`, and `c`, `getMergeBaseMany([a, b, c])`
+   * will compute a hypothetical commit `m`, which is a merge between `b`
+   * and `c`.
+   *
+   * For example, with the following topology:
+   * ```text
+   *        o---o---o---o---C
+   *       /
+   *      /   o---o---o---B
+   *     /   /
+   * ---2---1---o---o---o---A
+   * ```
+   *
+   * the result of `getMergeBaseMany([a, b, c])` is 1. This is because the
+   * equivalent topology with a merge commit `m` between `b` and `c` would
+   * is:
+   * ```text
+   *        o---o---o---o---o
+   *       /                 \
+   *      /   o---o---o---o---M
+   *     /   /
+   * ---2---1---o---o---o---A
+   * ```
+   *
+   * and the result of `getMergeBaseMany([a, m])` is 1.
+   *
+   * ---
+   *
+   * If you're looking to recieve the common merge base between all the
+   * given commits, use `getMergeBaseOctopus`.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBaseMany(oids: string[]): string;
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns The OID of a merge base considering all the commits.
+   */
+  getMergeBaseMany(oids: Array<string>): string
+  /**
+   * Find a merge base in preparation for an octopus merge.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBaseOctopus(oids: string[]): string;
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns The OID of a merge base considering all the commits.
+   */
+  getMergeBaseOctopus(oids: Array<string>): string
+  /**
+   * Find all merge bases between two commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBases(one: string, two: string): string[];
+   * }
+   * ```
+   *
+   * @param {string} one - One of the commits OID.
+   * @param {string} two - The other commit OID.
+   * @returns Array in which to store the resulting OIDs.
+   */
+  getMergeBases(one: string, two: string): Array<string>
+  /**
+   * Find all merge bases given a list of commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBasesMany(oids: string[]): string[];
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns Array in which to store the resulting OIDs.
+   */
+  getMergeBasesMany(oids: Array<string>): Array<string>
+  /**
+   * Merges the given commit(s) into HEAD, writing the results into the
+   * working directory. Any changes are staged for commit and any conflicts
+   * are written to the index. Callers should inspect the repository's index
+   * after this completes, resolve any conflicts and prepare a commit.
+   *
+   * For compatibility with git, the repository is put into a merging state.
+   * Once the commit is done (or if the user wishes to abort), you should
+   * clear this state by calling `cleanupState()`.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   merge(
+   *     annotatedCommits: AnnotatedCommit[],
+   *     mergeOptions?: MergeOptions | undefined | null,
+   *     checkoutOptions?: CheckoutOptions | undefined | null,
+   *   ): void;
+   * }
+   * ```
+   *
+   * @param {AnnotatedCommit[]} annotatedCommits - Commits to merge.
+   * @param {MergeOptions} [mergeOptions] - Merge options.
+   * @param {CheckoutOptions} [checkoutOptions] - Checkout options.
+   */
+  merge(annotatedCommits: Array<AnnotatedCommit>, mergeOptions?: MergeOptions | undefined | null, checkoutOptions?: CheckoutOptions | undefined | null): void
+  /**
+   * Merge two commits, producing an index that reflects the result of
+   * the merge. The index may be written as-is to the working directory or
+   * checked out. If the index is to be converted to a tree, the caller
+   * should resolve any conflicts that arose as part of the merge.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   mergeCommits(
+   *     ourCommit: Commit,
+   *     theirCommit: Commit,
+   *     options?: MergeOptions | undefined | null,
+   *   ): Index;
+   * }
+   * ```
+   *
+   * @param {Commit} outCommit - The commit that reflects the destination tree.
+   * @param {Commit} theirCommit - The commit to merge in to `ourCommit`.
+   * @param {MergeOptions} [options] - Merge options.
+   * @returns The index result.
+   */
+  mergeCommits(ourCommit: Commit, theirCommit: Commit, options?: MergeOptions | undefined | null): Index
+  /**
+   * Merge two trees, producing an index that reflects the result of
+   * the merge. The index may be written as-is to the working directory or
+   * checked out. If the index is to be converted to a tree, the caller
+   * should resolve any conflicts that arose as part of the merge.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   mergeTrees(
+   *     ancestorTree: Tree,
+   *     ourTree: Tree,
+   *     theirTree: Tree,
+   *     options?: MergeOptions | undefined | null,
+   *   ): Index;
+   * }
+   * ```
+   *
+   * @param {Tree} ancestorTree - The common ancestor between.
+   * @param {Tree} outTree - The tree that reflects the destination tree.
+   * @param {Tree} theirTree - The tree to merge in to `ourTree`.
+   * @param {MergeOptions} [options] - Merge options.
+   * @returns The index result.
+   */
+  mergeTrees(ancestorTree: Tree, ourTree: Tree, theirTree: Tree, options?: MergeOptions | undefined | null): Index
+  /**
+   * Analyzes the given branch(es) and determines the opportunities for
+   * merging them into the HEAD of the repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   analyzeMergeFor(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+   * }
+   * ```
+   *
+   * @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+   * @returns Merge analysis result.
+   */
+  analyzeMerge(theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
+  /**
+   * Analyzes the given branch(es) and determines the opportunities for
+   * merging them into a reference.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   analyzeMergeForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+   * }
+   * ```
+   *
+   * @param {Reference} ourRef - The reference to perform the analysis from.
+   * @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+   * @returns Merge analysis result.
+   */
+  analyzeMergeForRef(ourRef: Reference, theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
+  /**
    * Lookup a reference to one of the objects in a repository.
    *
    * @category Repository/Methods
@@ -4868,6 +5206,19 @@ export declare class Repository {
    *          or null if the object is not signed.
    */
   extractSignature(oid: string): ExtractedSignature | null
+  /**
+   * Remove all the metadata associated with an ongoing command like merge,
+   * revert, cherry-pick, etc. For example: `MERGE_HEAD`, `MERGE_MSG`, etc.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   cleanupState(): void;
+   * }
+   * ```
+   */
+  cleanupState(): void
   /**
    * Execute a rev-parse operation against the `spec` listed.
    *
