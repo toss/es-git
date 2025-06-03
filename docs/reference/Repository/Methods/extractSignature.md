@@ -43,3 +43,23 @@ class Repository {
     </ul>
   </li>
 </ul>
+
+## Examples
+
+```ts
+import { openRepository } from 'es-git';
+
+const repo = await openRepository('.');
+const commit = repo.getCommit('a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+
+// Extract the signature from a commit
+const signatureInfo = repo.extractSignature(commit.id());
+
+if (signatureInfo) {
+  console.log('Object is signed!');
+  console.log('Signature:', signatureInfo.signature);
+  console.log('Signed data:', signatureInfo.signedData);
+} else {
+  console.log('Object is not signed');
+}
+```
