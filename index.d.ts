@@ -4618,6 +4618,115 @@ export declare class Repository {
    */
   mailmap(): Mailmap | null
   /**
+   * Find a merge base between two commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   mergeBase(one: string, two: string): string;
+   * }
+   * ```
+   *
+   * @param {string} one - One of the commits OID.
+   * @param {string} two - The other commit OID.
+   * @returns The OID of a merge base between 'one' and 'two'.
+   */
+  getMergeBase(one: string, two: string): string
+  /**
+   * Find a merge base given a list of commits
+   *
+   * This behaves similar to [`git merge-base`](https://git-scm.com/docs/git-merge-base#_discussion).
+   * Given three commits `a`, `b`, and `c`, `getMergeBaseMany([a, b, c])`
+   * will compute a hypothetical commit `m`, which is a merge between `b`
+   * and `c`.
+   *
+   * For example, with the following topology:
+   * ```text
+   *        o---o---o---o---C
+   *       /
+   *      /   o---o---o---B
+   *     /   /
+   * ---2---1---o---o---o---A
+   * ```
+   *
+   * the result of `getMergeBaseMany([a, b, c])` is 1. This is because the
+   * equivalent topology with a merge commit `m` between `b` and `c` would
+   * is:
+   * ```text
+   *        o---o---o---o---o
+   *       /                 \
+   *      /   o---o---o---o---M
+   *     /   /
+   * ---2---1---o---o---o---A
+   * ```
+   *
+   * and the result of `getMergeBaseMany([a, m])` is 1.
+   *
+   * ---
+   *
+   * If you're looking to recieve the common merge base between all the
+   * given commits, use `getMergeBaseOctopus`.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBaseMany(oids: string[]): string;
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns The OID of a merge base considering all the commits.
+   */
+  getMergeBaseMany(oids: Array<string>): string
+  /**
+   * Find a merge base in preparation for an octopus merge.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBaseOctopus(oids: string[]): string;
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns The OID of a merge base considering all the commits.
+   */
+  getMergeBaseOctopus(oids: Array<string>): string
+  /**
+   * Find all merge bases between two commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBases(one: string, two: string): string[];
+   * }
+   * ```
+   *
+   * @param {string} one - One of the commits OID.
+   * @param {string} two - The other commit OID.
+   * @returns Array in which to store the resulting OIDs.
+   */
+  getMergeBases(one: string, two: string): Array<string>
+  /**
+   * Find all merge bases given a list of commits
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getMergeBasesMany(oids: string[]): string[];
+   * }
+   * ```
+   *
+   * @param {string[]} oids - Oids of the commits.
+   * @returns Array in which to store the resulting OIDs.
+   */
+  getMergeBasesMany(oids: Array<string>): Array<string>
+  /**
    * Merges the given commit(s) into HEAD, writing the results into the
    * working directory. Any changes are staged for commit and any conflicts
    * are written to the index. Callers should inspect the repository's index
@@ -4639,9 +4748,9 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {AnnotatedCommit[]} annotatedCommits -
-   * @param {MergeOptions} [mergeOptions] -
-   * @param {CheckoutOptions} [checkoutOptions] -
+   * @param {AnnotatedCommit[]} annotatedCommits - Commits to merge.
+   * @param {MergeOptions} [mergeOptions] - Merge options.
+   * @param {CheckoutOptions} [checkoutOptions] - Checkout options.
    */
   merge(annotatedCommits: Array<AnnotatedCommit>, mergeOptions?: MergeOptions | undefined | null, checkoutOptions?: CheckoutOptions | undefined | null): void
   /**
@@ -4662,10 +4771,10 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Commit} outCommit -
-   * @param {Commit} theirCommit -
-   * @param {MergeOptions} [options] -
-   * @returns
+   * @param {Commit} outCommit - The commit that reflects the destination tree.
+   * @param {Commit} theirCommit - The commit to merge in to `ourCommit`.
+   * @param {MergeOptions} [options] - Merge options.
+   * @returns The index result.
    */
   mergeCommits(ourCommit: Commit, theirCommit: Commit, options?: MergeOptions | undefined | null): Index
   /**
@@ -4687,11 +4796,11 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Tree} ancestorTree -
-   * @param {Tree} outTree -
-   * @param {Tree} theirTree -
-   * @param {MergeOptions} [options] -
-   * @returns
+   * @param {Tree} ancestorTree - The common ancestor between.
+   * @param {Tree} outTree - The tree that reflects the destination tree.
+   * @param {Tree} theirTree - The tree to merge in to `ourTree`.
+   * @param {MergeOptions} [options] - Merge options.
+   * @returns The index result.
    */
   mergeTrees(ancestorTree: Tree, ourTree: Tree, theirTree: Tree, options?: MergeOptions | undefined | null): Index
   /**
@@ -4702,14 +4811,14 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   mergeAnalysis(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+   *   analyzeMergeFor(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
    * }
    * ```
    *
-   * @param {AnnotatedCommit[]} theirHeads -
-   * @returns
+   * @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+   * @returns Merge analysis result.
    */
-  mergeAnalysis(theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
+  analyzeMerge(theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
   /**
    * Analyzes the given branch(es) and determines the opportunities for
    * merging them into a reference.
@@ -4718,15 +4827,15 @@ export declare class Repository {
    * @signature
    * ```ts
    * class Repository {
-   *   mergeAnalysisForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+   *   analyzeMergeForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
    * }
    * ```
    *
-   * @param {Reference} ourRef -
-   * @param {AnnotatedCommit[]} theirHeads -
-   * @returns
+   * @param {Reference} ourRef - The reference to perform the analysis from.
+   * @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+   * @returns Merge analysis result.
    */
-  mergeAnalysisForRef(ourRef: Reference, theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
+  analyzeMergeForRef(ourRef: Reference, theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
   /**
    * Lookup a reference to one of the objects in a repository.
    *
@@ -5099,7 +5208,7 @@ export declare class Repository {
   extractSignature(oid: string): ExtractedSignature | null
   /**
    * Remove all the metadata associated with an ongoing command like merge,
-   * revert, cherry-pick, etc. For example: MERGE_HEAD, MERGE_MSG, etc.
+   * revert, cherry-pick, etc. For example: `MERGE_HEAD`, `MERGE_MSG`, etc.
    *
    * @category Repository/Methods
    * @signature

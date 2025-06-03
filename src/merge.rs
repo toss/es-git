@@ -5,6 +5,7 @@ use crate::index::Index;
 use crate::reference::Reference;
 use crate::repository::Repository;
 use crate::tree::Tree;
+use git2::Oid;
 use napi_derive::napi;
 use std::ops::Deref;
 
@@ -202,6 +203,21 @@ impl From<git2::MergePreference> for MergePreference {
   }
 }
 
+trait IntoOids {
+  fn into_oids(self) -> crate::Result<Vec<Oid>>;
+}
+
+impl IntoOids for Vec<String> {
+  fn into_oids(self) -> crate::Result<Vec<Oid>> {
+    let mut oids = vec![];
+    for oid in self {
+      let oid = Oid::from_str(&oid)?;
+      oids.push(oid);
+    }
+    Ok(oids)
+  }
+}
+
 #[napi(object)]
 pub struct MergeAnalysisResult {
   pub analysis: MergeAnalysis,
@@ -210,6 +226,140 @@ pub struct MergeAnalysisResult {
 
 #[napi]
 impl Repository {
+  #[napi]
+  /// Find a merge base between two commits
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   mergeBase(one: string, two: string): string;
+  /// }
+  /// ```
+  ///
+  /// @param {string} one - One of the commits OID.
+  /// @param {string} two - The other commit OID.
+  /// @returns The OID of a merge base between 'one' and 'two'.
+  pub fn get_merge_base(&self, one: String, two: String) -> crate::Result<String> {
+    let merge_oid = self.inner.merge_base(Oid::from_str(&one)?, Oid::from_str(&two)?)?;
+    Ok(merge_oid.to_string())
+  }
+
+  #[napi]
+  /// Find a merge base given a list of commits
+  ///
+  /// This behaves similar to [`git merge-base`](https://git-scm.com/docs/git-merge-base#_discussion).
+  /// Given three commits `a`, `b`, and `c`, `getMergeBaseMany([a, b, c])`
+  /// will compute a hypothetical commit `m`, which is a merge between `b`
+  /// and `c`.
+  ///
+  /// For example, with the following topology:
+  /// ```text
+  ///        o---o---o---o---C
+  ///       /
+  ///      /   o---o---o---B
+  ///     /   /
+  /// ---2---1---o---o---o---A
+  /// ```
+  ///
+  /// the result of `getMergeBaseMany([a, b, c])` is 1. This is because the
+  /// equivalent topology with a merge commit `m` between `b` and `c` would
+  /// is:
+  /// ```text
+  ///        o---o---o---o---o
+  ///       /                 \
+  ///      /   o---o---o---o---M
+  ///     /   /
+  /// ---2---1---o---o---o---A
+  /// ```
+  ///
+  /// and the result of `getMergeBaseMany([a, m])` is 1.
+  ///
+  /// ---
+  ///
+  /// If you're looking to recieve the common merge base between all the
+  /// given commits, use `getMergeBaseOctopus`.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getMergeBaseMany(oids: string[]): string;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} oids - Oids of the commits.
+  /// @returns The OID of a merge base considering all the commits.
+  pub fn get_merge_base_many(&self, oids: Vec<String>) -> crate::Result<String> {
+    let merge_oid = self.inner.merge_base_many(&oids.into_oids()?)?;
+    Ok(merge_oid.to_string())
+  }
+
+  #[napi]
+  /// Find a merge base in preparation for an octopus merge.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getMergeBaseOctopus(oids: string[]): string;
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} oids - Oids of the commits.
+  /// @returns The OID of a merge base considering all the commits.
+  pub fn get_merge_base_octopus(&self, oids: Vec<String>) -> crate::Result<String> {
+    let merge_oid = self.inner.merge_base_octopus(&oids.into_oids()?)?;
+    Ok(merge_oid.to_string())
+  }
+
+  #[napi]
+  /// Find all merge bases between two commits
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getMergeBases(one: string, two: string): string[];
+  /// }
+  /// ```
+  ///
+  /// @param {string} one - One of the commits OID.
+  /// @param {string} two - The other commit OID.
+  /// @returns Array in which to store the resulting OIDs.
+  pub fn get_merge_bases(&self, one: String, two: String) -> crate::Result<Vec<String>> {
+    let oids = self
+      .inner
+      .merge_bases(Oid::from_str(&one)?, Oid::from_str(&two)?)?
+      .iter()
+      .map(|x| x.to_string())
+      .collect::<Vec<_>>();
+    Ok(oids)
+  }
+
+  #[napi]
+  /// Find all merge bases given a list of commits
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   getMergeBasesMany(oids: string[]): string[];
+  /// }
+  /// ```
+  ///
+  /// @param {string[]} oids - Oids of the commits.
+  /// @returns Array in which to store the resulting OIDs.
+  pub fn get_merge_bases_many(&self, oids: Vec<String>) -> crate::Result<Vec<String>> {
+    let oids = self
+      .inner
+      .merge_bases_many(&oids.into_oids()?)?
+      .iter()
+      .map(|x| x.to_string())
+      .collect::<Vec<_>>();
+    Ok(oids)
+  }
+
   #[napi]
   /// Merges the given commit(s) into HEAD, writing the results into the
   /// working directory. Any changes are staged for commit and any conflicts
@@ -232,9 +382,9 @@ impl Repository {
   /// }
   /// ```
   ///
-  /// @param {AnnotatedCommit[]} annotatedCommits -
-  /// @param {MergeOptions} [mergeOptions] -
-  /// @param {CheckoutOptions} [checkoutOptions] -
+  /// @param {AnnotatedCommit[]} annotatedCommits - Commits to merge.
+  /// @param {MergeOptions} [mergeOptions] - Merge options.
+  /// @param {CheckoutOptions} [checkoutOptions] - Checkout options.
   pub fn merge(
     &self,
     annotated_commits: Vec<&AnnotatedCommit>,
@@ -268,10 +418,10 @@ impl Repository {
   /// }
   /// ```
   ///
-  /// @param {Commit} outCommit -
-  /// @param {Commit} theirCommit -
-  /// @param {MergeOptions} [options] -
-  /// @returns
+  /// @param {Commit} outCommit - The commit that reflects the destination tree.
+  /// @param {Commit} theirCommit - The commit to merge in to `ourCommit`.
+  /// @param {MergeOptions} [options] - Merge options.
+  /// @returns The index result.
   pub fn merge_commits(
     &self,
     our_commit: &Commit,
@@ -304,11 +454,11 @@ impl Repository {
   /// }
   /// ```
   ///
-  /// @param {Tree} ancestorTree -
-  /// @param {Tree} outTree -
-  /// @param {Tree} theirTree -
-  /// @param {MergeOptions} [options] -
-  /// @returns
+  /// @param {Tree} ancestorTree - The common ancestor between.
+  /// @param {Tree} outTree - The tree that reflects the destination tree.
+  /// @param {Tree} theirTree - The tree to merge in to `ourTree`.
+  /// @param {MergeOptions} [options] - Merge options.
+  /// @returns The index result.
   pub fn merge_trees(
     &self,
     ancestor_tree: &Tree,
@@ -331,13 +481,13 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   mergeAnalysis(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+  ///   analyzeMergeFor(theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
   /// }
   /// ```
   ///
-  /// @param {AnnotatedCommit[]} theirHeads -
-  /// @returns
-  pub fn merge_analysis(&self, their_heads: Vec<&AnnotatedCommit>) -> crate::Result<MergeAnalysisResult> {
+  /// @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+  /// @returns Merge analysis result.
+  pub fn analyze_merge(&self, their_heads: Vec<&AnnotatedCommit>) -> crate::Result<MergeAnalysisResult> {
     let commits = their_heads.iter().map(|x| x.inner.deref()).collect::<Vec<_>>();
     let (analysis, preference) = self.inner.merge_analysis(commits.as_slice())?;
     Ok(MergeAnalysisResult {
@@ -354,14 +504,14 @@ impl Repository {
   /// @signature
   /// ```ts
   /// class Repository {
-  ///   mergeAnalysisForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
+  ///   analyzeMergeForRef(ourRef: Reference, theirHeads: AnnotatedCommit[]): MergeAnalysisResult;
   /// }
   /// ```
   ///
-  /// @param {Reference} ourRef -
-  /// @param {AnnotatedCommit[]} theirHeads -
-  /// @returns
-  pub fn merge_analysis_for_ref(
+  /// @param {Reference} ourRef - The reference to perform the analysis from.
+  /// @param {AnnotatedCommit[]} theirHeads - The heads to merge into.
+  /// @returns Merge analysis result.
+  pub fn analyze_merge_for_ref(
     &self,
     our_ref: &Reference,
     their_heads: Vec<&AnnotatedCommit>,
