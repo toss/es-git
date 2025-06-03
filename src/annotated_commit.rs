@@ -1,9 +1,9 @@
-use std::ops::Deref;
 use crate::commit::Commit;
 use crate::reference::Reference as GitReference;
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::ops::Deref;
 
 #[napi]
 /// A structure to represent an annotated commit, the input to merge and rebase.
