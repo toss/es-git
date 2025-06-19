@@ -25,6 +25,10 @@ export class ReferenceCommand extends Command {
     description: 'AI model for when translating documentation with OpenAI. Default model is "gpt-4o".',
     env: 'TRANSLATE_AI_MODEL',
   });
+  readonly translateAiBaseUrl = Option.String('--translate-ai-base-url', {
+    description: 'Base url for Open AI.',
+    env: 'TRANSLATE_AI_BASE_URL',
+  });
 
   async execute() {
     const rootDir = await findRootDir();
@@ -60,7 +64,12 @@ export class ReferenceCommand extends Command {
     });
 
     const ai =
-      this.translateAiToken != null && this.lang !== 'en' ? new OpenAI({ apiKey: this.translateAiToken }) : null;
+      this.translateAiToken != null && this.lang !== 'en'
+        ? new OpenAI({
+            apiKey: this.translateAiToken,
+            baseURL: this.translateAiBaseUrl,
+          })
+        : null;
 
     for (let i = 0; i < references.length; i += 1) {
       const reference = references[i]!;

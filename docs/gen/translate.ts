@@ -5,6 +5,7 @@ import type { Language } from './lang';
 interface Options {
   /** @defaultValue 'gpt-4o' */
   model?: OpenAI.ChatModel;
+  baseUrl?: string;
 }
 
 export async function translate(
