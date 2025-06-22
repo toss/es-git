@@ -1,5 +1,18 @@
 # Changelog
 
+## Version v0.4.0
+
+Released on June 22th, 2025.
+
+- feat: add merge features (#127)
+- feat: add annotated commit feature (#126)
+- docs: transform markdown links into html (#124)
+- feat: add checkout features (#123)
+- chore: upgrade yarn 4.9.1 (#122)
+- fix(docs): use yarn dlx for Vercel CLI (#121)
+
+We sincerely thank @other-yuka for their contributions. We appreciate your great efforts!
+
 ## Version v0.3.0
 
 Released on April 26th, 2025.
