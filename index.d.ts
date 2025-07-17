@@ -1730,6 +1730,84 @@ export interface SignaturePayload {
   email: string
   timeOptions?: SignatureTimeOptions
 }
+/**
+ * Options for saving a stash.
+ *
+ * All fields are optional. If not provided, sensible defaults will be used.
+ *
+ * @example
+ * ```ts
+ * import { openRepository } from 'es-git';
+ *
+ * const repo = await openRepository('./path/to/repo');
+ *
+ * // Basic usage
+ * repo.stashSave({
+ *   stasher: { name: 'Seokju Na', email: 'seokju.me@toss.im' }
+ * });
+ *
+ * // With options
+ * repo.stashSave({
+ *   stasher: { name: 'Seokju Na', email: 'seokju.me@toss.im' },
+ *   message: 'WIP: feature implementation',
+ *   includeUntracked: true
+ * });
+ * ```
+ */
+export interface StashSaveOptions {
+  /**
+   * The identity of the person performing the stashing.
+   * If not provided, uses the repository's default signature.
+   */
+  stasher?: SignaturePayload
+  /**
+   * Description along with the stashed state.
+   * If not provided, a default message will be generated.
+   */
+  message?: string
+  /**
+   * Whether to stash untracked files.
+   * Default: false
+   */
+  includeUntracked?: boolean
+  /**
+   * Whether to stash ignored files.
+   * Default: false
+   */
+  includeIgnored?: boolean
+  /**
+   * Whether to retain the index after stashing.
+   * If true, staged changes remain in the index after stashing.
+   * Default: false
+   */
+  keepIndex?: boolean
+}
+/**
+ * Options for applying a stash.
+ *
+ * Controls how a stash is applied to the working directory.
+ *
+ * @example
+ * ```ts
+ * import { openRepository } from 'es-git';
+ *
+ * const repo = await openRepository('./path/to/repo');
+ *
+ * // Default apply
+ * repo.stashApply(0);
+ *
+ * // With options
+ * repo.stashApply(0, { reinstantiateIndex: true });
+ * ```
+ */
+export interface StashApplyOptions {
+  /**
+   * Whether to reinstall the index from the stash.
+   * If true, the index state recorded in the stash is also restored.
+   * Default: false
+   */
+  reinstantiateIndex?: boolean
+}
 export interface Status {
   current: boolean
   indexNew: boolean
@@ -5287,6 +5365,175 @@ export declare class Repository {
    */
   revwalk(): Revwalk
   /**
+   * Save the local modifications to a new stash.
+   *
+   * This method saves your current working directory and index state to a new stash entry,
+   * allowing you to temporarily store changes and work on something else. The working directory
+   * is reverted to match the HEAD commit after stashing.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   stashSave(options?: StashSaveOptions): string;
+   * }
+   * ```
+   *
+   * @param {StashSaveOptions} [options] - Options for saving the stash.
+   * @returns {string} The object ID (40-character SHA1) of the commit containing the stashed state.
+   * @throws {Error} If there are no local changes to stash or if the stash operation fails.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   *
+   * // Simple stash
+   * const stashId = repo.stashSave({
+   *   stasher: { name: 'Seokju Na', email: 'seokju.me@toss.im' },
+   *   message: 'WIP: implementing new feature'
+   * });
+   *
+   * // Stash including untracked files
+   * repo.stashSave({
+   *   stasher: { name: 'Seokju Na', email: 'seokju.me@toss.im' },
+   *   includeUntracked: true
+   * });
+   * ```
+   */
+  stashSave(options?: StashSaveOptions | undefined | null): string
+  /**
+   * Apply a single stashed state from the stash list.
+   *
+   * This method applies the changes from a stash entry to your working directory.
+   * Unlike `stashPop`, this does not remove the stash from the list after applying.
+   * Conflicts may occur if the stashed changes conflict with the current working directory.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   stashApply(index: number, options?: StashApplyOptions): void;
+   * }
+   * ```
+   *
+   * @param {number} index - The index of the stash to apply (0 is the most recent).
+   * @param {StashApplyOptions} [options] - Options for applying the stash.
+   * @throws {Error} If the stash index is invalid or if there are conflicts during application.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   *
+   * // Apply the most recent stash
+   * repo.stashApply(0);
+   *
+   * // Apply with options
+   * repo.stashApply(0, { reinstantiateIndex: true });
+   * ```
+   */
+  stashApply(index: number, options?: StashApplyOptions | undefined | null): void
+  /**
+   * Remove a single stashed state from the stash list.
+   *
+   * This permanently deletes a stash entry. The stash is removed from the list and
+   * cannot be recovered. All subsequent stashes will be reindexed (e.g., stash@{2}
+   * becomes stash@{1} after dropping stash@{1}).
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   stashDrop(index: number): void;
+   * }
+   * ```
+   *
+   * @param {number} index - The index of the stash to drop (0 is the most recent).
+   * @throws {Error} If the stash index is invalid.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   *
+   * // Drop the most recent stash
+   * repo.stashDrop(0);
+   *
+   * // Drop the third stash
+   * repo.stashDrop(2);
+   * ```
+   */
+  stashDrop(index: number): void
+  /**
+   * Apply a single stashed state from the stash list and remove it from the list if successful.
+   *
+   * This method combines `stashApply` and `stashDrop` into a single operation. It applies
+   * the stash to your working directory and, if successful, removes it from the stash list.
+   * If the application fails (e.g., due to conflicts), the stash remains in the list.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   stashPop(index: number, options?: StashApplyOptions): void;
+   * }
+   * ```
+   *
+   * @param {number} index - The index of the stash to pop (0 is the most recent).
+   * @param {StashApplyOptions} [options] - Options for applying the stash.
+   * @throws {Error} If the stash index is invalid or if there are conflicts during application.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   *
+   * // Pop the most recent stash
+   * repo.stashPop(0);
+   *
+   * // Pop with options
+   * repo.stashPop(0, { reinstantiateIndex: true });
+   * ```
+   */
+  stashPop(index: number, options?: StashApplyOptions | undefined | null): void
+  /**
+   * Get the list of stash states in the repository.
+   *
+   * Returns a StashList object that provides access to all stashes in the repository.
+   * The list is ordered with the most recent stash at index 0.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   stashList(): StashList;
+   * }
+   * ```
+   *
+   * @returns {StashList} A container providing access to all stash entries in the repository.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   *
+   * if (!stashList.isEmpty()) {
+   *   console.log(`Found ${stashList.len()} stashes`);
+   *   for (const stash of stashList.iter()) {
+   *     console.log(`${stash.index()}: ${stash.message()}`);
+   *   }
+   * }
+   * ```
+   */
+  stashList(): StashList
+  /**
    * Test if the ignore rules apply to a given file.
    *
    * This function checks the ignore rules to see if they would apply to the
@@ -5832,6 +6079,220 @@ export declare class Revwalk {
    * @param {string} reference - The reference must point to a commitish.
    */
   hideRef(reference: string): this
+}
+/**
+ * A class to represent a git stash entry.
+ *
+ * A stash entry represents a snapshot of the working directory and index that has been saved
+ * temporarily. Each stash entry has an index (position in the stash stack), an ID (commit SHA),
+ * and an optional message describing the changes.
+ */
+export declare class StashEntry {
+  /**
+   * Get the index of this stash entry.
+   *
+   * The index represents the position of this stash in the stash stack, where 0 is the most recent stash.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashEntry {
+   *   index(): number;
+   * }
+   * ```
+   *
+   * @returns {number} Index of this stash entry (0-based, with 0 being the most recent).
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   * const stash = stashList.get(0);
+   * console.log(stash?.index()); // 0
+   * ```
+   */
+  index(): number
+  /**
+   * Get the id (SHA1) of this stash entry.
+   *
+   * Each stash is stored as a commit object, and this returns the commit SHA.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashEntry {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns {string} The 40-character hexadecimal SHA1 hash of the stash commit.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   * const stash = stashList.get(0);
+   * console.log(stash?.id()); // e.g., "a1b2c3d4e5f6..."
+   * ```
+   */
+  id(): string
+  /**
+   * Get the message of this stash entry.
+   *
+   * Returns the message associated with the stash when it was created. If no custom message
+   * was provided, it returns the default message generated by Git.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashEntry {
+   *   message(): string | null;
+   * }
+   * ```
+   *
+   * @returns {string | null} The stash message, or null if not available.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   * const stash = stashList.get(0);
+   * console.log(stash?.message()); // e.g., "WIP on main: abc1234 fix: typo"
+   * ```
+   */
+  message(): string | null
+}
+/**
+ * A container for a list of stash entries about a repository.
+ *
+ * The stash list provides access to all stashes in the repository. Stashes are indexed
+ * from 0 (most recent) to n-1 (oldest). This class provides methods to access individual
+ * stashes, check the count, and iterate over all stashes.
+ *
+ * @example
+ * ```ts
+ * import { openRepository } from 'es-git';
+ *
+ * const repo = await openRepository('./path/to/repo');
+ * const stashList = repo.stashList();
+ * console.log(`Total stashes: ${stashList.len()}`);
+ *
+ * // Iterate over all stashes
+ * for (const stash of stashList.iter()) {
+ *   console.log(`${stash.index()}: ${stash.message()}`);
+ * }
+ * ```
+ */
+export declare class StashList {
+  /**
+   * Gets a stash entry from this list at the specified index.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashList {
+   *   get(index: number): StashEntry | null;
+   * }
+   * ```
+   *
+   * @param {number} index - Index of the stash entry to get (0-based, where 0 is the most recent).
+   * @returns {StashEntry | null} A stash entry from this list at the specified index, or `null` if the index is out of bounds.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   *
+   * // Get the most recent stash
+   * const stash = stashList.get(0);
+   * if (stash) {
+   *   console.log(stash.message());
+   * }
+   * ```
+   */
+  get(index: number): StashEntry | null
+  /**
+   * Gets the count of stash entries in this list.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashList {
+   *   len(): number;
+   * }
+   * ```
+   *
+   * @returns If there are no stashes in the repository, this should return 0.
+   */
+  len(): number
+  /**
+   * Check if the stash list is empty.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashList {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns {boolean} Returns `true` if there are no stash entries in this repository.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   *
+   * if (stashList.isEmpty()) {
+   *   console.log('No stashes found');
+   * } else {
+   *   console.log(`Found ${stashList.len()} stashes`);
+   * }
+   * ```
+   */
+  isEmpty(): boolean
+  /**
+   * Returns an iterator over the stash entries in this list.
+   *
+   * The iterator yields stash entries in order from newest (index 0) to oldest.
+   *
+   * @category Stash/Methods
+   * @signature
+   * ```ts
+   * class StashList {
+   *   iter(): StashListIter;
+   * }
+   * ```
+   *
+   * @returns {StashListIter} An iterator that yields StashEntry objects.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('./path/to/repo');
+   * const stashList = repo.stashList();
+   *
+   * // Iterate over stashes
+   * for (const stash of stashList.iter()) {
+   *   console.log(`${stash.index()}: ${stash.message()}`);
+   * }
+   * ```
+   */
+  iter(): StashListIter
+}
+export declare class StashListIter {
+  [Symbol.iterator](): Iterator<StashEntry, void, void>
 }
 /**
  * A container for a list of status information about a repository.

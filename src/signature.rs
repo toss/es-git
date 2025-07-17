@@ -35,6 +35,7 @@ impl TryFrom<Signature> for git2::Signature<'static> {
 }
 
 #[napi(object)]
+#[derive(Clone)]
 pub struct SignatureTimeOptions {
   /// Time in seconds, from epoch
   pub timestamp: i64,
