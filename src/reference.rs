@@ -451,7 +451,7 @@ impl Reference {
         .rename(
           &new_name,
           force.unwrap_or_default(),
-          &msg.unwrap_or(format!("Renaming reference into {}", new_name)),
+          &msg.unwrap_or(format!("Renaming reference into {new_name}")),
         )
         .map_err(crate::Error::from)
         .map_err(|e| e.into())
