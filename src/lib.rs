@@ -21,6 +21,7 @@ pub mod repository;
 pub mod revparse;
 pub mod revwalk;
 pub mod signature;
+pub mod stash;
 pub mod status;
 pub mod tag;
 pub mod tree;
