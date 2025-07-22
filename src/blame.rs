@@ -308,7 +308,7 @@ impl Blame {
     let hunk = self
       .inner
       .get_index(index as usize)
-      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found at index {}", index)))?;
+      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found at index {index}")))?;
 
     Ok(BlameHunk::from(&hunk))
   }
@@ -331,7 +331,7 @@ impl Blame {
     let hunk = self
       .inner
       .get_line(line as usize)
-      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found for line {}", line)))?;
+      .ok_or_else(|| Error::new(Status::InvalidArg, format!("No blame hunk found for line {line}")))?;
 
     Ok(BlameHunk::from(&hunk))
   }
