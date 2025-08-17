@@ -1029,6 +1029,93 @@ export declare function hashObjectOid(objType: ObjectType, bytes: Buffer): strin
  * @returns Hashed string.
  */
 export declare function hashFileOid(objType: ObjectType, path: string): string
+export interface RebaseCommitOptions {
+  /**
+   * Signature for author.
+   * To keep the author from the original commit leave this as empty.
+   */
+  author?: SignaturePayload
+  /** Signature for commiter. */
+  committer: SignaturePayload
+  /** To keep the message from the original commit leave this as empty. */
+  message?: string
+}
+/**
+ * A rebase operation
+ *
+ * Describes a single instruction/operation to be performed during the
+ * rebase.
+ */
+export interface RebaseOperation {
+  /** The type of rebase operation */
+  type?: RebaseOperationType
+  /**
+   * The commit ID being cherry-picked. This will be populated for all
+   * operations except those of type `GIT_REBASE_OPERATION_EXEC`.
+   */
+  id: string
+  /**
+   *The executable the user has requested be run.  This will only
+   * be populated for operations of type `Exec`.
+   */
+  exec?: string
+}
+/**
+ * A rebase operation.
+ * Describes a single instruction/operation to be performed during the
+ * rebase.
+ *
+ * - `Pick` : The given commit is to be cherry-picked. The client should commit the
+ * changes and continue if there are no conflicts.
+ * - `Reword` : The given commit is to be cherry-picked, but the client should prompt
+ * the user to provide an updated commit message.
+ * - `Edit` : The given commit is to be cherry-picked, but the client should stop to
+ * allow the user to edit the changes before committing them.
+ * - `Squash` : The given commit is to be squashed into the previous commit. The commit
+ * message will be merged with the previous message.
+ * - `Fixup` : The given commit is to be squashed into the previous commit. The commit
+ * message from this commit will be discarded.
+ * - `Exec` : No commit will be cherry-picked. The client should run the given command
+ * and (if successful) continue.
+ */
+export type RebaseOperationType = 'Pick' | 'Reword' | 'Edit' | 'Squash' | 'Fixup' | 'Exec';
+export interface RebaseOptions {
+  /**
+   * This will instruct other clients working on this
+   * rebase that you want a quiet rebase experience, which they may choose to
+   * provide in an application-specific manner. This has no effect upon
+   * libgit2 directly, but is provided for interoperability between Git
+   * tools.
+   */
+  quiet?: boolean
+  /**
+   * This will begin an in-memory rebase,
+   * which will allow callers to step through the rebase operations and
+   * commit the rebased changes, but will not rewind HEAD or update the
+   * repository to be in a rebasing state.  This will not interfere with
+   * the working directory (if there is one).
+   */
+  inmemory?: boolean
+  /**
+   * Used by `finish()`, this is the name of the notes reference
+   * used to rewrite notes for rebased commits when finishing the rebase;
+   * if NULL, the contents of the configuration option `notes.rewriteRef`
+   * is examined, unless the configuration option `notes.rewrite.rebase`
+   * is set to false.
+   * If `notes.rewriteRef` is also NULL, notes will not be rewritten.
+   */
+  rewriteNotesRef?: string
+  /** Options to control how trees are merged during `next()`. */
+  mergeOptions?: MergeOptions
+  /**
+   * Options to control how files are written during `Repository::rebase`,
+   * `next()` and `abort()`. Note that a minimum strategy of
+   * `GIT_CHECKOUT_SAFE` is defaulted in `init` and `next`, and a minimum
+   * strategy of `GIT_CHECKOUT_FORCE` is defaulted in `abort` to match git
+   * semantics.
+   */
+  checkoutOptions?: CheckoutOptions
+}
 /**
  * - `Direct` : A reference which points at an object id.
  * - `Symbolic` : A reference which points at another reference.
@@ -3721,6 +3808,48 @@ export declare class GitObject {
    */
   asCommit(): Commit | null
 }
+/** Representation of a rebase */
+export declare class Rebase {
+  /** Gets the count of rebase operations that are to be applied. */
+  len(): bigint
+  /** Gets the original `HEAD` ref name for merge rebases. */
+  originHeadName(): string | null
+  /** Gets the original `HEAD` id for merge rebases. */
+  originHeadId(): string | null
+  /**
+   * Gets the index of the rebase operation that is currently being applied.
+   * If the first operation has not yet been applied (because you have called
+   * `init` but not yet `next`) then this returns None.
+   */
+  operationCurrent(): bigint | null
+  /**
+   * Gets the index produced by the last operation, which is the result of
+   * `next()` and which will be committed by the next invocation of
+   * `commit()`. This is useful for resolving conflicts in an in-memory
+   * rebase before committing them.
+   *
+   * This is only applicable for in-memory rebases; for rebases within a
+   * working directory, the changes were applied to the repository's index.
+   */
+  inmemoryIndex(): Index
+  /**
+   * Commits the current patch.  You must have resolved any conflicts that
+   * were introduced during the patch application from the `git_rebase_next`
+   * invocation.
+   */
+  commit(options: RebaseCommitOptions): string
+  /**
+   * Aborts a rebase that is currently in progress, resetting the repository
+   * and working directory to their state before rebase began.
+   */
+  abort(): void
+  /**
+   * Finishes a rebase that is currently in progress once all patches have
+   * been applied.
+   */
+  finish(signature?: SignaturePayload | undefined | null): void
+  [Symbol.iterator](): Iterator<RebaseOperation, void, void>
+}
 /**
  * A class to represent a git [reference][1].
  *
@@ -4945,6 +5074,38 @@ export declare class Repository {
    * @throws Throws error if the object does not exist.
    */
   getObject(oid: string): GitObject
+  /**
+   * Initializes a rebase operation to rebase the changes in `branch`
+   * relative to `upstream` onto another branch. To begin the rebase process,
+   * call iterator.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   rebase(
+   *     branch?: AnnotatedCommit | undefined | null,
+   *     upstream?: AnnotatedCommit | undefined | null,
+   *     onto?: AnnotatedCommit | undefined | null,
+   *     options?: RebaseOptions | undefined | null,
+   *   ): Rebase;
+   * }
+   * ```
+   */
+  rebase(branch?: AnnotatedCommit | undefined | null, upstream?: AnnotatedCommit | undefined | null, onto?: AnnotatedCommit | undefined | null, options?: RebaseOptions | undefined | null): Rebase
+  /**
+   * Opens an existing rebase that was previously started by either an
+   * invocation of `rebase()` or by another client.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   openRebase(options?: RebaseOptions | undefined | null): Rebase;
+   * }
+   * ```
+   */
+  openRebase(options?: RebaseOptions | undefined | null): Rebase
   /**
    * Lookup a reference to one of the objects in a repository.
    *
