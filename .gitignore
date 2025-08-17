@@ -196,7 +196,7 @@ $RECYCLE.BIN/
 *.node
 
 # IDE
-/.idea
+**/.idea
 
 # npm folders
 npm

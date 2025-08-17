@@ -1,0 +1,19 @@
+{
+  "name": "es-git-e2e-tests",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "es-git": "0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.17.2",
+    "execa": "9.6.0",
+    "typescript": "5.8.2",
+    "vite": "7.1.2",
+    "vitest": "3.2.4"
+  }
+}
