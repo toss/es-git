@@ -1820,6 +1820,7 @@ export interface Status {
   wtDeleted: boolean
   wtTypechange: boolean
   wtRenamed: boolean
+  wtUnreadable: boolean
   ignored: boolean
   conflicted: boolean
 }

@@ -18,9 +18,7 @@ pub struct Status {
   pub wt_deleted: bool,
   pub wt_typechange: bool,
   pub wt_renamed: bool,
-  // TODO: Field does not exist on current `git2-rs` version.
-  // Wait for updates (https://github.com/rust-lang/git2-rs/pull/1151)
-  // pub wt_unreadable: bool,
+  pub wt_unreadable: bool,
   pub ignored: bool,
   pub conflicted: bool,
 }
@@ -38,6 +36,7 @@ impl From<git2::Status> for Status {
     let wt_deleted = value.contains(git2::Status::WT_DELETED);
     let wt_typechange = value.contains(git2::Status::WT_TYPECHANGE);
     let wt_renamed = value.contains(git2::Status::WT_RENAMED);
+    let wt_unreadable = value.contains(git2::Status::WT_UNREADABLE);
     let ignored = value.contains(git2::Status::IGNORED);
     let conflicted = value.contains(git2::Status::CONFLICTED);
     Self {
@@ -52,6 +51,7 @@ impl From<git2::Status> for Status {
       wt_deleted,
       wt_typechange,
       wt_renamed,
+      wt_unreadable,
       ignored,
       conflicted,
     }
