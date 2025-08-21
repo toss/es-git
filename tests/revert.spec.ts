@@ -404,4 +404,53 @@ describe('revert', () => {
     const fileContent = await fs.readFile(path.join(p, 'to-delete.txt'), 'utf-8');
     expect(fileContent).toBe('file to be deleted');
   });
+  
+
+  it('handle conflicts during revert', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), 'line1\nline2\nline3');
+    let index = repo.index();
+    index.addPath('conflict.txt');
+    const baseTreeId = index.writeTree();
+    const baseTree = repo.getTree(baseTreeId);
+    const baseOid = repo.commit(baseTree, 'base', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), 'line1\nmodified2\nline3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const secondTreeId = index.writeTree();
+    const secondTree = repo.getTree(secondTreeId);
+    const secondOid = repo.commit(secondTree, 'modify middle', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), 'changed1\nchanged2\nchanged3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const thirdTreeId = index.writeTree();
+    const thirdTree = repo.getTree(thirdTreeId);
+    const thirdOid = repo.commit(thirdTree, 'change all', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [secondOid],
+    });
+
+    const secondCommit = repo.getCommit(secondOid);
+    const thirdCommit = repo.getCommit(thirdOid);
+
+    const revertIndex = repo.revertCommit(secondCommit, thirdCommit, 0, { failOnConflict: false });
+
+    expect(revertIndex.hasConflicts()).toBe(true);
+  });
 });
