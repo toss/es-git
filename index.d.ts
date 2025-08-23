@@ -3808,20 +3808,54 @@ export declare class GitObject {
    */
   asCommit(): Commit | null
 }
-/** Representation of a rebase */
+/**
+ * Representation of a rebase
+ * Begin the rebase by iterating the returned `Rebase`
+ * (e.g., `for (const op of rebase) { ... }` or calling `next()`).
+ */
 export declare class Rebase {
-  /** Gets the count of rebase operations that are to be applied. */
-  len(): bigint
-  /** Gets the original `HEAD` ref name for merge rebases. */
-  originHeadName(): string | null
-  /** Gets the original `HEAD` id for merge rebases. */
-  originHeadId(): string | null
   /**
-   * Gets the index of the rebase operation that is currently being applied.
-   * If the first operation has not yet been applied (because you have called
-   * `init` but not yet `next`) then this returns None.
+   * Gets the count of rebase operations that are to be applied.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   len(): number;
+   * }
+   * ```
+   *
+   * @returns The count of rebase operations.
    */
-  operationCurrent(): bigint | null
+  len(): bigint
+  /**
+   * Gets the original `HEAD` ref name for merge rebases.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   originHeadName(): string | null;
+   * }
+   * ```
+   *
+   * @returns The original `HEAD` ref name for merge rebases.
+   */
+  originHeadName(): string | null
+  /**
+   * Gets the original `HEAD` id for merge rebases.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   originHeadId(): string | null;
+   * }
+   * ```
+   *
+   * @returns The original `HEAD` id for merge rebases.
+   */
+  originHeadId(): string | null
   /**
    * Gets the index produced by the last operation, which is the result of
    * `next()` and which will be committed by the next invocation of
@@ -3830,22 +3864,73 @@ export declare class Rebase {
    *
    * This is only applicable for in-memory rebases; for rebases within a
    * working directory, the changes were applied to the repository's index.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   inmemoryIndex(): Index;
+   * }
+   * ```
+   *
+   * @returns The index produced by the last operation.
    */
   inmemoryIndex(): Index
   /**
    * Commits the current patch.  You must have resolved any conflicts that
-   * were introduced during the patch application from the `git_rebase_next`
+   * were introduced during the patch application from the rebase next
    * invocation.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   commit(options: RebaseCommitOptions): string;
+   * }
+   * ```
+   *
+   * @param {RebaseCommitOptions} options - Options for committing the patch.
+   * @returns The commit ID of the commit that was created.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const rebase = repo.rebase(...);
+   * const sig = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
+   * for (const op of rebase) {
+   *   rebase.commit({ committer: sig });
+   * }
+   * ```
    */
   commit(options: RebaseCommitOptions): string
   /**
    * Aborts a rebase that is currently in progress, resetting the repository
    * and working directory to their state before rebase began.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   abort(): void;
+   * }
+   * ```
    */
   abort(): void
   /**
    * Finishes a rebase that is currently in progress once all patches have
    * been applied.
+   *
+   * @category Rebase/Methods
+   * @signature
+   * ```ts
+   * class Rebase {
+   *   finish(signature?: SignaturePayload | undefined | null): void;
+   * }
+   * ```
+   *
+   * @params {SignaturePayload | undefined | null} [signature] - The identity that is finishing the rebase
    */
   finish(signature?: SignaturePayload | undefined | null): void
   [Symbol.iterator](): Iterator<RebaseOperation, void, void>
@@ -5091,6 +5176,37 @@ export declare class Repository {
    *   ): Rebase;
    * }
    * ```
+   *
+   * @param {AnnotatedCommit | undefined | null} [branch] - Annotated commit representing the
+   * branch to rebase. Typically, the branch's head commit. If omitted, the currently checked-out
+   * branch is used.
+   * @param {AnnotatedCommit | undefined | null} [upstream] - Annotated commit that defines the
+   * "original base" of the commits to be rebased. If omitted, the repository will typically try
+   * to use the branch's configured upstream.
+   * @param {AnnotatedCommit | undefined | null} [onto] - Specified the "new base" onto which the
+   * selected commits will be reapplied.
+   * @param {RebaseOptions | undefined | null} [options] - Fine-grained control of the rebase
+   * behavior, such as checkout options, merge options, and in-memory rebase.
+   * @returns The initialized rebase handle to iterate and apply steps.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const branchRef = repo.getReference('refs/heads/other');
+   * const upstreamRef = repo.getReference('refs/heads/main');
+   * const branch = repo.getAnnotatedCommitFromReference(branchRef);
+   * const upstream = repo.getAnnotatedCommitFromReference(upstreamRef);
+   *
+   * const sig = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
+   *
+   * const rebase = repo.rebase(branch, upstream);
+   * for (const op of rebase) {
+   *   rebase.commit({ committer: sig });
+   * }
+   * rebase.finish(sig);
+   * ```
    */
   rebase(branch?: AnnotatedCommit | undefined | null, upstream?: AnnotatedCommit | undefined | null, onto?: AnnotatedCommit | undefined | null, options?: RebaseOptions | undefined | null): Rebase
   /**
@@ -5104,6 +5220,11 @@ export declare class Repository {
    *   openRebase(options?: RebaseOptions | undefined | null): Rebase;
    * }
    * ```
+   *
+   * @param {RebaseOptions | undefined | null} [options] - Fine-grained control of the rebase
+   * behavior, such as checkout options, merge options, and in-memory rebase.
+   * @returns The initialized rebase handle to iterate and apply steps.
+   * @throws Throws if the existing rebase was not found.
    */
   openRebase(options?: RebaseOptions | undefined | null): Rebase
   /**

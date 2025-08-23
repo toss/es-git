@@ -22,6 +22,8 @@ pub struct RebaseCommitOptions {
 
 #[napi(iterator)]
 /// Representation of a rebase
+/// Begin the rebase by iterating the returned `Rebase`
+/// (e.g., `for (const op of rebase) { ... }` or calling `next()`).
 pub struct Rebase {
   pub(crate) inner: SharedReference<Repository, git2::Rebase<'static>>,
 }
@@ -30,28 +32,50 @@ pub struct Rebase {
 impl Rebase {
   #[napi]
   /// Gets the count of rebase operations that are to be applied.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   len(): number;
+  /// }
+  /// ```
+  ///
+  /// @returns The count of rebase operations.
   pub fn len(&self) -> usize {
     self.inner.len()
   }
 
   #[napi]
   /// Gets the original `HEAD` ref name for merge rebases.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   originHeadName(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns The original `HEAD` ref name for merge rebases.
   pub fn origin_head_name(&self) -> Option<String> {
     self.inner.orig_head_name().map(|x| x.to_string())
   }
 
   #[napi]
   /// Gets the original `HEAD` id for merge rebases.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   originHeadId(): string | null;
+  /// }
+  /// ```
+  ///
+  /// @returns The original `HEAD` id for merge rebases.
   pub fn origin_head_id(&self) -> Option<String> {
     self.inner.orig_head_id().map(|x| x.to_string())
-  }
-
-  #[napi]
-  /// Gets the index of the rebase operation that is currently being applied.
-  /// If the first operation has not yet been applied (because you have called
-  /// `init` but not yet `next`) then this returns None.
-  pub fn operation_current(&mut self) -> Option<usize> {
-    self.inner.operation_current()
   }
 
   #[napi]
@@ -62,14 +86,48 @@ impl Rebase {
   ///
   /// This is only applicable for in-memory rebases; for rebases within a
   /// working directory, the changes were applied to the repository's index.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   inmemoryIndex(): Index;
+  /// }
+  /// ```
+  ///
+  /// @returns The index produced by the last operation.
   pub fn inmemory_index(&mut self) -> crate::Result<Index> {
-    todo!()
+    let index = self.inner.inmemory_index().map(|inner| Index { inner })?;
+    Ok(index)
   }
 
   #[napi]
   /// Commits the current patch.  You must have resolved any conflicts that
-  /// were introduced during the patch application from the `git_rebase_next`
+  /// were introduced during the patch application from the rebase next
   /// invocation.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   commit(options: RebaseCommitOptions): string;
+  /// }
+  /// ```
+  ///
+  /// @param {RebaseCommitOptions} options - Options for committing the patch.
+  /// @returns The commit ID of the commit that was created.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('.');
+  /// const rebase = repo.rebase(...);
+  /// const sig = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
+  /// for (const op of rebase) {
+  ///   rebase.commit({ committer: sig });
+  /// }
+  /// ```
   pub fn commit(&mut self, options: RebaseCommitOptions) -> crate::Result<String> {
     let author = options
       .author
@@ -85,6 +143,14 @@ impl Rebase {
   #[napi]
   /// Aborts a rebase that is currently in progress, resetting the repository
   /// and working directory to their state before rebase began.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   abort(): void;
+  /// }
+  /// ```
   pub fn abort(&mut self) -> crate::Result<()> {
     self.inner.abort()?;
     Ok(())
@@ -93,6 +159,16 @@ impl Rebase {
   #[napi]
   /// Finishes a rebase that is currently in progress once all patches have
   /// been applied.
+  ///
+  /// @category Rebase/Methods
+  /// @signature
+  /// ```ts
+  /// class Rebase {
+  ///   finish(signature?: SignaturePayload | undefined | null): void;
+  /// }
+  /// ```
+  ///
+  /// @params {SignaturePayload | undefined | null} [signature] - The identity that is finishing the rebase
   pub fn finish(&mut self, signature: Option<SignaturePayload>) -> crate::Result<()> {
     let signature = signature
       .and_then(|x| Signature::try_from(x).ok())
@@ -134,7 +210,11 @@ impl From<git2::RebaseOperation<'_>> for RebaseOperation {
   fn from(value: git2::RebaseOperation<'_>) -> Self {
     let kind = value.kind().map(RebaseOperationType::from);
     let id = value.id().to_string();
-    let exec = value.exec().map(|x| x.to_string());
+    let exec = if let Some(git2::RebaseOperationType::Exec) = value.kind() {
+      value.exec().map(|x| x.to_string())
+    } else {
+      None
+    };
     Self { kind, id, exec }
   }
 }
@@ -263,6 +343,37 @@ impl Repository {
   ///   ): Rebase;
   /// }
   /// ```
+  ///
+  /// @param {AnnotatedCommit | undefined | null} [branch] - Annotated commit representing the
+  /// branch to rebase. Typically, the branch's head commit. If omitted, the currently checked-out
+  /// branch is used.
+  /// @param {AnnotatedCommit | undefined | null} [upstream] - Annotated commit that defines the
+  /// "original base" of the commits to be rebased. If omitted, the repository will typically try
+  /// to use the branch's configured upstream.
+  /// @param {AnnotatedCommit | undefined | null} [onto] - Specified the "new base" onto which the
+  /// selected commits will be reapplied.
+  /// @param {RebaseOptions | undefined | null} [options] - Fine-grained control of the rebase
+  /// behavior, such as checkout options, merge options, and in-memory rebase.
+  /// @returns The initialized rebase handle to iterate and apply steps.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('.');
+  /// const branchRef = repo.getReference('refs/heads/other');
+  /// const upstreamRef = repo.getReference('refs/heads/main');
+  /// const branch = repo.getAnnotatedCommitFromReference(branchRef);
+  /// const upstream = repo.getAnnotatedCommitFromReference(upstreamRef);
+  ///
+  /// const sig = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
+  ///
+  /// const rebase = repo.rebase(branch, upstream);
+  /// for (const op of rebase) {
+  ///   rebase.commit({ committer: sig });
+  /// }
+  /// rebase.finish(sig);
+  /// ```
   pub fn rebase(
     &self,
     branch: Option<&AnnotatedCommit>,
@@ -298,6 +409,11 @@ impl Repository {
   ///   openRebase(options?: RebaseOptions | undefined | null): Rebase;
   /// }
   /// ```
+  ///
+  /// @param {RebaseOptions | undefined | null} [options] - Fine-grained control of the rebase
+  /// behavior, such as checkout options, merge options, and in-memory rebase.
+  /// @returns The initialized rebase handle to iterate and apply steps.
+  /// @throws Throws if the existing rebase was not found.
   pub fn open_rebase(
     &self,
     options: Option<RebaseOptions>,
