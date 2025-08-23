@@ -4850,7 +4850,7 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Commit} outCommit - The commit that reflects the destination tree.
+   * @param {Commit} ourCommit - The commit that reflects the destination tree.
    * @param {Commit} theirCommit - The commit to merge in to `ourCommit`.
    * @param {MergeOptions} [options] - Merge options.
    * @returns The index result.
@@ -4876,7 +4876,7 @@ export declare class Repository {
    * ```
    *
    * @param {Tree} ancestorTree - The common ancestor between.
-   * @param {Tree} outTree - The tree that reflects the destination tree.
+   * @param {Tree} ourTree - The tree that reflects the destination tree.
    * @param {Tree} theirTree - The tree to merge in to `ourTree`.
    * @param {MergeOptions} [options] - Merge options.
    * @returns The index result.
@@ -5242,7 +5242,7 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Commit} commitish - A Commit which the HEAD should point to.
+   * @param {Commit} commit - A Commit which the HEAD should point to.
    */
   setHeadDetached(commit: Commit): void
   /**
