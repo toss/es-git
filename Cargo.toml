@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 bitflags    = "2.1.0"
 chrono      = "0.4"
-git2        = { version = "0.20.1", features = ["vendored-libgit2", "vendored-openssl"] }
+git2        = { version = "0.20.2", features = ["vendored-libgit2", "vendored-openssl"] }
 napi        = { version = "2.16.17", default-features = false, features = ["napi6", "chrono_date"] }
 napi-derive = "2.16.13"
 thiserror   = "2.0.3"
