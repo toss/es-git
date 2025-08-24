@@ -7,13 +7,19 @@ import { fileURLToPath } from 'node:url';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootdir = path.join(dirname, '..');
 
-const [, , build, commit] = process.argv;
-if (build == null || commit == null) {
-  throw new Error('Invalid build/commit info');
+const { GITHUB_SHA: sha, GITHUB_RUN_NUMBER: runNumber, GITHUB_RUN_ATTEMPT: runAttempt } = process.env;
+
+if (sha == null || runNumber == null || runAttempt == null) {
+  throw new Error('Script should be run in GitHub Actions');
 }
+
+const build = `${runNumber}.${runAttempt}`;
+const commit = sha.slice(0, 7);
 
 const pkgFilepath = path.join(rootdir, 'package.json');
 const pkg = JSON.parse(await fs.readFile(pkgFilepath, 'utf8'));
-pkg.version = `${pkg.version}-next.${build}+${commit.slice(0, 7)}`;
+const nextVersion = `${pkg.version}-next.${build}+${commit}`;
+console.log('next version:', nextVersion);
+pkg.version = nextVersion;
 
 await fs.writeFile(pkgFilepath, `${JSON.stringify(pkg, null, 2)}${EOL}`, 'utf8');
