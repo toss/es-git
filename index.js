@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { AnnotatedCommit, Blame, BlameHunks, BlameHunksByLine, Blob, isValidBranchName, Branch, Branches, BranchType, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, Mailmap, createMailmapFromBuffer, FileFavor, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, StashEntry, StashList, StashListIter, StatusShow, Statuses, StatusesIter, StatusEntry, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
+const { AnnotatedCommit, Blame, BlameHunks, BlameHunksByLine, Blob, isValidBranchName, Branch, Branches, BranchType, Commit, ConfigLevel, ConfigEntries, Config, openConfig, openDefaultConfig, findGlobalConfigPath, findSystemConfigPath, findXdgConfigPath, parseConfigBool, parseConfigI32, parseConfigI64, DiffFlags, diffFlagsContains, DeltaType, DiffFormat, Diff, DiffStats, Deltas, DiffDelta, FileMode, DiffFile, IndexStage, Index, IndexEntries, Mailmap, createMailmapFromBuffer, FileFavor, ObjectType, GitObject, isValidOid, isZeroOid, zeroOid, hashObjectOid, hashFileOid, Rebase, RebaseOperationType, ReferenceType, Reference, isValidReferenceName, ReferenceFormat, normalizeReferenceName, Direction, CredentialType, FetchPrune, AutotagOption, RemoteRedirect, Remote, RepositoryState, RepositoryInitMode, Repository, initRepository, openRepository, discoverRepository, cloneRepository, RevparseMode, revparseModeContains, RevwalkSort, Revwalk, createSignature, StashEntry, StashList, StashListIter, StatusShow, Statuses, StatusesIter, StatusEntry, isValidTagName, Tag, TreeWalkMode, Tree, TreeIter, TreeEntry } = nativeBinding
 
 module.exports.AnnotatedCommit = AnnotatedCommit
 module.exports.Blame = Blame
@@ -356,6 +356,8 @@ module.exports.isZeroOid = isZeroOid
 module.exports.zeroOid = zeroOid
 module.exports.hashObjectOid = hashObjectOid
 module.exports.hashFileOid = hashFileOid
+module.exports.Rebase = Rebase
+module.exports.RebaseOperationType = RebaseOperationType
 module.exports.ReferenceType = ReferenceType
 module.exports.Reference = Reference
 module.exports.isValidReferenceName = isValidReferenceName
