@@ -450,7 +450,7 @@ impl Repository {
   /// }
   /// ```
   ///
-  /// @param {Commit} commitish - A Commit which the HEAD should point to.
+  /// @param {Commit} commit - A Commit which the HEAD should point to.
   pub fn set_head_detached(&self, commit: &Commit) -> crate::Result<()> {
     let oid = commit.inner.id();
     self.inner.set_head_detached(oid)?;
