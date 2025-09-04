@@ -7,7 +7,7 @@ import { useFixture } from './fixtures';
 describe('revert', () => {
   const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
 
-  it('should revert a simple commit', async () => {
+  it('revert simple commit', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
@@ -45,7 +45,7 @@ describe('revert', () => {
     expect(repo.state()).toBe('Clean');
   });
 
-  it('should revert with options', async () => {
+  it('revert with options', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
@@ -87,13 +87,93 @@ describe('revert', () => {
     repo.cleanupState();
   });
 
-  it('should use revertCommit for manual index control', async () => {
+  it('revert file addition', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
-    await fs.writeFile(path.join(p, 'manual.txt'), 'original');
+    await fs.writeFile(path.join(p, 'existing.txt'), 'existing file');
     let index = repo.index();
-    index.addPath('manual.txt');
+    index.addPath('existing.txt');
+    const baseTreeId = index.writeTree();
+    const baseTree = repo.getTree(baseTreeId);
+    const baseOid = repo.commit(baseTree, 'base', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.writeFile(path.join(p, 'added.txt'), 'new file content');
+    index = repo.index();
+    index.addPath('added.txt');
+    const addTreeId = index.writeTree();
+    const addTree = repo.getTree(addTreeId);
+    const addOid = repo.commit(addTree, 'add new file', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
+
+    const commitToRevert = repo.getCommit(addOid);
+    repo.revert(commitToRevert);
+
+    repo.cleanupState();
+
+    const fileExists = await fs
+      .access(path.join(p, 'added.txt'))
+      .then(() => true)
+      .catch(() => false);
+    expect(fileExists).toBe(false);
+
+    const existingFileContent = await fs.readFile(path.join(p, 'existing.txt'), 'utf-8');
+    expect(existingFileContent).toBe('existing file');
+  });
+
+  it('revert file deletion', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'to-delete.txt'), 'file to be deleted');
+    let index = repo.index();
+    index.addPath('to-delete.txt');
+    const baseTreeId = index.writeTree();
+    const baseTree = repo.getTree(baseTreeId);
+    const baseOid = repo.commit(baseTree, 'base with file', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.unlink(path.join(p, 'to-delete.txt'));
+    index = repo.index();
+    index.removePath('to-delete.txt');
+    const deleteTreeId = index.writeTree();
+    const deleteTree = repo.getTree(deleteTreeId);
+    const deleteOid = repo.commit(deleteTree, 'delete file', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
+
+    const commitToRevert = repo.getCommit(deleteOid);
+    repo.revert(commitToRevert);
+
+    repo.cleanupState();
+
+    const fileContent = await fs.readFile(path.join(p, 'to-delete.txt'), 'utf-8');
+    expect(fileContent).toBe('file to be deleted');
+  });
+
+  it('revert state is clean after cleanup', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'state-test.txt'), 'initial');
+    let index = repo.index();
+    index.addPath('state-test.txt');
     const firstTreeId = index.writeTree();
     const firstTree = repo.getTree(firstTreeId);
     const firstOid = repo.commit(firstTree, 'first', {
@@ -102,11 +182,10 @@ describe('revert', () => {
       committer: signature,
       parents: [repo.head().target()!],
     });
-    const firstCommit = repo.getCommit(firstOid);
 
-    await fs.writeFile(path.join(p, 'manual.txt'), 'changed');
+    await fs.writeFile(path.join(p, 'state-test.txt'), 'modified');
     index = repo.index();
-    index.addPath('manual.txt');
+    index.addPath('state-test.txt');
     const secondTreeId = index.writeTree();
     const secondTree = repo.getTree(secondTreeId);
     const secondOid = repo.commit(secondTree, 'second', {
@@ -115,29 +194,51 @@ describe('revert', () => {
       committer: signature,
       parents: [firstOid],
     });
-    const secondCommit = repo.getCommit(secondOid);
 
-    await fs.writeFile(path.join(p, 'manual.txt'), 'changed more');
-    index = repo.index();
-    index.addPath('manual.txt');
-    const thirdTreeId = index.writeTree();
-    const thirdTree = repo.getTree(thirdTreeId);
-    const thirdOid = repo.commit(thirdTree, 'third', {
+    expect(repo.state()).toBe('Clean');
+
+    const commitToRevert = repo.getCommit(secondOid);
+    repo.revert(commitToRevert);
+
+    repo.cleanupState();
+    expect(repo.state()).toBe('Clean');
+
+    repo.cleanupState();
+    expect(repo.state()).toBe('Clean');
+  });
+
+  it('revert keeps HEAD unchanged', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'head.txt'), 'v1');
+    let index = repo.index();
+    index.addPath('head.txt');
+    const t1 = repo.getTree(index.writeTree());
+    const c1 = repo.commit(t1, 'v1', {
       updateRef: 'HEAD',
       author: signature,
       committer: signature,
-      parents: [secondOid],
+      parents: [repo.head().target()!],
     });
-    const thirdCommit = repo.getCommit(thirdOid);
+    await fs.writeFile(path.join(p, 'head.txt'), 'v2');
+    index = repo.index();
+    index.addPath('head.txt');
+    const t2 = repo.getTree(index.writeTree());
+    const c2 = repo.commit(t2, 'v2', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [c1],
+    });
 
-    const revertIndex = repo.revertCommit(secondCommit, thirdCommit, 0);
-
-    expect(revertIndex).toBeDefined();
-
-    expect(revertIndex.constructor.name).toBe('Index');
+    const before = repo.head().target();
+    repo.revert(repo.getCommit(c2));
+    const after = repo.head().target();
+    expect(after).toBe(before);
   });
 
-  it('should revert merge commit with mainline', async () => {
+  it('revert merge commit with mainline 1', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
@@ -221,47 +322,7 @@ describe('revert', () => {
     expect(fileAExists).toBe(true);
   });
 
-  it('should handle revert state', async () => {
-    const p = await useFixture('empty');
-    const repo = await openRepository(p);
-
-    await fs.writeFile(path.join(p, 'state-test.txt'), 'initial');
-    let index = repo.index();
-    index.addPath('state-test.txt');
-    const firstTreeId = index.writeTree();
-    const firstTree = repo.getTree(firstTreeId);
-    const firstOid = repo.commit(firstTree, 'first', {
-      updateRef: 'HEAD',
-      author: signature,
-      committer: signature,
-      parents: [repo.head().target()!],
-    });
-
-    await fs.writeFile(path.join(p, 'state-test.txt'), 'modified');
-    index = repo.index();
-    index.addPath('state-test.txt');
-    const secondTreeId = index.writeTree();
-    const secondTree = repo.getTree(secondTreeId);
-    const secondOid = repo.commit(secondTree, 'second', {
-      updateRef: 'HEAD',
-      author: signature,
-      committer: signature,
-      parents: [firstOid],
-    });
-
-    expect(repo.state()).toBe('Clean');
-
-    const commitToRevert = repo.getCommit(secondOid);
-    repo.revert(commitToRevert);
-
-    repo.cleanupState();
-    expect(repo.state()).toBe('Clean');
-
-    repo.cleanupState();
-    expect(repo.state()).toBe('Clean');
-  });
-
-  it('should fail when reverting merge commit without mainline', async () => {
+  it('error on merge revert without mainline', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
@@ -325,86 +386,79 @@ describe('revert', () => {
     }).toThrow();
   });
 
-  it('should revert file addition', async () => {
+  it('revert merge commit with mainline 2', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
 
-    await fs.writeFile(path.join(p, 'existing.txt'), 'existing file');
+    await fs.writeFile(path.join(p, 'base.txt'), 'base');
     let index = repo.index();
-    index.addPath('existing.txt');
-    const baseTreeId = index.writeTree();
-    const baseTree = repo.getTree(baseTreeId);
+    index.addPath('base.txt');
+    const baseTree = repo.getTree(index.writeTree());
     const baseOid = repo.commit(baseTree, 'base', {
       updateRef: 'HEAD',
       author: signature,
       committer: signature,
       parents: [repo.head().target()!],
     });
+    const baseCommit = repo.getCommit(baseOid);
 
-    await fs.writeFile(path.join(p, 'added.txt'), 'new file content');
+    repo.createBranch('A', baseCommit);
+    repo.setHead('refs/heads/A');
+    await fs.writeFile(path.join(p, 'a.txt'), 'A');
     index = repo.index();
-    index.addPath('added.txt');
-    const addTreeId = index.writeTree();
-    const addTree = repo.getTree(addTreeId);
-    const addOid = repo.commit(addTree, 'add new file', {
+    index.addPath('a.txt');
+    const aTree = repo.getTree(index.writeTree());
+    const aOid = repo.commit(aTree, 'A', {
       updateRef: 'HEAD',
       author: signature,
       committer: signature,
       parents: [baseOid],
     });
 
-    const commitToRevert = repo.getCommit(addOid);
-    repo.revert(commitToRevert);
+    repo.createBranch('B', baseCommit);
+    repo.setHead('refs/heads/B');
+    repo.checkoutHead({ force: true });
+    await fs.writeFile(path.join(p, 'b.txt'), 'B');
+    index = repo.index();
+    index.addPath('b.txt');
+    const bTree = repo.getTree(index.writeTree());
+    const bOid = repo.commit(bTree, 'B', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
 
+    repo.setHead('refs/heads/A');
+    repo.checkoutHead({ force: true });
+
+    await fs.writeFile(path.join(p, 'b.txt'), 'B');
+    index = repo.index();
+    index.addPath('a.txt');
+    index.addPath('b.txt');
+    const mergeTree = repo.getTree(index.writeTree());
+    const mergeOid = repo.commit(mergeTree, 'merge', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [aOid, bOid],
+    });
+    const mergeCommit = repo.getCommit(mergeOid);
+
+    repo.revert(mergeCommit, { mainline: 2 });
     repo.cleanupState();
 
-    const fileExists = await fs
-      .access(path.join(p, 'added.txt'))
+    const aExists = await fs
+      .access(path.join(p, 'a.txt'))
       .then(() => true)
       .catch(() => false);
-    expect(fileExists).toBe(false);
-
-    const existingFileContent = await fs.readFile(path.join(p, 'existing.txt'), 'utf-8');
-    expect(existingFileContent).toBe('existing file');
+    const bExists = await fs
+      .access(path.join(p, 'b.txt'))
+      .then(() => true)
+      .catch(() => false);
+    expect(aExists).toBe(false);
+    expect(bExists).toBe(true);
   });
-
-  it('should revert file deletion', async () => {
-    const p = await useFixture('empty');
-    const repo = await openRepository(p);
-
-    await fs.writeFile(path.join(p, 'to-delete.txt'), 'file to be deleted');
-    let index = repo.index();
-    index.addPath('to-delete.txt');
-    const baseTreeId = index.writeTree();
-    const baseTree = repo.getTree(baseTreeId);
-    const baseOid = repo.commit(baseTree, 'base with file', {
-      updateRef: 'HEAD',
-      author: signature,
-      committer: signature,
-      parents: [repo.head().target()!],
-    });
-
-    await fs.unlink(path.join(p, 'to-delete.txt'));
-    index = repo.index();
-    index.removePath('to-delete.txt');
-    const deleteTreeId = index.writeTree();
-    const deleteTree = repo.getTree(deleteTreeId);
-    const deleteOid = repo.commit(deleteTree, 'delete file', {
-      updateRef: 'HEAD',
-      author: signature,
-      committer: signature,
-      parents: [baseOid],
-    });
-
-    const commitToRevert = repo.getCommit(deleteOid);
-    repo.revert(commitToRevert);
-
-    repo.cleanupState();
-
-    const fileContent = await fs.readFile(path.join(p, 'to-delete.txt'), 'utf-8');
-    expect(fileContent).toBe('file to be deleted');
-  });
-  
 
   it('handle conflicts during revert', async () => {
     const p = await useFixture('empty');
@@ -452,5 +506,216 @@ describe('revert', () => {
     const revertIndex = repo.revertCommit(secondCommit, thirdCommit, 0, { failOnConflict: false });
 
     expect(revertIndex.hasConflicts()).toBe(true);
+  });
+
+  it('revert conflict throws with failOnConflict', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\n2\n3');
+    let index = repo.index();
+    index.addPath('conflict.txt');
+    const baseTreeId = index.writeTree();
+    const baseTree = repo.getTree(baseTreeId);
+    const baseOid = repo.commit(baseTree, 'base', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\nA\n3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const aTreeId = index.writeTree();
+    const aTree = repo.getTree(aTreeId);
+    const aOid = repo.commit(aTree, 'A changes', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\nB\n3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const bTreeId = index.writeTree();
+    const bTree = repo.getTree(bTreeId);
+    repo.commit(bTree, 'B changes', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [aOid],
+    });
+
+    const commitA = repo.getCommit(aOid);
+    expect(() =>
+      repo.revert(commitA, {
+        mergeOptions: { failOnConflict: true },
+      })
+    ).toThrow();
+  });
+
+  it('revert conflict leaves conflicts without failOnConflict', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\n2\n3');
+    let index = repo.index();
+    index.addPath('conflict.txt');
+    const baseTreeId = index.writeTree();
+    const baseTree = repo.getTree(baseTreeId);
+    const baseOid = repo.commit(baseTree, 'base', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\nA\n3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const aTreeId = index.writeTree();
+    const aTree = repo.getTree(aTreeId);
+    const aOid = repo.commit(aTree, 'A changes', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [baseOid],
+    });
+
+    await fs.writeFile(path.join(p, 'conflict.txt'), '1\nB\n3');
+    index = repo.index();
+    index.addPath('conflict.txt');
+    const bTreeId = index.writeTree();
+    const bTree = repo.getTree(bTreeId);
+    repo.commit(bTree, 'B changes', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [aOid],
+    });
+
+    const commitA = repo.getCommit(aOid);
+    repo.revert(commitA, { mergeOptions: { failOnConflict: false } });
+    expect(repo.index().hasConflicts()).toBe(true);
+  });
+
+  it('revert with checkoutOptions.dryRun does not touch working tree', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'dry.txt'), 'v1');
+    let index = repo.index();
+    index.addPath('dry.txt');
+    const t1 = repo.getTree(index.writeTree());
+    const c1 = repo.commit(t1, 'v1', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+
+    await fs.writeFile(path.join(p, 'dry.txt'), 'v2');
+    index = repo.index();
+    index.addPath('dry.txt');
+    const t2 = repo.getTree(index.writeTree());
+    const c2 = repo.commit(t2, 'v2', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [c1],
+    });
+
+    const commitToRevert = repo.getCommit(c2);
+    repo.revert(commitToRevert, { checkoutOptions: { dryRun: true } });
+
+    const content = await fs.readFile(path.join(p, 'dry.txt'), 'utf-8');
+    expect(content).toBe('v2');
+    expect(repo.state()).toBe('Revert');
+    repo.cleanupState();
+    expect(repo.state()).toBe('Clean');
+  });
+
+  // revertCommit usage
+  it('revertCommit returns index for manual control', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'manual.txt'), 'original');
+    let index = repo.index();
+    index.addPath('manual.txt');
+    const firstTreeId = index.writeTree();
+    const firstTree = repo.getTree(firstTreeId);
+    const firstOid = repo.commit(firstTree, 'first', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+    const firstCommit = repo.getCommit(firstOid);
+
+    await fs.writeFile(path.join(p, 'manual.txt'), 'changed');
+    index = repo.index();
+    index.addPath('manual.txt');
+    const secondTreeId = index.writeTree();
+    const secondTree = repo.getTree(secondTreeId);
+    const secondOid = repo.commit(secondTree, 'second', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [firstOid],
+    });
+    const secondCommit = repo.getCommit(secondOid);
+
+    await fs.writeFile(path.join(p, 'manual.txt'), 'changed more');
+    index = repo.index();
+    index.addPath('manual.txt');
+    const thirdTreeId = index.writeTree();
+    const thirdTree = repo.getTree(thirdTreeId);
+    const thirdOid = repo.commit(thirdTree, 'third', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [secondOid],
+    });
+    const thirdCommit = repo.getCommit(thirdOid);
+
+    const revertIndex = repo.revertCommit(secondCommit, thirdCommit, 0);
+
+    expect(revertIndex).toBeDefined();
+    expect(revertIndex.constructor.name).toBe('Index');
+  });
+
+  it('revertCommit end-to-end via checkoutIndex', async () => {
+    const p = await useFixture('empty');
+    const repo = await openRepository(p);
+
+    await fs.writeFile(path.join(p, 'e2e.txt'), 'v1');
+    let index = repo.index();
+    index.addPath('e2e.txt');
+    const t1 = repo.getTree(index.writeTree());
+    const c1 = repo.commit(t1, 'v1', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [repo.head().target()!],
+    });
+    await fs.writeFile(path.join(p, 'e2e.txt'), 'v2');
+    index = repo.index();
+    index.addPath('e2e.txt');
+    const t2 = repo.getTree(index.writeTree());
+    const c2 = repo.commit(t2, 'v2', {
+      updateRef: 'HEAD',
+      author: signature,
+      committer: signature,
+      parents: [c1],
+    });
+
+    const idx = repo.revertCommit(repo.getCommit(c2), repo.getCommit(c2), 0);
+    repo.checkoutIndex(idx);
+
+    const content = await fs.readFile(path.join(p, 'e2e.txt'), 'utf-8');
+    expect(content).toBe('v1');
   });
 });
