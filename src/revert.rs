@@ -6,6 +6,30 @@ use crate::repository::Repository;
 use napi_derive::napi;
 
 #[napi(object)]
+/// Options for revert behavior.
+///
+/// Controls how a revert is performed when applying the inverse of a commit.
+///
+/// @example
+/// ```ts
+/// import { openRepository } from 'es-git';
+///
+/// const repo = await openRepository('./path/to/repo');
+/// const head = repo.head().target()!;
+/// const commit = repo.getCommit(head);
+///
+/// // Simple revert
+/// repo.revert(commit);
+/// repo.cleanupState();
+///
+/// // Revert a merge commit selecting the first parent as mainline
+/// repo.revert(commit, { mainline: 1 });
+/// repo.cleanupState();
+///
+/// // Prevent working tree changes (dry run) but compute conflicts
+/// repo.revert(commit, { checkoutOptions: { dryRun: true } });
+/// repo.cleanupState();
+/// ```
 pub struct RevertOptions {
   /// Parent number for merge commits (1-based).
   ///
@@ -59,6 +83,23 @@ impl Repository {
   /// @param {RevertOptions} [options] - Options for the revert operation.
   /// @throws {Error} If the commit is a merge commit and no mainline is specified.
   /// @throws {Error} If there are conflicts during the revert operation.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('./path/to/repo');
+  /// const last = repo.head().target()!;
+  /// const commit = repo.getCommit(last);
+  ///
+  /// // Revert and update working tree
+  /// repo.revert(commit);
+  /// repo.cleanupState();
+  ///
+  /// // Revert a merge commit: specify the mainline parent
+  /// // repo.revert(mergeCommit, { mainline: 1 });
+  /// // repo.cleanupState();
+  /// ```
   pub fn revert(&self, commit: &Commit, options: Option<RevertOptions>) -> crate::Result<()> {
     let mut git_options = options.map(Into::into);
 
@@ -94,6 +135,20 @@ impl Repository {
   /// @param {number} mainline - The parent of the revert commit, if it is a merge (1-based).
   /// @param {MergeOptions} [mergeOptions] - Options for merge conflict resolution.
   /// @returns The index result.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('./path/to/repo');
+  /// const head = repo.head().target()!;
+  /// const ours = repo.getCommit(head);
+  /// const target = repo.getCommit(head);
+  ///
+  /// // Compute a revert index and apply to working tree
+  /// const idx = repo.revertCommit(target, ours, 0);
+  /// repo.checkoutIndex(idx);
+  /// ```
   pub fn revert_commit(
     &self,
     revert_commit: &Commit,
