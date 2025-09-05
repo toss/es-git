@@ -5446,11 +5446,11 @@ export declare class Repository {
    *
    * const repo = await openRepository('./path/to/repo');
    * const head = repo.head().target()!;
-   * const ours = repo.getCommit(head);
+   * const our = repo.getCommit(head);
    * const target = repo.getCommit(head);
    *
    * // Compute a revert index and apply to working tree
-   * const idx = repo.revertCommit(target, ours, 0);
+   * const idx = repo.revertCommit(target, our, 0);
    * repo.checkoutIndex(idx);
    * ```
    */
