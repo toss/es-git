@@ -1,5 +1,5 @@
 #![deny(clippy::all)]
-
+#![allow(clippy::len_without_is_empty)]
 pub mod annotated_commit;
 pub mod blame;
 pub mod blob;
@@ -15,6 +15,7 @@ pub mod mailmap;
 pub mod merge;
 pub mod object;
 pub mod oid;
+pub mod rebase;
 pub mod reference;
 pub mod remote;
 pub mod repository;
