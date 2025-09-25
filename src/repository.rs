@@ -341,6 +341,16 @@ impl Repository {
   /// ```
   ///
   /// @returns The current state of this repository.
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('./repo');
+  /// console.log(repo.state()); // e.g., 'Clean'
+  /// // After a revert/merge/cherry-pick, state can be 'Revert'/'Merge' etc.
+  /// // Use repo.cleanupState() to return to 'Clean' when done handling.
+  /// ```
   pub fn state(&self) -> RepositoryState {
     self.inner.state().into()
   }
@@ -541,6 +551,17 @@ impl Repository {
   /// ```ts
   /// class Repository {
   ///   cleanupState(): void;
+  /// }
+  /// ```
+  ///
+  /// @example
+  /// ```ts
+  /// import { openRepository } from 'es-git';
+  ///
+  /// const repo = await openRepository('./repo');
+  /// // After revert or merge operations:
+  /// if (repo.state() !== 'Clean') {
+  ///   repo.cleanupState();
   /// }
   /// ```
   pub fn cleanup_state(&self) -> crate::Result<()> {
