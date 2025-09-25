@@ -19,6 +19,7 @@ pub mod rebase;
 pub mod reference;
 pub mod remote;
 pub mod repository;
+pub mod revert;
 pub mod revparse;
 pub mod revwalk;
 pub mod signature;
