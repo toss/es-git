@@ -75,7 +75,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
       - name: Install rust
@@ -126,9 +126,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
+      - name: Update npm
+        run: npm install -g npm@11.5.1
       - name: Install dependencies
         run: yarn install
       - name: Download all artifacts
@@ -168,8 +170,7 @@ jobs:
         run: |
           set -ex
           npm config set provenance true
-          npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
-          npm config set access public
+          npm config set //registry.npmjs.org/
           npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
             yarn napi prepublish -t npm --gh-release-id ${{ steps.gh-release.outputs.id }}
@@ -183,7 +184,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   publish-docs:
     runs-on: ubuntu-latest
     needs:
@@ -194,7 +194,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
       - name: Install dependencies
