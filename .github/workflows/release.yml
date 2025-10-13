@@ -137,7 +137,11 @@ jobs:
           path: release-artifacts
       - name: Prepare next release
         if: github.ref_type == 'branch'
-        run: node --no-warnings=ExperimentalWarning --experimental-strip-types ./.scripts/prepare-next-release.ts ${{ github.run_number }} ${{ github.sha }}
+        run: node --no-warnings=ExperimentalWarning --experimental-strip-types ./.scripts/prepare-next-release.ts
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
       - name: Create npm dirs
         run: yarn napi create-npm-dir -t .
       - name: Move artifacts
@@ -181,9 +185,33 @@ jobs:
           else
             echo "Skip publish"
           fi
+
+          # set output
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "es-git-version=$VERSION" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs:
+      - release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          check-latest: true
+      - name: Install dependencies
+        working-directory: e2e-tests
+        run: npm install
+      - name: Run e2e tests
+        working-directory: e2e-tests
+        run: npm run test
+        env:
+          ES_GIT_VERSION: ${{ steps.publish.outputs.es-git-version }}
+          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   publish-docs:
     runs-on: ubuntu-latest
     needs:
