@@ -169,7 +169,6 @@ jobs:
         id: publish
         run: |
           set -ex
-          npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
             yarn napi prepublish -t npm --gh-release-id ${{ steps.gh-release.outputs.id }}
             npm publish --provenance --access public
