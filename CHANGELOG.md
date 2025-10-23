@@ -1,5 +1,19 @@
 # Changelog
 
+## Version v0.5.0
+
+Released on Oct 22th, 2025.
+
+- ci: oidc (#151)
+- feat: implements revert feature (#148)
+- feat: add rebase feature (#146)
+- fix: jsdoc unmatched parameters (#147)
+- feat: add missing `wt_unreaddable` field in status by upgrading git2-rs v0.20.2 (#144)
+- feat: implements stash feature (#132)
+- fix: resolve clippy lint errors with inline format arguments (#133)
+
+We sincerely thank @other-yuka for their contributions. We appreciate your great efforts!
+
 ## Version v0.4.0
 
 Released on June 22th, 2025.
