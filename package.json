@@ -15,22 +15,19 @@
   "license": "MIT",
   "packageManager": "yarn@4.9.2",
   "napi": {
-    "name": "es-git",
-    "triples": {
-      "defaults": false,
-      "additional": [
-        "x86_64-apple-darwin",
-        "aarch64-apple-darwin",
-        "x86_64-pc-windows-msvc",
-        "aarch64-pc-windows-msvc",
-        "x86_64-unknown-linux-gnu",
-        "x86_64-unknown-linux-musl",
-        "aarch64-linux-android",
-        "aarch64-unknown-linux-gnu",
-        "aarch64-unknown-linux-musl",
-        "armv7-linux-androideabi"
-      ]
-    }
+    "binaryName": "es-git",
+    "targets": [
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-linux-android",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "armv7-linux-androideabi"
+    ]
   },
   "engines": {
     "node": ">= 10.20.0"
@@ -48,7 +45,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@napi-rs/cli": "^2.18.4",
+    "@napi-rs/cli": "3.4.1",
     "@types/jscodeshift": "^0.12.0",
     "@types/node": "^22.8.4",
     "fast-glob": "^3.3.3",

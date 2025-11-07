@@ -1,9 +1,8 @@
 use crate::index::Index;
 use crate::repository::Repository;
 use crate::tree::Tree;
-use crate::util::{bitflags_contain, path_to_js_string};
+use crate::util::{bitflags_contain, path_to_string};
 use napi::bindgen_prelude::*;
-use napi::JsString;
 use napi_derive::napi;
 use std::ops::Deref;
 
@@ -683,8 +682,8 @@ impl DiffFile {
   /// ```
   ///
   /// @returns Ths path of the entry relative to the working directory of the repository.
-  pub fn path(&self, env: Env) -> Option<JsString> {
-    self.inner.path().and_then(|p| path_to_js_string(&env, p).ok())
+  pub fn path(&self) -> Option<String> {
+    self.inner.path().map(path_to_string)
   }
 
   #[napi]

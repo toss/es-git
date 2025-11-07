@@ -2,7 +2,6 @@ use crate::repository::Repository;
 use crate::util;
 use chrono::{DateTime, Timelike, Utc};
 use napi::bindgen_prelude::*;
-use napi::JsString;
 use napi_derive::napi;
 use std::path::Path;
 
@@ -575,8 +574,8 @@ impl Index {
   /// ```
   ///
   /// @returns Returns `null` if this is an in-memory index.
-  pub fn path(&self, env: Env) -> Option<JsString> {
-    self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
+  pub fn path(&self) -> Option<String> {
+    self.inner.path().map(util::path_to_string)
   }
 
   #[napi]
