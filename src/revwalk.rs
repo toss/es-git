@@ -26,7 +26,7 @@ impl Revwalk {
       Some(x) => {
         let item = x?;
         Ok(Some(item.to_string()))
-      },
+      }
       None => Ok(None),
     }
   }

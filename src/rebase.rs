@@ -182,8 +182,8 @@ impl Rebase {
       Some(x) => {
         let op = RebaseOperation::from(x?);
         Ok(Some(op))
-      },
-      None => Ok(None)
+      }
+      None => Ok(None),
     }
   }
 }
