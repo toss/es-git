@@ -5,7 +5,6 @@ use crate::merge::MergeOptions;
 use crate::repository::Repository;
 use crate::signature::{Signature, SignaturePayload};
 use napi::bindgen_prelude::*;
-use napi::iterator::Generator;
 use napi_derive::napi;
 use std::ops::Deref;
 
@@ -20,7 +19,7 @@ pub struct RebaseCommitOptions {
   pub message: Option<String>,
 }
 
-#[napi(iterator)]
+#[napi]
 /// Representation of a rebase
 /// Begin the rebase by iterating the returned `Rebase`
 /// (e.g., `for (const op of rebase) { ... }` or calling `next()`).
@@ -176,16 +175,16 @@ impl Rebase {
     self.inner.finish(signature.as_ref())?;
     Ok(())
   }
-}
 
-#[napi]
-impl Generator for Rebase {
-  type Yield = RebaseOperation;
-  type Next = ();
-  type Return = ();
-
-  fn next(&mut self, _value: Option<Self::Next>) -> Option<Self::Yield> {
-    self.inner.next().and_then(|x| x.ok().map(RebaseOperation::from))
+  #[napi(js_name = "next")]
+  pub fn get_next(&mut self) -> crate::Result<Option<RebaseOperation>> {
+    match self.inner.next() {
+      Some(x) => {
+        let op = RebaseOperation::from(x?);
+        Ok(Some(op))
+      },
+      None => Ok(None)
+    }
   }
 }
 

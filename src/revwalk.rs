@@ -11,7 +11,7 @@ pub enum RevwalkSort {
   Reverse = 4,
 }
 
-#[napi(iterator)]
+#[napi]
 /// A revwalk allows traversal of the commit graph defined by including one or
 /// more leaves and excluding one or more roots.
 pub struct Revwalk {
@@ -19,18 +19,18 @@ pub struct Revwalk {
 }
 
 #[napi]
-impl Generator for Revwalk {
-  type Yield = String;
-  type Next = ();
-  type Return = ();
-
-  fn next(&mut self, _value: Option<Self::Next>) -> Option<Self::Yield> {
-    self.inner.next().and_then(|x| x.ok().map(|x| x.to_string()))
-  }
-}
-
-#[napi]
 impl Revwalk {
+  #[napi(js_name = "next")]
+  pub fn get_next(&mut self) -> crate::Result<Option<String>> {
+    match self.inner.next() {
+      Some(x) => {
+        let item = x?;
+        Ok(Some(item.to_string()))
+      },
+      None => Ok(None),
+    }
+  }
+
   #[napi]
   /// Reset a revwalk to allow re-configuring it.
   ///

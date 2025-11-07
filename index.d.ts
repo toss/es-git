@@ -1861,14 +1861,8 @@ export declare class Mailmap {
  * Representation of a rebase
  * Begin the rebase by iterating the returned `Rebase`
  * (e.g., `for (const op of rebase) { ... }` or calling `next()`).
- *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Rebase extends Iterator<RebaseOperation, void, void> {
+export declare class Rebase {
   /**
    * Gets the count of rebase operations that are to be applied.
    *
@@ -1988,7 +1982,7 @@ export declare class Rebase extends Iterator<RebaseOperation, void, void> {
    * @params {SignaturePayload | undefined | null} [signature] - The identity that is finishing the rebase
    */
   finish(signature?: SignaturePayload | undefined | null): void
-  next(value?: void): IteratorResult<RebaseOperation, void>
+  next(): RebaseOperation | null
 }
 
 /**
@@ -4311,14 +4305,9 @@ export declare class Repository {
 /**
  * A revwalk allows traversal of the commit graph defined by including one or
  * more leaves and excluding one or more roots.
- *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Revwalk extends Iterator<string, void, void> {
+export declare class Revwalk {
+  next(): string | null
   /**
    * Reset a revwalk to allow re-configuring it.
    *
@@ -4524,7 +4513,6 @@ export declare class Revwalk extends Iterator<string, void, void> {
    * @param {string} reference - The reference must point to a commitish.
    */
   hideRef(reference: string): this
-  next(value?: void): IteratorResult<string, void>
 }
 
 /**
