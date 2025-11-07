@@ -109,6 +109,7 @@ impl From<DeltaType> for git2::Delta {
 }
 
 #[napi(string_enum)]
+#[derive(Default)]
 /// Possible output formats for diff data.
 ///
 /// - `Patch`: Full `git diff` (default)
@@ -118,18 +119,13 @@ impl From<DeltaType> for git2::Delta {
 /// - `NameStatus` : Like `git diff --name-status`
 /// - `PatchId` : `git diff` as used by `git patch-id`
 pub enum DiffFormat {
+  #[default]
   Patch,
   PatchHeader,
   Raw,
   NameOnly,
   NameStatus,
   PatchId,
-}
-
-impl Default for DiffFormat {
-  fn default() -> Self {
-    Self::Patch
-  }
 }
 
 impl From<DiffFormat> for git2::DiffFormat {

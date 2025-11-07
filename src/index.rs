@@ -127,6 +127,7 @@ impl IndexAddAllOptions {
 }
 
 #[napi(string_enum)]
+#[derive(Default)]
 /// - `Any` : Match any index stage.
 /// - `Normal` : A normal staged file in the index.
 /// - `Ancestor` : The ancestor side of a conflict.
@@ -134,16 +135,11 @@ impl IndexAddAllOptions {
 /// - `Theirs` : The "theirs" side of a conflict.
 pub enum IndexStage {
   Any,
+  #[default]
   Normal,
   Ancestor,
   Ours,
   Theirs,
-}
-
-impl Default for IndexStage {
-  fn default() -> Self {
-    Self::Normal
-  }
 }
 
 impl From<IndexStage> for i32 {
