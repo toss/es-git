@@ -2,7 +2,7 @@ use crate::annotated_commit::AnnotatedCommit;
 use crate::commit::Commit;
 use crate::remote::FetchOptions;
 use crate::util;
-use napi::{bindgen_prelude::*, JsString};
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
 
@@ -324,9 +324,8 @@ impl Repository {
   ///
   /// @returns The path to the `.git` folder for normal repositories or the repository itself
   /// for bare repositories.
-  pub fn path(&self, env: Env) -> crate::Result<JsString> {
-    let path = util::path_to_js_string(&env, self.inner.path())?;
-    Ok(path)
+  pub fn path(&self) -> String {
+    util::path_to_string(self.inner.path())
   }
 
   #[napi]
@@ -369,11 +368,8 @@ impl Repository {
   /// @returns The path of the working directory for this repository.
   /// If this repository is bare, then `null` is returned.
   /// ```
-  pub fn workdir(&self, env: Env) -> Option<JsString> {
-    self
-      .inner
-      .workdir()
-      .and_then(|path| util::path_to_js_string(&env, path).ok())
+  pub fn workdir(&self) -> Option<String> {
+    self.inner.workdir().map(util::path_to_string)
   }
 
   #[napi]

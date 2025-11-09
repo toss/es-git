@@ -2,7 +2,6 @@ use crate::repository::Repository;
 use crate::util;
 use chrono::{DateTime, Timelike, Utc};
 use napi::bindgen_prelude::*;
-use napi::JsString;
 use napi_derive::napi;
 use std::path::Path;
 
@@ -128,6 +127,7 @@ impl IndexAddAllOptions {
 }
 
 #[napi(string_enum)]
+#[derive(Default)]
 /// - `Any` : Match any index stage.
 /// - `Normal` : A normal staged file in the index.
 /// - `Ancestor` : The ancestor side of a conflict.
@@ -135,16 +135,11 @@ impl IndexAddAllOptions {
 /// - `Theirs` : The "theirs" side of a conflict.
 pub enum IndexStage {
   Any,
+  #[default]
   Normal,
   Ancestor,
   Ours,
   Theirs,
-}
-
-impl Default for IndexStage {
-  fn default() -> Self {
-    Self::Normal
-  }
 }
 
 impl From<IndexStage> for i32 {
@@ -575,8 +570,8 @@ impl Index {
   /// ```
   ///
   /// @returns Returns `null` if this is an in-memory index.
-  pub fn path(&self, env: Env) -> Option<JsString> {
-    self.inner.path().and_then(|x| util::path_to_js_string(&env, x).ok())
+  pub fn path(&self) -> Option<String> {
+    self.inner.path().map(util::path_to_string)
   }
 
   #[napi]

@@ -1,6 +1,5 @@
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
-use napi::JsString;
 use napi_derive::napi;
 use std::path::Path;
 use std::sync::RwLock;
@@ -54,6 +53,7 @@ impl<'a> TryFrom<git2::Refspec<'a>> for Refspec {
 }
 
 #[napi(string_enum)]
+#[derive(Copy, Clone)]
 pub enum CredentialType {
   Default,
   SSHKeyFromAgent,
@@ -131,6 +131,7 @@ impl ProxyOptions {
 }
 
 #[napi(string_enum)]
+#[derive(Copy, Clone)]
 /// - `Unspecified` : Use the setting from the configuration.
 /// - `On` : Force pruning on.
 /// - `Off` : Force pruning off
@@ -151,6 +152,7 @@ impl From<FetchPrune> for git2::FetchPrune {
 }
 
 #[napi(string_enum)]
+#[derive(Copy, Clone)]
 /// - `Unspecified` : Use the setting from the remote's configuration
 /// - `Auto` : Ask the server for tags pointing to objects we're already downloading
 /// - `None` : Don't ask for any tags beyond the refspecs
@@ -174,6 +176,7 @@ impl From<AutotagOption> for git2::AutotagOption {
 }
 
 #[napi(string_enum)]
+#[derive(Copy, Clone)]
 /// - `None` : Do not follow any off-site redirects at any stage of the fetch or push.
 /// - `Initial` : Allow off-site redirects only upon the initial request. This is the default.
 /// - `All` : Allow redirects at any stage in the fetch or push.
@@ -434,7 +437,7 @@ unsafe impl Send for GetRemoteDefaultBranchTask {}
 #[napi]
 impl Task for GetRemoteDefaultBranchTask {
   type Output = String;
-  type JsValue = JsString;
+  type JsValue = String;
 
   fn compute(&mut self) -> Result<Self::Output> {
     let mut remote = self
@@ -451,8 +454,8 @@ impl Task for GetRemoteDefaultBranchTask {
     Ok(branch)
   }
 
-  fn resolve(&mut self, env: Env, output: Self::Output) -> Result<Self::JsValue> {
-    env.create_string(&output)
+  fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
+    Ok(output.to_owned())
   }
 }
 

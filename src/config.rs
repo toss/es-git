@@ -1,7 +1,6 @@
 use crate::repository::Repository;
-use crate::util::path_to_js_string;
+use crate::util::path_to_string;
 use napi::bindgen_prelude::*;
-use napi::JsString;
 use napi_derive::napi;
 use std::path::Path;
 
@@ -377,37 +376,9 @@ impl Config {
   ///
   /// @param {string} name - The name of config entry.
   /// @returns The value of a path config variable.
-  pub fn get_path(&self, env: Env, name: String) -> crate::Result<JsString> {
+  pub fn get_path(&self, name: String) -> crate::Result<String> {
     let value = self.inner.get_path(&name)?;
-    let path = path_to_js_string(&env, &value)?;
-    Ok(path)
-  }
-
-  #[napi]
-  /// Find the value of a path config variable.
-  ///
-  /// A leading '~' will be expanded to the global search path (which
-  /// defaults to the user's home directory but can be overridden via
-  /// [`git_libgit2_opts`][1].
-  ///
-  /// [1]: https://libgit2.org/docs/reference/v1.9.0/common/git_libgit2_opts.html
-  ///
-  /// All config files will be looked into, in the order of their
-  /// defined level. A higher level means a higher priority. The
-  /// first occurrence of the variable will be returned here.
-  ///
-  /// @category Config/Methods
-  /// @signature
-  /// ```ts
-  /// class Config {
-  ///   findPath(name: string): string | null;
-  /// }
-  /// ```
-  ///
-  /// @param {string} name - The name of config entry.
-  /// @returns The value of a path config variable.
-  pub fn find_path(&self, env: Env, name: String) -> Option<JsString> {
-    self.get_path(env, name).ok()
+    Ok(path_to_string(&value))
   }
 
   #[napi]
@@ -673,11 +644,8 @@ pub fn open_default_config() -> crate::Result<Config> {
 /// ```
 ///
 /// @returns The path to the global configuration file.
-pub fn find_global_config_path(env: Env) -> Option<JsString> {
-  git2::Config::find_global()
-    .ok()
-    .map(|x| path_to_js_string(&env, &x))
-    .and_then(|x| x.ok())
+pub fn find_global_config_path() -> Option<String> {
+  git2::Config::find_global().ok().map(|x| path_to_string(&x))
 }
 
 #[napi]
@@ -692,11 +660,8 @@ pub fn find_global_config_path(env: Env) -> Option<JsString> {
 /// ```
 ///
 /// @returns The path to the system configuration file.
-pub fn find_system_config_path(env: Env) -> Option<JsString> {
-  git2::Config::find_system()
-    .ok()
-    .map(|x| path_to_js_string(&env, &x))
-    .and_then(|x| x.ok())
+pub fn find_system_config_path() -> Option<String> {
+  git2::Config::find_system().ok().map(|x| path_to_string(&x))
 }
 
 #[napi]
@@ -712,11 +677,8 @@ pub fn find_system_config_path(env: Env) -> Option<JsString> {
 /// ```
 ///
 /// @returns The path to the XDG compatible configuration file.
-pub fn find_xdg_config_path(env: Env) -> Option<JsString> {
-  git2::Config::find_xdg()
-    .ok()
-    .map(|x| path_to_js_string(&env, &x))
-    .and_then(|x| x.ok())
+pub fn find_xdg_config_path() -> Option<String> {
+  git2::Config::find_xdg().ok().map(|x| path_to_string(&x))
 }
 
 #[napi]

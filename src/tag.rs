@@ -297,12 +297,12 @@ impl Repository {
   /// //  ['674e3327707fcf32a348ecfc0cb6b93e57398b8c', 'refs/tags/v1'],
   /// //  ['567aa5c6b219312dc7758ab88ebb7a1e5d36d26b', 'refs/tags/v2']]
   /// ```
-  pub fn tag_foreach(&self, callback: Function<(String, String), bool>) -> crate::Result<()> {
+  pub fn tag_foreach(&self, callback: Function<FnArgs<(String, String)>, bool>) -> crate::Result<()> {
     self.inner.tag_foreach(|oid, name| {
       let oid = oid.to_string();
       let name = std::str::from_utf8(name).ok().map(|x| x.to_string());
       if let Some(name) = name {
-        callback.call((oid, name)).unwrap_or(false)
+        callback.call((oid, name).into()).unwrap_or(false)
       } else {
         false
       }
