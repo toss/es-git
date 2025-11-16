@@ -32,7 +32,9 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: yarn build --target x86_64-unknown-linux-gnu
+            build: |-
+              rustup update stable &&
+              yarn build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
@@ -40,6 +42,7 @@ jobs:
               # `perl` needs for building openssl
               set -e &&
               apk add perl &&
+              rustup update stable &&
               yarn build
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
@@ -51,6 +54,7 @@ jobs:
               apt-get install -y perl &&
               unset CC_aarch64_unknown_linux_gnu &&
               unset CXX_aarch64_unknown_linux_gnu &&
+              rustup update stable &&
               yarn build --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
@@ -59,6 +63,7 @@ jobs:
               # `perl` needs for building openssl
               set -e &&
               apk add perl &&
+              rustup update stable &&
               rustup target add aarch64-unknown-linux-musl &&
               yarn build --target aarch64-unknown-linux-musl
           - host: ubuntu-latest
