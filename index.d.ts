@@ -548,6 +548,23 @@ export declare class Commit {
    */
   time(): Date
   /**
+   * Get the id of the tree pointed to by this commit.
+   *
+   * No attempts are made to fetch an object from the ODB.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   treeId(): string;
+   * }
+   * ```
+   *
+   * @returns Get the id of the tree pointed to by a commit.
+   */
+  treeId(): string
+  /**
    * Get the tree pointed to by a commit.
    *
    * @category Commit/Methods

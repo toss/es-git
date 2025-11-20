@@ -206,6 +206,25 @@ impl Commit {
   }
 
   #[napi]
+  /// Get the id of the tree pointed to by this commit.
+  ///
+  /// No attempts are made to fetch an object from the ODB.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   treeId(): string;
+  /// }
+  /// ```
+  ///
+  /// @returns Get the id of the tree pointed to by a commit.
+  pub fn tree_id(&self) -> String {
+    self.inner.tree_id().to_string()
+  }
+
+  #[napi]
   /// Get the tree pointed to by a commit.
   ///
   /// @category Commit/Methods
