@@ -548,6 +548,23 @@ export declare class Commit {
    */
   time(): Date
   /**
+   * Get the id of the tree pointed to by this commit.
+   *
+   * No attempts are made to fetch an object from the ODB.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   treeId(): string;
+   * }
+   * ```
+   *
+   * @returns Get the id of the tree pointed to by a commit.
+   */
+  treeId(): string
+  /**
    * Get the tree pointed to by a commit.
    *
    * @category Commit/Methods
@@ -577,6 +594,27 @@ export declare class Commit {
    * @returns `GitObject` that casted from this commit.
    */
   asObject(): GitObject
+  /**
+   * Amend this existing commit with all non-nullable values
+   *
+   * This creates a new commit that is exactly the same as the old commit,
+   * except that any non-nullable values will be updated. The new commit has
+   * the same parents as the old commit.
+   *
+   * @category Commit/Methods
+   *
+   * @signature
+   * ```ts
+   * class Commit {
+   *   amend(options?: AmendOptions, tree?: Tree): string;
+   * }
+   * ```
+   *
+   * @param {AmendOptions} [options] - Options for amending commit.
+   * @param {Tree} [tree] - Tree to use for amending commit.
+   * @returns ID(SHA1) of amended commit.
+   */
+  amend(options?: AmendOptions | undefined | null, tree?: Tree | undefined | null): string
   /**
    * Get the author of this commit, using the mailmap to map it to the canonical name and email.
    *
@@ -5252,6 +5290,30 @@ export interface AddMailmapEntryData {
   realEmail?: string
   replaceName?: string
   replaceEmail: string
+}
+
+export interface AmendOptions {
+  /**
+   * If not NULL, name of the reference that will be updated to point to this commit.
+   * If the reference is not direct, it will be resolved to a direct reference.
+   * Use "HEAD" to update the HEAD of the current branch and make it point to this commit.
+   *
+   * If the reference doesn't exist yet, it will be created.
+   * If it does exist, the first parent must be the tip of this branch.
+   */
+  updateRef?: string
+  /** Signature for author. */
+  author?: SignaturePayload
+  /** Signature for committer. */
+  committer?: SignaturePayload
+  /** Full message for this commit */
+  message?: string
+  /**
+   * The encoding for the message in the commit, represented with a standard encoding name.
+   * E.g. "UTF-8".
+   * If NULL, no encoding header is written and UTF-8 is assumed.
+   */
+  messageEncoding?: string
 }
 
 /**
