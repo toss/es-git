@@ -38,7 +38,12 @@ describe('rev-parse', () => {
 describe('revwalk', () => {
   benchmark.esGit('es-git', repo => {
     const revwalk = repo.revwalk().pushRange('b597cf0b..d47af3b0');
-    const oids = [...revwalk];
+    const oids = [];
+    let oid = revwalk.next();
+    while (oid != null) {
+      oids.push(oid);
+      oid = revwalk.next();
+    }
     console.assert(oids.length === 103);
   });
 
