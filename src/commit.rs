@@ -288,17 +288,16 @@ impl Commit {
   /// @param {AmendOptions} [options] - Options for amending commit.
   /// @param {Tree} [tree] - Tree to use for amending commit.
   /// @returns ID(SHA1) of amended commit.
-  pub fn amend(
-    &self,
-    options: Option<AmendOptions>,
-    tree: Option<&Tree>,
-  ) -> crate::Result<String> {
+  pub fn amend(&self, options: Option<AmendOptions>, tree: Option<&Tree>) -> crate::Result<String> {
     let opts = options.unwrap_or_default();
     let update_ref = opts.update_ref;
-    let author = opts.author
+    let author = opts
+      .author
       .and_then(|x| Signature::try_from(x).ok())
       .and_then(|x| git2::Signature::try_from(x).ok());
-    let committer = opts.committer.and_then(|x| Signature::try_from(x).ok())
+    let committer = opts
+      .committer
+      .and_then(|x| Signature::try_from(x).ok())
       .and_then(|x| git2::Signature::try_from(x).ok());
     let message = opts.message;
     let message_encoding = opts.message_encoding;
