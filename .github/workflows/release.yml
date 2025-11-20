@@ -179,7 +179,7 @@ jobs:
             npm publish --provenance --access public
           elif [[ "$GITHUB_REF_TYPE" = "branch" ]]; then
             npm config set tag next
-            yarn napi prepublish -t npm --skip-gh-release
+            yarn napi prepublish -t npm --no-gh-release
             npm publish --provenance --access public --tag next
           else
             echo "Skip publish"
