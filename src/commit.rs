@@ -31,6 +31,28 @@ pub struct CommitOptions {
   pub signature_field: Option<String>,
 }
 
+#[napi(object)]
+#[derive(Default)]
+pub struct AmendOptions {
+  /// If not NULL, name of the reference that will be updated to point to this commit.
+  /// If the reference is not direct, it will be resolved to a direct reference.
+  /// Use "HEAD" to update the HEAD of the current branch and make it point to this commit.
+  ///
+  /// If the reference doesn't exist yet, it will be created.
+  /// If it does exist, the first parent must be the tip of this branch.
+  pub update_ref: Option<String>,
+  /// Signature for author.
+  pub author: Option<SignaturePayload>,
+  /// Signature for committer.
+  pub committer: Option<SignaturePayload>,
+  /// Full message for this commit
+  pub message: Option<String>,
+  /// The encoding for the message in the commit, represented with a standard encoding name.
+  /// E.g. "UTF-8".
+  /// If NULL, no encoding header is written and UTF-8 is assumed.
+  pub message_encoding: Option<String>,
+}
+
 pub(crate) enum CommitInner {
   Repo(SharedReference<Repository, git2::Commit<'static>>),
   Owned(git2::Commit<'static>),
@@ -245,6 +267,51 @@ impl Commit {
     GitObject {
       inner: ObjectInner::Owned(obj),
     }
+  }
+
+  #[napi]
+  /// Amend this existing commit with all non-nullable values
+  ///
+  /// This creates a new commit that is exactly the same as the old commit,
+  /// except that any non-nullable values will be updated. The new commit has
+  /// the same parents as the old commit.
+  ///
+  /// @category Commit/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Commit {
+  ///   amend(options?: AmendOptions, tree?: Tree): string;
+  /// }
+  /// ```
+  ///
+  /// @param {AmendOptions} [options] - Options for amending commit.
+  /// @param {Tree} [tree] - Tree to use for amending commit.
+  /// @returns ID(SHA1) of amended commit.
+  pub fn amend(
+    &self,
+    options: Option<AmendOptions>,
+    tree: Option<&Tree>,
+  ) -> crate::Result<String> {
+    let opts = options.unwrap_or_default();
+    let update_ref = opts.update_ref;
+    let author = opts.author
+      .and_then(|x| Signature::try_from(x).ok())
+      .and_then(|x| git2::Signature::try_from(x).ok());
+    let committer = opts.committer.and_then(|x| Signature::try_from(x).ok())
+      .and_then(|x| git2::Signature::try_from(x).ok());
+    let message = opts.message;
+    let message_encoding = opts.message_encoding;
+
+    let oid = self.inner.amend(
+      update_ref.as_deref(),
+      author.as_ref(),
+      committer.as_ref(),
+      message_encoding.as_deref(),
+      message.as_deref(),
+      tree.map(|x| x.inner.deref()),
+    )?;
+    Ok(oid.to_string())
   }
 }
 
