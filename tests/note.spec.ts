@@ -35,7 +35,10 @@ describe('note', () => {
       committer: signature,
     });
     expect(repo.findNote('a01e9888e46729ef4aa68953ba19b02a7a64eb82')).not.toBeNull();
-    repo.deleteNote('a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+    repo.deleteNote('a01e9888e46729ef4aa68953ba19b02a7a64eb82', {
+      author: signature,
+      committer: signature,
+    });
     expect(repo.findNote('a01e9888e46729ef4aa68953ba19b02a7a64eb82')).toBeNull();
   });
 
