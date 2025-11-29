@@ -1896,6 +1896,85 @@ export declare class Mailmap {
 }
 
 /**
+ * A structure representing a [note][1] in git.
+ *
+ * [1]: http://alblue.bandlem.com/2011/11/git-tip-of-week-git-notes.html
+ */
+export declare class Note {
+  /**
+   * Get the note object's id
+   *
+   * @category Note/Methods
+   * @signature
+   * ```ts
+   * class Note {
+   *   id(): string;
+   * }
+   * ```
+   *
+   * @returns The note object's id.
+   */
+  id(): string
+  /**
+   * Get the note author
+   *
+   * @category Note/Methods
+   * @signature
+   * ```ts
+   * class Note {
+   *   author(): Signature;
+   * }
+   * ```
+   *
+   * @returns The note author signature.
+   */
+  author(): Signature
+  /**
+   * Get the note committer
+   *
+   * @category Note/Methods
+   * @signature
+   * ```ts
+   * class Note {
+   *   committer(): Signature;
+   * }
+   * ```
+   *
+   * @returns The note committer signature.
+   */
+  committer(): Signature
+  /**
+   * Get the note message as a string.
+   *
+   * @category Note/Methods
+   * @signature
+   * ```ts
+   * class Note {
+   *   message(): string;
+   * }
+   * ```
+   *
+   * @returns The note message as a string
+   * @throws Throws error if message is not utf-8.
+   */
+  message(): string
+}
+
+/**
+ * An iterator over all of the notes within a repository.
+ *
+ * This type extends JavaScript's `Iterator`, and so has the iterator helper
+ * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
+ * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ */
+export declare class Notes extends Iterator<NoteIterItem, void, void> {
+
+  next(value?: void): IteratorResult<NoteIterItem, void>
+}
+
+/**
  * Representation of a rebase
  * Begin the rebase by iterating the returned `Rebase`
  * (e.g., `for (const op of rebase) { ... }` or calling `next()`).
@@ -3218,6 +3297,134 @@ export declare class Repository {
    * @returns Merge analysis result.
    */
   analyzeMergeForRef(ourRef: Reference, theirHeads: Array<AnnotatedCommit>): MergeAnalysisResult
+  /**
+   * Add a note for an object
+   *
+   * The `notesRef` argument is the canonical name of the reference to use,
+   * defaulting to "refs/notes/commits". If `force` is specified then
+   * previous notes are overwritten.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   note(oid: string, note: string, options?: CreateNoteOptions | null | undefined): string;
+   * }
+   * ```
+   *
+   * @param {string} oid - OID of the git object to decorate.
+   * @param {string} note - Content of the note to add for object oid.
+   * @param {CreateNoteOptions} [options] - Options for creating note.
+   * @returns OID for the note.
+   */
+  note(oid: string, note: string, options?: CreateNoteOptions | undefined | null): string
+  /**
+   * Get the default notes reference for this repository
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   noteDefaultRef(): string;
+   * }
+   * ```
+   *
+   * @returns The default notes reference.
+   */
+  noteDefaultRef(): string
+  /**
+   * Creates a new iterator for notes in this repository.
+   *
+   * The `notesRef` argument is the canonical name of the reference to use,
+   * defaulting to "refs/notes/commits".
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   notes(notesRef?: string | null | undefined): Notes;
+   * }
+   * ```
+   *
+   * @param {string} [notesRef] - The canonical name of the reference to use.
+   * @returns Iterator of all notes. The iterator returned yields pairs of `[string, string]`
+   * where first element is the id of the note and the second id is the id the note is annotating.
+   *
+   * @example
+   * ```ts
+   * import { openRepository } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * for (const { noteId, annotatedId } of repo.notes()) {
+   *   const note = repo.getNote(noteId);
+   *   const commit = repo.getCommit(annotatedId);
+   * }
+   * ```
+   */
+  notes(notesRef?: string | undefined | null): Notes
+  /**
+   * Read the note for an object.
+   *
+   * The `notesRef` argument is the canonical name of the reference to use,
+   * defaulting to "refs/notes/commits".
+   *
+   * The id specified is the Oid of the git object to read the note from.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getNote(id: string, options?: FindNoteOptions | null | undefined): Note;
+   * }
+   * ```
+   *
+   * @param {string} id - OID of the git object to read the note from.
+   * @param {FindNoteOptions} [options] - Options for finding note.
+   * @returns Instance of the note.
+   * @throws Throws error if note does not exists.
+   */
+  getNote(id: string, options?: FindNoteOptions | undefined | null): Note
+  /**
+   * Read the note for an object.
+   *
+   * The `notesRef` argument is the canonical name of the reference to use,
+   * defaulting to "refs/notes/commits".
+   *
+   * The id specified is the Oid of the git object to read the note from.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findNote(id: string, options?: FindNoteOptions | null | undefined): Note | null;
+   * }
+   * ```
+   *
+   * @param {string} id - OID of the git object to read the note from.
+   * @param {FindNoteOptions} [options] - Options for finding note.
+   * @returns Instance of the note. If does not exists, returns `null`.
+   */
+  findNote(id: string, options?: FindNoteOptions | undefined | null): Note | null
+  /**
+   * Remove the note for an object.
+   *
+   * The `notesRef` argument is the canonical name of the reference to use,
+   * defaulting to "refs/notes/commits".
+   *
+   * The id specified is the Oid of the git object to remove the note from.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   deleteNote(id: string, options?: DeleteNoteOptions | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {string} id - OID of the git object to remove the note from.
+   * @param {DeleteNoteOptions} [options] - Options for deleting note.
+   */
+  deleteNote(id: string, options?: DeleteNoteOptions | undefined | null): void
   /**
    * Lookup a reference to one of the objects in a repository.
    *
@@ -5734,6 +5941,31 @@ export interface CreateLightweightTagOptions {
  */
 export declare function createMailmapFromBuffer(content: string): Mailmap
 
+export interface CreateNoteOptions {
+  /**
+   * Signature of the notes commit author.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  author?: SignaturePayload
+  /**
+   * Signature of the notes commit commiter.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  committer?: SignaturePayload
+  /**
+   * canonical name of the reference to use.
+   *
+   * Defaults to "refs/notes/commits".
+   */
+  notesRef?: string
+  /** Overwrite existing note. */
+  force?: boolean
+}
+
 export interface CreateRemoteOptions {
   fetchRefspec?: string
 }
@@ -5810,6 +6042,29 @@ export type CredentialType =  'Default'|
 'SSHKeyFromPath'|
 'SSHKey'|
 'Plain';
+
+export interface DeleteNoteOptions {
+  /**
+   * Signature of the notes commit author.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  author?: SignaturePayload
+  /**
+   * Signature of the notes commit commiter.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  committer?: SignaturePayload
+  /**
+   * canonical name of the reference to use.
+   *
+   * Defaults to "refs/notes/commits".
+   */
+  notesRef?: string
+}
 
 /**
  * - `Unmodified` : No changes.
@@ -6249,6 +6504,10 @@ export type FileMode =  'Unreadable'|
  * @returns The path to the global configuration file.
  */
 export declare function findGlobalConfigPath(): string | null
+
+export interface FindNoteOptions {
+  notesRef?: string
+}
 
 /**
  * Locate the path to the system configuration file.
@@ -6721,6 +6980,11 @@ export interface MergePreference {
  * ```
  */
 export declare function normalizeReferenceName(refname: string, format?: number | undefined | null): string | null
+
+export interface NoteIterItem {
+  noteId: string
+  annotatedId: string
+}
 
 /**
  * - `Any` : Any kind of git object
