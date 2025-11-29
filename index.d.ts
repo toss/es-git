@@ -1084,6 +1084,28 @@ export declare class Deltas extends Iterator<DiffDelta, void, void> {
 }
 
 /**
+ * The result of a `describe` operation on either an `Describe` or a
+ * `Repository`.
+ */
+export declare class Describe {
+  /**
+   * Prints this describe result, returning the result as a string.
+   *
+   * @category Describe/Methods
+   * @signature
+   * ```ts
+   * class Describe {
+   *   format(options?: DescribeFormatOptions | null | undefined): string;
+   * }
+   * ```
+   *
+   * @param {DescribeFormatOptions} [options] - Options for formatting describe.
+   * @returns Formatted string for this describe.
+   */
+  format(options?: DescribeFormatOptions | undefined | null): string
+}
+
+/**
  * The diff object that contains all individual file deltas.
  *
  * This is an opaque structure which will be allocated by one of the diff
@@ -1530,6 +1552,23 @@ export declare class GitObject {
    * @returns Returns `null` if the object is not actually a commit.
    */
   asCommit(): Commit | null
+  /**
+   * Describes a commit
+   *
+   * Performs a describe operation on this commitish object.
+   *
+   * @category GitObject/Methods
+   * @signature
+   * ```ts
+   * class Object {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -4545,6 +4584,25 @@ export declare class Repository {
    * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
+  /**
+   * Describes a commit
+   *
+   * Performs a describe operation on the current commit and the worktree.
+   * After performing a describe on `HEAD`, a status is run and description is
+   * considered to be dirty if there are.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -6090,6 +6148,54 @@ export type DeltaType =  'Unmodified'|
 'Typechange'|
 'Unreadable'|
 'Conflicted';
+
+export interface DescribeFormatOptions {
+  /**
+   * Sets the size of the abbreviated commit id to use.
+   *
+   * The value is the lower bound for the length of the abbreviated string,
+   * and the default is 7.
+   */
+  abbreviatedSize?: number
+  /**
+   * Sets whether or not the long format is used even when a shorter name
+   * could be used.
+   */
+  alwaysUseLongFormat?: boolean
+  /**
+   * If the workdir is dirty and this is set, this string will be appended to
+   * the description string.
+   */
+  dirtySuffix?: string
+}
+
+export interface DescribeOptions {
+  maxCandidatesTags?: number
+  /**
+   * Sets the reference lookup strategy
+   *
+   * This behaves like the `--tags` option to git-describe.
+   */
+  describeTags?: boolean
+  /**
+   * Sets the reference lookup strategy
+   *
+   * This behaves like the `--all` option to git-describe.
+   */
+  describeAll?: boolean
+  /**
+   * Indicates when calculating the distance from the matching tag or
+   * reference whether to only walk down the first-parent ancestry.
+   */
+  onlyFollowFirstParent?: boolean
+  /**
+   * If no matching tag or reference is found whether a describe option would
+   * normally fail. This option indicates, however, that it will instead fall
+   * back to showing the full id of the commit.
+   */
+  showCommitOidAsFallback?: boolean
+  pattern?: string
+}
 
 export interface DiffFindOptions {
   /** Look for renames? */
