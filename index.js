@@ -583,6 +583,7 @@ module.exports.Commit = nativeBinding.Commit
 module.exports.Config = nativeBinding.Config
 module.exports.ConfigEntries = nativeBinding.ConfigEntries
 module.exports.Deltas = nativeBinding.Deltas
+module.exports.Describe = nativeBinding.Describe
 module.exports.Diff = nativeBinding.Diff
 module.exports.DiffDelta = nativeBinding.DiffDelta
 module.exports.DiffFile = nativeBinding.DiffFile
