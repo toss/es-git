@@ -7,6 +7,7 @@ pub mod branch;
 pub mod checkout;
 pub mod commit;
 pub mod config;
+pub mod describe;
 pub mod diff;
 mod error;
 pub mod ignore;
@@ -29,7 +30,6 @@ pub mod status;
 pub mod tag;
 pub mod tree;
 pub(crate) mod util;
-pub mod describe;
 
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, Error>;
