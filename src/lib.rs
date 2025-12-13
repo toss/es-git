@@ -7,6 +7,7 @@ pub mod branch;
 pub mod checkout;
 pub mod commit;
 pub mod config;
+pub mod cherrypick;
 pub mod describe;
 pub mod diff;
 mod error;

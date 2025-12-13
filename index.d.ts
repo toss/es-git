@@ -1465,6 +1465,23 @@ export declare class DiffStats {
  */
 export declare class GitObject {
   /**
+   * Describes a commit
+   *
+   * Performs a describe operation on this commitish object.
+   *
+   * @category GitObject/Methods
+   * @signature
+   * ```ts
+   * class Object {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
+  /**
    * Get the id (SHA1) of a repository object.
    *
    * @category GitObject/Methods
@@ -1552,23 +1569,6 @@ export declare class GitObject {
    * @returns Returns `null` if the object is not actually a commit.
    */
   asCommit(): Commit | null
-  /**
-   * Describes a commit
-   *
-   * Performs a describe operation on this commitish object.
-   *
-   * @category GitObject/Methods
-   * @signature
-   * ```ts
-   * class Object {
-   *   describe(options?: DescribeOptions | null | undefined): Describe;
-   * }
-   * ```
-   *
-   * @param {DescribeOptions} [options] - Options for describe operation.
-   * @returns Instance of describe.
-   */
-  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -2872,6 +2872,25 @@ export declare class Repository {
    * (if they are available).
    */
   config(): Config
+  /**
+   * Describes a commit
+   *
+   * Performs a describe operation on the current commit and the worktree.
+   * After performing a describe on `HEAD`, a status is run and description is
+   * considered to be dirty if there are.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
   /**
    * Create a diff with the difference between two tree objects.
    *
@@ -4584,25 +4603,6 @@ export declare class Repository {
    * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
-  /**
-   * Describes a commit
-   *
-   * Performs a describe operation on the current commit and the worktree.
-   * After performing a describe on `HEAD`, a status is run and description is
-   * considered to be dirty if there are.
-   *
-   * @category Repository/Methods
-   * @signature
-   * ```ts
-   * class Repository {
-   *   describe(options?: DescribeOptions | null | undefined): Describe;
-   * }
-   * ```
-   *
-   * @param {DescribeOptions} [options] - Options for describe operation.
-   * @returns Instance of describe.
-   */
-  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -5826,6 +5826,21 @@ export interface CheckoutOptions {
   ourLabel?: string
   /** The name of the common their side of conflicts */
   theirLabel?: string
+}
+
+/** Options for cherrypick behavior. */
+export interface CherrypickOptions {
+  /**
+   * Parent number for merge commits (1-based).
+   *
+   * When cherrypicking a merge commit, the mainline parent is the one you want to
+   * cherrypick from. The mainline is the branch from which the merge was made.
+   */
+  mainline?: number
+  /** Options for merge resolution when cherrypicking a merge commit. */
+  mergeOptions?: MergeOptions
+  /** Options for checkout behavior when updating working directory. */
+  checkoutOptions?: CheckoutOptions
 }
 
 /**
