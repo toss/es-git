@@ -2801,78 +2801,6 @@ export declare class Repository {
    */
   checkoutTree(treeish: GitObject, options?: CheckoutOptions | undefined | null): void
   /**
-   * Lookup a reference to one of the commits in a repository.
-   *
-   * Returns `null` if the commit does not exist.
-   *
-   * @category Repository/Methods
-   *
-   * @signature
-   * ```ts
-   * class Repository {
-   *   findCommit(oid: string): Commit | null;
-   * }
-   * ```
-   * @param {string} oid - Commit ID(SHA1) to lookup.
-   * @returns Commit instance found by oid. Returns `null` if the commit does not exist.
-   */
-  findCommit(oid: string): Commit | null
-  /**
-   * Lookup a reference to one of the commits in a repository.
-   *
-   * @category Repository/Methods
-   *
-   * @signature
-   * ```ts
-   * class Repository {
-   *   getCommit(oid: string): Commit;
-   * }
-   * ```
-   *
-   * @param {string} oid - Commit ID(SHA1) to lookup.
-   * @returns Commit instance found by oid.
-   * @throws Throws error if the commit does not exist.
-   */
-  getCommit(oid: string): Commit
-  /**
-   * Create new commit in the repository.
-   *
-   * If the `updateRef` is not `null`, name of the reference that will be
-   * updated to point to this commit. If the reference is not direct, it will
-   * be resolved to a direct reference. Use "HEAD" to update the HEAD of the
-   * current branch and make it point to this commit. If the reference
-   * doesn't exist yet, it will be created. If it does exist, the first
-   * parent must be the tip of this branch.
-   *
-   * @category Repository/Methods
-   *
-   * @signature
-   * ```ts
-   * class Repository {
-   *   commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
-   * }
-   * ```
-   *
-   * @returns ID(SHA1) of created commit.
-   */
-  commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
-  /**
-   * Get the configuration file for this repository.
-   *
-   * @category Repository/Methods
-   * @signature
-   * ```ts
-   * class Repository {
-   *   config(): Config;
-   * }
-   * ```
-   *
-   * @returns If a configuration file has not been set, the default config set for the
-   * repository will be returned, including global and system configurations
-   * (if they are available).
-   */
-  config(): Config
-  /**
    * Cherrypicks the given commit onto HEAD and updates the working tree and index.
    * This method prepares the index and tree as if the commit were applied, but does not actually make a new commit.
    *
@@ -2964,6 +2892,78 @@ export declare class Repository {
    * ```
    */
   cherrypickCommit(cherrypickCommit: Commit, ourCommit: Commit, mainline: number, mergeOptions?: MergeOptions | undefined | null): Index
+  /**
+   * Lookup a reference to one of the commits in a repository.
+   *
+   * Returns `null` if the commit does not exist.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findCommit(oid: string): Commit | null;
+   * }
+   * ```
+   * @param {string} oid - Commit ID(SHA1) to lookup.
+   * @returns Commit instance found by oid. Returns `null` if the commit does not exist.
+   */
+  findCommit(oid: string): Commit | null
+  /**
+   * Lookup a reference to one of the commits in a repository.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getCommit(oid: string): Commit;
+   * }
+   * ```
+   *
+   * @param {string} oid - Commit ID(SHA1) to lookup.
+   * @returns Commit instance found by oid.
+   * @throws Throws error if the commit does not exist.
+   */
+  getCommit(oid: string): Commit
+  /**
+   * Create new commit in the repository.
+   *
+   * If the `updateRef` is not `null`, name of the reference that will be
+   * updated to point to this commit. If the reference is not direct, it will
+   * be resolved to a direct reference. Use "HEAD" to update the HEAD of the
+   * current branch and make it point to this commit. If the reference
+   * doesn't exist yet, it will be created. If it does exist, the first
+   * parent must be the tip of this branch.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
+   * }
+   * ```
+   *
+   * @returns ID(SHA1) of created commit.
+   */
+  commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
+  /**
+   * Get the configuration file for this repository.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   config(): Config;
+   * }
+   * ```
+   *
+   * @returns If a configuration file has not been set, the default config set for the
+   * repository will be returned, including global and system configurations
+   * (if they are available).
+   */
+  config(): Config
   /**
    * Describes a commit
    *
