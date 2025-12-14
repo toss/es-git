@@ -24,13 +24,13 @@ impl From<CherrypickOptions> for git2::CherrypickOptions<'static> {
   fn from(value: CherrypickOptions) -> Self {
     let mut git2_cherrypick_options = git2::CherrypickOptions::new();
     if let Some(mainline) = value.mainline {
-        git2_cherrypick_options.mainline(mainline);
+      git2_cherrypick_options.mainline(mainline);
     }
     if let Some(merge_opts) = value.merge_options {
-        git2_cherrypick_options.merge_opts(merge_opts.into());
+      git2_cherrypick_options.merge_opts(merge_opts.into());
     }
     if let Some(checkout_opts) = value.checkout_options {
-        git2_cherrypick_options.checkout_builder(checkout_opts.into());
+      git2_cherrypick_options.checkout_builder(checkout_opts.into());
     }
     git2_cherrypick_options
   }
@@ -41,7 +41,7 @@ impl Repository {
   #[napi]
   /// Cherrypicks the given commit onto HEAD and updates the working tree and index.
   /// This method prepares the index and tree as if the commit were applied, but does not actually make a new commit.
-  /// 
+  ///
   /// @category Repository/Methods
   /// @signature
   /// ```ts
@@ -90,7 +90,6 @@ impl Repository {
     Ok(())
   }
 
-
   #[napi]
   /// Applies a cherrypick of `cherrypick_commit` against `our_commit` and returns the resulting Index,
   /// without modifying the working directory or repository state.  
@@ -133,7 +132,7 @@ impl Repository {
   /// // For merge commits, mainline specifies which parent to use as baseline (1 or 2).
   /// // For normal (non-merge) commits, use mainline 0.
   /// const idx = repo.cherrypickCommit(cherry, target, 0);
-  /// 
+  ///
   /// // You can check for conflicts with idx.hasConflicts()
   /// ```
   pub fn cherrypick_commit(
@@ -146,7 +145,12 @@ impl Repository {
     let git2_merge_options = merge_options.map(Into::into);
     let git2_index = self
       .inner
-      .cherrypick_commit(&cherrypick_commit.inner, &our_commit.inner, mainline, git2_merge_options.as_ref())
+      .cherrypick_commit(
+        &cherrypick_commit.inner,
+        &our_commit.inner,
+        mainline,
+        git2_merge_options.as_ref(),
+      )
       .map_err(crate::Error::from)?;
     Ok(Index { inner: git2_index })
   }
