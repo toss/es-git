@@ -564,5 +564,8 @@ describe('cherrypick', () => {
     const contentAfter = await fs.readFile(path.join(p, 'conflict.txt'), 'utf-8');
     expect(filesAfter.sort()).toEqual(filesBefore.sort());
     expect(contentAfter).toBe(contentBefore);
+
+    // Clean up the state of the repository
+    repo.cleanupState();
   });
 });
