@@ -8029,6 +8029,46 @@ export type StatusShow =  'Index'|
 'IndexAndWorkdir';
 
 /**
+ * Clear the global subscriber
+ *
+ * @category Tracing
+ * @signature
+ * ```ts
+ * function traceClear(): void;
+ * ```
+ */
+export declare function traceClear(): void
+
+/**
+ * Available tracing levels.  When tracing is set to a particular level,
+ * callers will be provided tracing at the given level and all lower levels.
+ */
+export type TraceLevel =  'None'|
+'Fatal'|
+'Error'|
+'Warn'|
+'Info'|
+'Debug'|
+'Trace';
+
+/**
+ * Set the global subscriber called when libgit2 produces a tracing message.
+ *
+ * @category Tracing
+ * @signature
+ * ```ts
+ * function traceSet(
+ *   level: TraceLevel,
+ *   callback: (level: TraceLevel, message: string) => void,
+ * ): void;
+ * ```
+ *
+ * @param {TraceLevel} level - Level to set tracing to
+ * @param {(level: TraceLevel, message: string) => void} callback - Callback to call with trace data
+ */
+export declare function traceSet(level: TraceLevel, callback: (level: TraceLevel, message: string) => void): void
+
+/**
  * - `PreOrder` : Runs the traversal in pre-order.
  * - `PostOrder` : Runs the traversal in post-order.
  */
