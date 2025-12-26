@@ -1465,6 +1465,23 @@ export declare class DiffStats {
  */
 export declare class GitObject {
   /**
+   * Describes a commit
+   *
+   * Performs a describe operation on this commitish object.
+   *
+   * @category GitObject/Methods
+   * @signature
+   * ```ts
+   * class Object {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
+  /**
    * Get the id (SHA1) of a repository object.
    *
    * @category GitObject/Methods
@@ -1552,23 +1569,6 @@ export declare class GitObject {
    * @returns Returns `null` if the object is not actually a commit.
    */
   asCommit(): Commit | null
-  /**
-   * Describes a commit
-   *
-   * Performs a describe operation on this commitish object.
-   *
-   * @category GitObject/Methods
-   * @signature
-   * ```ts
-   * class Object {
-   *   describe(options?: DescribeOptions | null | undefined): Describe;
-   * }
-   * ```
-   *
-   * @param {DescribeOptions} [options] - Options for describe operation.
-   * @returns Instance of describe.
-   */
-  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -2641,6 +2641,43 @@ export declare class Repository {
    */
   getAnnotatedCommitFromFetchHead(branchName: string, remoteUrl: string, id: string): AnnotatedCommit
   /**
+   * Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
+   *
+   * @category Repositoryodssignature
+   * ```ts
+   * class Repository {
+   *   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {Diff} diff -
+   * @param {ApplyLocation} location -
+   * @param {ApplyOptions} [options] -
+   */
+  apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | undefined | null): void
+  /**
+   * Apply a Diff to the provided tree, and return the resulting Index.
+   *
+   * @category Repositoryods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   applyToTree(
+   *     tree: Tree,
+   *     diff: Diff,
+   *     options?: ApplyOptions | null | undefined
+   *   ): Index;
+   * }
+   * ```
+   *
+   * @param {Tree} tree -
+   * @param {Diff} diff -
+   * @param {ApplyOptions} [options] -
+   *
+   * @returns
+   */
+  applyToTree(tree: Tree, diff: Diff, options?: ApplyOptions | undefined | null): Index
+  /**
    * Creates a blame object for the file at the given path
    *
    * @category Repository/Methods
@@ -2872,6 +2909,25 @@ export declare class Repository {
    * (if they are available).
    */
   config(): Config
+  /**
+   * Describes a commit
+   *
+   * Performs a describe operation on the current commit and the worktree.
+   * After performing a describe on `HEAD`, a status is run and description is
+   * considered to be dirty if there are.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   describe(options?: DescribeOptions | null | undefined): Describe;
+   * }
+   * ```
+   *
+   * @param {DescribeOptions} [options] - Options for describe operation.
+   * @returns Instance of describe.
+   */
+  describe(options?: DescribeOptions | undefined | null): Describe
   /**
    * Create a diff with the difference between two tree objects.
    *
@@ -4584,25 +4640,6 @@ export declare class Repository {
    * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
-  /**
-   * Describes a commit
-   *
-   * Performs a describe operation on the current commit and the worktree.
-   * After performing a describe on `HEAD`, a status is run and description is
-   * considered to be dirty if there are.
-   *
-   * @category Repository/Methods
-   * @signature
-   * ```ts
-   * class Repository {
-   *   describe(options?: DescribeOptions | null | undefined): Describe;
-   * }
-   * ```
-   *
-   * @param {DescribeOptions} [options] - Options for describe operation.
-   * @returns Instance of describe.
-   */
-  describe(options?: DescribeOptions | undefined | null): Describe
 }
 
 /**
@@ -5582,6 +5619,25 @@ export interface AmendOptions {
 }
 
 /**
+ * Possible application locations for git_apply
+ * see <https://libgit2.org/libgit2/#HEAD/type/git_apply_options>
+ */
+export type ApplyLocation = /** Apply the patch to the workdir */
+'WorkDir'|
+/** Apply the patch to the index */
+'Index'|
+/** Apply the patch to both the working directory and the index */
+'Both';
+
+/** Options to specify when applying a diff */
+export interface ApplyOptions {
+  /** Don't actually make changes, just test that the patch applies. */
+  check?: boolean
+  /** When applying a patch, callback that will be made per hunk. */
+  hunkCallback?: HunkCallback
+}
+
+/**
  * - `Unspecified` : Use the setting from the remote's configuration
  * - `Auto` : Ask the server for tags pointing to objects we're already downloading
  * - `None` : Don't ask for any tags beyond the refspecs
@@ -6323,6 +6379,20 @@ export type DiffFormat =  'Patch'|
 'NameOnly'|
 'NameStatus'|
 'PatchId';
+
+/** Structure describing a hunk of a diff. */
+export interface DiffHunkData {
+  /** Starting line number in old_file */
+  oldStart: number
+  /** Number of lines in old_file */
+  oldLines: number
+  /** Starting line number in new_filenew_start: u32, */
+  newStart: number
+  /** Number of lines in new_file */
+  newLines: number
+  /** Header text */
+  header: string
+}
 
 export interface DiffOptions {
   /** Flag indicating whether the sides of the diff will be reversed. */
