@@ -31,6 +31,7 @@ pub mod signature;
 pub mod stash;
 pub mod status;
 pub mod tag;
+pub mod tracing;
 pub mod tree;
 pub(crate) mod util;
 
