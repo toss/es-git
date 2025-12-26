@@ -2641,6 +2641,43 @@ export declare class Repository {
    */
   getAnnotatedCommitFromFetchHead(branchName: string, remoteUrl: string, id: string): AnnotatedCommit
   /**
+   * Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
+   *
+   * @category Repository/Methods
+   * ```ts
+   * class Repository {
+   *   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {Diff} diff - The diff to apply
+   * @param {ApplyLocation} location - The location to apply
+   * @param {ApplyOptions} [options] - The options for the apply
+   */
+  apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | undefined | null): void
+  /**
+   * Apply a Diff to the provided tree, and return the resulting Index.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   applyToTree(
+   *     tree: Tree,
+   *     diff: Diff,
+   *     options?: ApplyOptions | null | undefined
+   *   ): Index;
+   * }
+   * ```
+   *
+   * @param {Tree} tree - The tree to apply the diff to
+   * @param {Diff} diff - The diff to apply
+   * @param {ApplyOptions} [options] - The options for the apply
+   *
+   * @returns The postimage of the application
+   */
+  applyToTree(tree: Tree, diff: Diff, options?: ApplyOptions | undefined | null): Index
+  /**
    * Creates a blame object for the file at the given path
    *
    * @category Repository/Methods
@@ -5671,6 +5708,23 @@ export interface AmendOptions {
    * If NULL, no encoding header is written and UTF-8 is assumed.
    */
   messageEncoding?: string
+}
+
+/**
+ * Possible application locations for git_apply
+ * see <https://libgit2.org/libgit2/#HEAD/type/git_apply_options>
+ */
+export type ApplyLocation = /** Apply the patch to the workdir */
+'WorkDir'|
+/** Apply the patch to the index */
+'Index'|
+/** Apply the patch to both the working directory and the index */
+'Both';
+
+/** Options to specify when applying a diff */
+export interface ApplyOptions {
+  /** Don't actually make changes, just test that the patch applies. */
+  check?: boolean
 }
 
 /**

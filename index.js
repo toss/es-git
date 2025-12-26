@@ -609,6 +609,7 @@ module.exports.Tag = nativeBinding.Tag
 module.exports.Tree = nativeBinding.Tree
 module.exports.TreeEntry = nativeBinding.TreeEntry
 module.exports.TreeIter = nativeBinding.TreeIter
+module.exports.ApplyLocation = nativeBinding.ApplyLocation
 module.exports.AutotagOption = nativeBinding.AutotagOption
 module.exports.BranchType = nativeBinding.BranchType
 module.exports.cloneRepository = nativeBinding.cloneRepository

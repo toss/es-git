@@ -1,6 +1,7 @@
 #![deny(clippy::all)]
 #![allow(clippy::len_without_is_empty)]
 pub mod annotated_commit;
+pub mod apply;
 pub mod blame;
 pub mod blob;
 pub mod branch;
