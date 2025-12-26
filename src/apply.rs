@@ -1,6 +1,5 @@
 use crate::diff::Diff;
 use crate::index::Index;
-use crate::js::{JsCallback, JsCallbackExt};
 use crate::repository::Repository;
 use crate::tree::Tree;
 use napi_derive::napi;
@@ -28,65 +27,25 @@ impl From<ApplyLocation> for git2::ApplyLocation {
   }
 }
 
-#[napi(object)]
-/// Structure describing a hunk of a diff.
-pub struct DiffHunkData {
-  /// Starting line number in old_file
-  pub old_start: u32,
-  /// Number of lines in old_file
-  pub old_lines: u32,
-  /// Starting line number in new_filenew_start: u32,
-  pub new_start: u32,
-  /// Number of lines in new_file
-  pub new_lines: u32,
-  /// Header text
-  pub header: String,
-}
-
-impl TryFrom<git2::DiffHunk<'_>> for DiffHunkData {
-  type Error = crate::Error;
-
-  fn try_from(value: git2::DiffHunk<'_>) -> std::result::Result<Self, Self::Error> {
-    let old_start = value.old_start();
-    let old_lines = value.old_lines();
-    let new_start = value.new_start();
-    let new_lines = value.new_lines();
-    let header = std::str::from_utf8(value.header())?;
-    Ok(Self {
-      old_start,
-      old_lines,
-      new_start,
-      new_lines,
-      header: header.to_string(),
-    })
-  }
-}
-
-type HunkCallback = JsCallback<Option<DiffHunkData>, bool>;
-
 #[napi(object, object_to_js = false)]
 /// Options to specify when applying a diff
 pub struct ApplyOptions {
   /// Don't actually make changes, just test that the patch applies.
   pub check: Option<bool>,
-  /// When applying a patch, callback that will be made per hunk.
-  #[napi(ts_type = "(data: DiffHunkData | null | undefined) => boolen")]
-  pub hunk_callback: Option<HunkCallback>,
-  // TODO: How can we pass DiffDelta as a callback parameter?
+  // TODO(@seokju-na): Consider node.js is single-thread so the calling callback from Rust side
+  // will make dead-lock. May be we should make `apply` function as async?
+  //
+  // #[napi(ts_type = "(data: DiffHunkData | null | undefined) => boolean")]
+  // pub hunk_callback: Option<HunkCallback>,
+  // #[napi(ts_type = "(data: DeltaData | null | undefined) => boolean")]
   // pub delta_callback: Option<DeltaCallback>,
 }
 
-impl<'a> From<ApplyOptions> for git2::ApplyOptions<'a> {
+impl From<ApplyOptions> for git2::ApplyOptions<'_> {
   fn from(value: ApplyOptions) -> Self {
     let mut options = git2::ApplyOptions::new();
     if let Some(check) = value.check {
       options.check(check);
-    }
-    if let Some(callback) = value.hunk_callback {
-      options.hunk_callback(move |hunk| {
-        let data = hunk.and_then(|x| DiffHunkData::try_from(x).ok());
-        callback.invoke(data).unwrap_or(true)
-      });
     }
     options
   }
@@ -97,16 +56,16 @@ impl Repository {
   #[napi]
   /// Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
   ///
-  /// @category Repositoryodssignature
+  /// @category Repository/Methods
   /// ```ts
   /// class Repository {
   ///   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
   /// }
   /// ```
   ///
-  /// @param {Diff} diff -
-  /// @param {ApplyLocation} location -
-  /// @param {ApplyOptions} [options] -
+  /// @param {Diff} diff - The diff to apply
+  /// @param {ApplyLocation} location - The location to apply
+  /// @param {ApplyOptions} [options] - The options for the apply
   pub fn apply(&self, diff: &Diff, location: ApplyLocation, options: Option<ApplyOptions>) -> crate::Result<()> {
     self
       .inner
@@ -117,7 +76,7 @@ impl Repository {
   #[napi]
   /// Apply a Diff to the provided tree, and return the resulting Index.
   ///
-  /// @category Repositoryods
+  /// @category Repository/Methods
   /// @signature
   /// ```ts
   /// class Repository {
@@ -129,11 +88,11 @@ impl Repository {
   /// }
   /// ```
   ///
-  /// @param {Tree} tree -
-  /// @param {Diff} diff -
-  /// @param {ApplyOptions} [options] -
+  /// @param {Tree} tree - The tree to apply the diff to
+  /// @param {Diff} diff - The diff to apply
+  /// @param {ApplyOptions} [options] - The options for the apply
   ///
-  /// @returns
+  /// @returns The postimage of the application
   pub fn apply_to_tree(&self, tree: &Tree, diff: &Diff, options: Option<ApplyOptions>) -> crate::Result<Index> {
     let inner = self
       .inner

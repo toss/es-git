@@ -2643,22 +2643,22 @@ export declare class Repository {
   /**
    * Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
    *
-   * @category Repositoryodssignature
+   * @category Repository/Methods
    * ```ts
    * class Repository {
    *   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
    * }
    * ```
    *
-   * @param {Diff} diff -
-   * @param {ApplyLocation} location -
-   * @param {ApplyOptions} [options] -
+   * @param {Diff} diff - The diff to apply
+   * @param {ApplyLocation} location - The location to apply
+   * @param {ApplyOptions} [options] - The options for the apply
    */
   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | undefined | null): void
   /**
    * Apply a Diff to the provided tree, and return the resulting Index.
    *
-   * @category Repositoryods
+   * @category Repository/Methods
    * @signature
    * ```ts
    * class Repository {
@@ -2670,11 +2670,11 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Tree} tree -
-   * @param {Diff} diff -
-   * @param {ApplyOptions} [options] -
+   * @param {Tree} tree - The tree to apply the diff to
+   * @param {Diff} diff - The diff to apply
+   * @param {ApplyOptions} [options] - The options for the apply
    *
-   * @returns
+   * @returns The postimage of the application
    */
   applyToTree(tree: Tree, diff: Diff, options?: ApplyOptions | undefined | null): Index
   /**
@@ -5633,8 +5633,6 @@ export type ApplyLocation = /** Apply the patch to the workdir */
 export interface ApplyOptions {
   /** Don't actually make changes, just test that the patch applies. */
   check?: boolean
-  /** When applying a patch, callback that will be made per hunk. */
-  hunkCallback?: HunkCallback
 }
 
 /**
@@ -6379,20 +6377,6 @@ export type DiffFormat =  'Patch'|
 'NameOnly'|
 'NameStatus'|
 'PatchId';
-
-/** Structure describing a hunk of a diff. */
-export interface DiffHunkData {
-  /** Starting line number in old_file */
-  oldStart: number
-  /** Number of lines in old_file */
-  oldLines: number
-  /** Starting line number in new_filenew_start: u32, */
-  newStart: number
-  /** Number of lines in new_file */
-  newLines: number
-  /** Header text */
-  header: string
-}
 
 export interface DiffOptions {
   /** Flag indicating whether the sides of the diff will be reversed. */
