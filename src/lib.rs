@@ -14,6 +14,7 @@ pub mod diff;
 mod error;
 pub mod ignore;
 pub mod index;
+pub(crate) mod js;
 pub mod mailmap;
 pub mod merge;
 pub mod note;
@@ -30,6 +31,7 @@ pub mod signature;
 pub mod stash;
 pub mod status;
 pub mod tag;
+pub mod tracing;
 pub mod tree;
 pub(crate) mod util;
 
