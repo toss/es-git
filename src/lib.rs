@@ -14,6 +14,7 @@ pub mod diff;
 mod error;
 pub mod ignore;
 pub mod index;
+pub(crate) mod js;
 pub mod mailmap;
 pub mod merge;
 pub mod note;
