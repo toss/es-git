@@ -6,6 +6,7 @@ pub mod blame;
 pub mod blob;
 pub mod branch;
 pub mod checkout;
+pub mod cherrypick;
 pub mod commit;
 pub mod config;
 pub mod describe;
