@@ -23,6 +23,7 @@ pub mod object;
 pub mod oid;
 pub mod rebase;
 pub mod reference;
+pub mod reflog;
 pub mod remote;
 pub mod repository;
 pub mod revert;
