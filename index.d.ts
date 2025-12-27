@@ -2678,6 +2678,27 @@ export declare class Repository {
    */
   applyToTree(tree: Tree, diff: Diff, options?: ApplyOptions | undefined | null): Index
   /**
+   * Get the value of a git attribute for a path.
+   *
+   * @ository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   getAttr(
+   *     path: string,
+   *     name: string,
+   *     options?: AttrOptions | null | undefined
+   *   ): boolean | string | Buffer | null;
+   * ```
+   *
+   * @param {string} path - The path to check for attributes. Relative paths are interpreted relative to the repo root.
+   * @param {string} name - The name of the attribute to look up.
+   * @param {AttrOptions} [options] - Options for attribute lookup.
+   *
+   * @returns Output of the value of the attribute.
+   */
+  getAttr(path: string, name: string, options?: AttrOptions | undefined | null): boolean | string | Buffer | null
+  /**
    * Creates a blame object for the file at the given path
    *
    * @category Repository/Methods
@@ -5725,6 +5746,17 @@ export type ApplyLocation = /** Apply the patch to the workdir */
 export interface ApplyOptions {
   /** Don't actually make changes, just test that the patch applies. */
   check?: boolean
+}
+
+export interface AttrOptions {
+  /** Check the working directory, then the index. */
+  checkFileThenIndex?: boolean
+  /** Check the index, then the working directory. */
+  checkIndexThenFile?: boolean
+  /** Check the index only. */
+  checkIndexOnly?: boolean
+  /** Do not use the system gitattributes file. */
+  checkNoSystem?: boolean
 }
 
 /**
