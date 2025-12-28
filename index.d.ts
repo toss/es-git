@@ -8949,7 +8949,7 @@ export interface SubmoduleUpdateOptions {
 export declare function traceClear(): void
 
 /**
- * Available tracing levels.  When tracing is set to a particular level,
+ * Available tracing levels. When tracing is set to a particular level,
  * callers will be provided tracing at the given level and all lower levels.
  */
 export type TraceLevel =  'None'|
