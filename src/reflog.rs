@@ -189,15 +189,15 @@ impl Reflog {
   /// @signature
   /// ```ts
   /// class Reflog {
-  ///   remove(i: number, rewritePreviousEntry: boolean): void;
+  ///   remove(i: number, rewritePreviousEntry?: boolean): void;
   /// }
   /// ```
   ///
   /// @param {number} i - Index of the entry to remove.
-  /// @param {boolean} rewritePreviousEntry - Whether to rewrite the previous entry.
+  /// @param {boolean} [rewritePreviousEntry] - Whether to rewrite the previous entry. Defaults to `false`.
   /// @throws Throws error if the index is invalid or if removal fails.
-  pub fn remove(&mut self, i: u32, rewrite_previous_entry: bool) -> crate::Result<()> {
-    self.inner.remove(i as usize, rewrite_previous_entry)?;
+  pub fn remove(&mut self, i: u32, rewrite_previous_entry: Option<bool>) -> crate::Result<()> {
+    self.inner.remove(i as usize, rewrite_previous_entry.unwrap_or(false))?;
     Ok(())
   }
 
@@ -280,6 +280,7 @@ impl Reflog {
   /// ```
   ///
   /// @returns Iterator over the reflog entries.
+  /// @throws Throws error if the reflog cannot be accessed.
   pub fn iter(&self, this: Reference<Reflog>, env: Env) -> crate::Result<ReflogIter> {
     let inner = this.share_with(env, |reflog| Ok(reflog.inner.iter()))?;
     Ok(ReflogIter { inner })

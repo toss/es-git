@@ -2402,15 +2402,15 @@ export declare class Reflog {
    * @signature
    * ```ts
    * class Reflog {
-   *   remove(i: number, rewritePreviousEntry: boolean): void;
+   *   remove(i: number, rewritePreviousEntry?: boolean): void;
    * }
    * ```
    *
    * @param {number} i - Index of the entry to remove.
-   * @param {boolean} rewritePreviousEntry - Whether to rewrite the previous entry.
+   * @param {boolean} [rewritePreviousEntry] - Whether to rewrite the previous entry. Defaults to 'false'.
    * @throws Throws error if the index is invalid or if removal fails.
    */
-  remove(i: number, rewritePreviousEntry: boolean): void
+  remove(i: number, rewritePreviousEntry?: boolean | undefined | null): void
   /**
    * Get a reflog entry by index.
    *

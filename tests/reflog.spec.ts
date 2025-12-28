@@ -221,7 +221,7 @@ describe('reflog', async () => {
     expect(initialLen).toBe(3);
 
     // Remove first entry
-    reflog.remove(0, false);
+    reflog.remove(0);
     reflog.write();
 
     // Verify entry was removed
