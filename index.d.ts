@@ -4801,6 +4801,19 @@ export declare class Repository {
    * @returns The submodule.
    */
   submodule(url: string, path: string, useGitlink?: boolean | undefined | null): Submodule
+  /**
+   * Load all submodules for this repository and return them.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Submodule {
+   *   submodules(): Submodule[];
+   * }
+   * ```
+   *
+   * @returns for this repository.
+   */
   submodules(): Array<Submodule>
   /**
    * Lookup submodule information by name or path.
