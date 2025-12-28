@@ -2407,7 +2407,7 @@ export declare class Reflog {
    * ```
    *
    * @param {number} i - Index of the entry to remove.
-   * @param {boolean} [rewritePreviousEntry] - Whether to rewrite the previous entry. Defaults to 'false'.
+   * @param {boolean} [rewritePreviousEntry] - Whether to rewrite the previous entry. Defaults to `false`.
    * @throws Throws error if the index is invalid or if removal fails.
    */
   remove(i: number, rewritePreviousEntry?: boolean | undefined | null): void
@@ -2470,6 +2470,7 @@ export declare class Reflog {
    * ```
    *
    * @returns Iterator over the reflog entries.
+   * @throws Throws error if the reflog cannot be accessed.
    */
   iter(): ReflogIter
   /**
@@ -2544,7 +2545,7 @@ export declare class ReflogEntry {
    * @signature
    * ```ts
    * class ReflogEntry {
-   *   message(): string | null;
+   *   message(): string;
    * }
    * ```
    *
