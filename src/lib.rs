@@ -31,6 +31,7 @@ pub mod revwalk;
 pub mod signature;
 pub mod stash;
 pub mod status;
+pub mod submodule;
 pub mod tag;
 pub mod tracing;
 pub mod tree;
