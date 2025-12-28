@@ -3,7 +3,7 @@ use napi::bindgen_prelude::FnArgs;
 use napi_derive::napi;
 use std::sync::{Mutex, OnceLock};
 
-/// Available tracing levels.  When tracing is set to a particular level,
+/// Available tracing levels. When tracing is set to a particular level,
 /// callers will be provided tracing at the given level and all lower levels.
 #[napi(string_enum)]
 pub enum TraceLevel {

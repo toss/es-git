@@ -864,6 +864,17 @@ impl Repository {
   }
 
   #[napi]
+  /// Load all submodules for this repository and return them.
+  ///
+  /// @category Repository/Methods
+  /// @signature
+  /// ```ts
+  /// class Submodule {
+  ///   submodules(): Submodule[];
+  /// }
+  /// ```
+  ///
+  /// @returns for this repository.
   pub fn submodules(&self, this: Reference<Repository>, env: Env) -> crate::Result<Vec<Submodule>> {
     let mut submodules = vec![];
     for sub in self.inner.submodules()? {

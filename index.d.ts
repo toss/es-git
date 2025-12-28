@@ -2839,6 +2839,7 @@ export declare class Repository {
    * Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
    *
    * @category Repository/Methods
+   * @signature
    * ```ts
    * class Repository {
    *   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
@@ -2875,7 +2876,7 @@ export declare class Repository {
   /**
    * Get the value of a git attribute for a path.
    *
-   * @ository/Methods
+   * @category Repository/Methods
    * @signature
    * ```ts
    * class Repository {
@@ -3099,7 +3100,7 @@ export declare class Repository {
    */
   cherrypick(commit: Commit, options?: CherrypickOptions | undefined | null): void
   /**
-   * Applies a cherrypick of `cherrypick_commit` against `our_commit` and returns the resulting Index,
+   * Applies a cherrypick of `cherrypickCommit` against `ourCommit` and returns the resulting Index,
    * without modifying the working directory or repository state.
    * This method does not write any changes to disk or update HEAD.
    * it is useful for computing what the cherrypick result would look like without actually applying it.
@@ -4786,6 +4787,19 @@ export declare class Repository {
    * @returns The submodule.
    */
   submodule(url: string, path: string, useGitlink?: boolean | undefined | null): Submodule
+  /**
+   * Load all submodules for this repository and return them.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Submodule {
+   *   submodules(): Submodule[];
+   * }
+   * ```
+   *
+   * @returns for this repository.
+   */
   submodules(): Array<Submodule>
   /**
    * Lookup submodule information by name or path.
@@ -9163,7 +9177,7 @@ export interface SubmoduleUpdateOptions {
 export declare function traceClear(): void
 
 /**
- * Available tracing levels.  When tracing is set to a particular level,
+ * Available tracing levels. When tracing is set to a particular level,
  * callers will be provided tracing at the given level and all lower levels.
  */
 export type TraceLevel =  'None'|
