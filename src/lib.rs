@@ -37,6 +37,7 @@ pub mod tag;
 pub mod tracing;
 pub mod tree;
 pub(crate) mod util;
+pub mod worktree;
 
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, Error>;

@@ -4127,20 +4127,6 @@ export declare class Repository {
    */
   isShallow(): boolean
   /**
-   * Tests whether this repository is a worktree.
-   *
-   * @category Repository/Methods
-   * @signature
-   * ```ts
-   * class Repository {
-   *   isWorktree(): boolean;
-   * }
-   * ```
-   *
-   * @returns Returns `true` if repository is a worktree.
-   */
-  isWorktree(): boolean
-  /**
    * Tests whether this repository is empty.
    *
    * @category Repository/Methods
@@ -5171,6 +5157,89 @@ export declare class Repository {
    * @returns If it does not exist, returns `null`.
    */
   findTree(oid: string): Tree | null
+  /**
+   * Add a new worktree to the repository.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   worktree(name: string, path: string, options?: WorktreeAddOptions | null | undefined): Worktree;
+   * }
+   * ```
+   *
+   * @param {string} name - Name of the worktree to add.
+   * @param {string} path - Path where the worktree should be created.
+   * @param {WorktreeAddOptions} [options] - Options for adding the worktree.
+   * @returns New worktree instance.
+   * @throws Throws error if adding the worktree fails.
+   */
+  worktree(name: string, path: string, options?: WorktreeAddOptions | undefined | null): Worktree
+  /**
+   * List all worktrees in the repository.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   worktrees(): string[];
+   * }
+   * ```
+   *
+   * @returns Array of worktree names.
+   * @throws Throws error if listing worktrees fails.
+   */
+  worktrees(): Array<string>
+  /**
+   * Tests whether this repository is a worktree.
+   *
+   * @category Repository/Methods
+   * @signature
+   * ```ts
+   * class Repository {
+   *   isWorktree(): boolean;
+   * }
+   * ```
+   *
+   * @returns Returns `true` if repository is a worktree.
+   */
+  isWorktree(): boolean
+  /**
+   * Find a worktree by name.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   findWorktree(name: string): Worktree;
+   * }
+   * ```
+   *
+   * @param {string} name - Name of the worktree to find.
+   * @returns Worktree instance.
+   * @throws Throws error if the worktree is not found or if opening fails.
+   */
+  findWorktree(name: string): Worktree
+  /**
+   * Open a repository from a worktree.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   static openFromWorktree(worktree: Worktree): Repository;
+   * }
+   * ```
+   *
+   * @param {Worktree} worktree - Worktree to open repository from.
+   * @returns Repository instance.
+   * @throws Throws error if opening the repository fails.
+   */
+  static openFromWorktree(worktree: Worktree): Repository
 }
 
 /**
@@ -6435,6 +6504,152 @@ export declare class TreeEntry {
 export declare class TreeIter extends Iterator<TreeEntry, void, void> {
 
   next(value?: void): IteratorResult<TreeEntry, void>
+}
+
+/** A class to represent a git worktree. */
+export declare class Worktree {
+  /**
+   * Open a worktree from a repository.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   static openFromRepository(repo: Repository): Worktree;
+   * }
+   * ```
+   *
+   * @param {Repository} repo - Repository to open worktree from.
+   * @returns Worktree instance.
+   * @throws Throws error if the repository is not a worktree or if opening fails.
+   */
+  static openFromRepository(repo: Repository): Worktree
+  /**
+   * Get the name of this worktree.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   name(): string | null;
+   * }
+   * ```
+   *
+   * @returns Name of this worktree. Returns `null` if the worktree has no name.
+   */
+  name(): string | null
+  /**
+   * Get the path of this worktree.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   path(): string;
+   * }
+   * ```
+   *
+   * @returns Path of this worktree.
+   */
+  path(): string
+  /**
+   * Validate that the worktree is in a valid state.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   validate(): void;
+   * }
+   * ```
+   *
+   * @throws Throws error if the worktree is in an invalid state.
+   */
+  validate(): void
+  /**
+   * Lock the worktree.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   lock(reason?: string | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {string} [reason] - Optional reason for locking the worktree.
+   * @throws Throws error if locking fails.
+   */
+  lock(reason?: string | undefined | null): void
+  /**
+   * Unlock the worktree.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   unlock(): void;
+   * }
+   * ```
+   *
+   * @throws Throws error if unlocking fails.
+   */
+  unlock(): void
+  /**
+   * Check if the worktree is locked.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   isLocked(): WorktreeLockStatus;
+   * }
+   * ```
+   *
+   * @returns Lock status of the worktree.
+   * @throws Throws error if checking the lock status fails.
+   */
+  isLocked(): WorktreeLockStatus
+  /**
+   * Prune the worktree.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   prune(options?: WorktreePruneOptions | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {WorktreePruneOptions} [options] - Options for pruning the worktree.
+   * @throws Throws error if pruning fails.
+   */
+  prune(worktreePruneOptions?: WorktreePruneOptions | undefined | null): void
+  /**
+   * Check if the worktree is prunable.
+   *
+   * @category Worktree/Methods
+   *
+   * @signature
+   * ```ts
+   * class Worktree {
+   *   isPrunable(options?: WorktreePruneOptions | null | undefined): boolean;
+   * }
+   * ```
+   *
+   * @param {WorktreePruneOptions} [options] - Options for checking if the worktree is prunable.
+   * @returns `true` if the worktree is prunable, `false` otherwise.
+   * @throws Throws error if checking fails.
+   */
+  isPrunable(worktreePruneOptions?: WorktreePruneOptions | undefined | null): boolean
 }
 
 export interface AddMailmapEntryData {
@@ -8982,6 +9197,67 @@ export declare function traceSet(level: TraceLevel, callback: (level: TraceLevel
  */
 export type TreeWalkMode =  'PreOrder'|
 'PostOrder';
+
+/** Options for adding a worktree. */
+export interface WorktreeAddOptions {
+  /**
+   * If enabled, this will cause the newly added worktree to be locked.
+   *
+   * Locking prevents the worktree from being pruned or deleted inadvertently.
+   * This is useful for worktrees stored on removable devices or network shares
+   * that may not always be accessible.
+   *
+   * Defaults to `false`.
+   */
+  lock?: boolean
+  /**
+   * If enabled, this will checkout the existing branch matching the worktree name.
+   *
+   * When creating a worktree, if a branch with the same name as the worktree
+   * already exists, this option allows checking out that branch instead of
+   * creating a new one.
+   *
+   * Defaults to `false`.
+   */
+  checkoutExisting?: boolean
+  /**
+   * Reference to use for the new worktree HEAD.
+   *
+   * This should be a reference name (e.g., `"refs/heads/main"`). If not provided,
+   * the worktree will checkout the branch that HEAD currently points to in the
+   * main repository.
+   *
+   * Defaults to `null`.
+   */
+  refName?: string
+}
+
+/** Lock Status of a worktree */
+export type WorktreeLockStatus =
+  | { type: 'Unlocked' }
+  | { type: 'Locked', field0?: string }
+
+/** Options to configure how worktree pruning is performed. */
+export interface WorktreePruneOptions {
+  /**
+   * Controls whether valid (still existing on the filesystem) worktrees will be pruned.
+   *
+   * Defaults to `false`.
+   */
+  valid?: boolean
+  /**
+   * Controls whether locked worktrees will be pruned.
+   *
+   * Defaults to `false`.
+   */
+  locked?: boolean
+  /**
+   * Controls whether the actual working tree on the filesystem is recursively removed.
+   *
+   * Defaults to `false`.
+   */
+  workingTree?: boolean
+}
 
 /**
  * Creates an all zero Oid structure.

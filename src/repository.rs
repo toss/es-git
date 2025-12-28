@@ -279,22 +279,6 @@ impl Repository {
   }
 
   #[napi]
-  /// Tests whether this repository is a worktree.
-  ///
-  /// @category Repository/Methods
-  /// @signature
-  /// ```ts
-  /// class Repository {
-  ///   isWorktree(): boolean;
-  /// }
-  /// ```
-  ///
-  /// @returns Returns `true` if repository is a worktree.
-  pub fn is_worktree(&self) -> bool {
-    self.inner.is_worktree()
-  }
-
-  #[napi]
   /// Tests whether this repository is empty.
   ///
   /// @category Repository/Methods
