@@ -28,14 +28,17 @@ pub enum WorktreeLockStatusType {
 /// Options for adding a worktree.
 pub struct WorktreeAddOptions {
   /// If enabled, this will cause the newly added worktree to be locked.
+  /// 
   /// Defaults to `false`.
   pub lock: Option<bool>,
 
   /// If enabled, this will checkout the existing branch matching the worktree name.
+  /// 
   /// Defaults to `false`.
   pub checkout_existing: Option<bool>,
 
   /// reference name to use for the new worktree HEAD
+  /// 
   /// Defaults to `null`.
   pub ref_name: Option<String>,
 }
@@ -44,14 +47,17 @@ pub struct WorktreeAddOptions {
 /// Options to configure how worktree pruning is performed.
 pub struct WorktreePruneOptions {
   /// Controls whether valid (still existing on the filesystem) worktrees will be pruned.
+  /// 
   /// Defaults to `false`.
   pub valid: Option<bool>,
 
   /// Controls whether locked worktrees will be pruned.
+  /// 
   /// Defaults to `false`.
   pub locked: Option<bool>,
 
   /// Controls whether the actual working tree on the filesystem is recursively removed.
+  /// 
   /// Defaults to `false`.
   pub working_tree: Option<bool>,
 }

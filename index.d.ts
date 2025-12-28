@@ -9202,16 +9202,19 @@ export type TreeWalkMode =  'PreOrder'|
 export interface WorktreeAddOptions {
   /**
    * If enabled, this will cause the newly added worktree to be locked.
+   *
    * Defaults to `false`.
    */
   lock?: boolean
   /**
    * If enabled, this will checkout the existing branch matching the worktree name.
+   *
    * Defaults to `false`.
    */
   checkoutExisting?: boolean
   /**
    * reference name to use for the new worktree HEAD
+   *
    * Defaults to `null`.
    */
   refName?: string
@@ -9235,16 +9238,19 @@ export type WorktreeLockStatusType = /** Worktree is Unlocked */
 export interface WorktreePruneOptions {
   /**
    * Controls whether valid (still existing on the filesystem) worktrees will be pruned.
+   *
    * Defaults to `false`.
    */
   valid?: boolean
   /**
    * Controls whether locked worktrees will be pruned.
+   *
    * Defaults to `false`.
    */
   locked?: boolean
   /**
    * Controls whether the actual working tree on the filesystem is recursively removed.
+   *
    * Defaults to `false`.
    */
   workingTree?: boolean
