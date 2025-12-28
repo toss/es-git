@@ -91,7 +91,7 @@ impl Repository {
   }
 
   #[napi]
-  /// Applies a cherrypick of `cherrypick_commit` against `our_commit` and returns the resulting Index,
+  /// Applies a cherrypick of `cherrypickCommit` against `ourCommit` and returns the resulting Index,
   /// without modifying the working directory or repository state.  
   /// This method does not write any changes to disk or update HEAD.
   /// it is useful for computing what the cherrypick result would look like without actually applying it.  
