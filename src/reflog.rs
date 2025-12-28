@@ -96,25 +96,15 @@ impl ReflogEntry {
   /// ```
   ///
   /// @returns Message of this reflog entry. Returns `null` if no message is present.
-  pub fn message(&self) -> Option<String> {
-    self.inner.message().map(|x| x.to_string())
-  }
-
-  #[napi]
-  /// Get the message bytes of this reflog entry.
-  ///
-  /// @category ReflogEntry/Methods
-  ///
-  /// @signature
-  /// ```ts
-  /// class ReflogEntry {
-  ///   messageBytes(): Uint8Array | null;
-  /// }
-  /// ```
-  ///
-  /// @returns Message bytes of this reflog entry. Returns `null` if no message is present.
-  pub fn message_bytes(&self) -> Option<Uint8Array> {
-    self.inner.message_bytes().map(|bytes| bytes.to_vec().into())
+  /// @throws Throws error if the message is not valid utf-8.
+  pub fn message(&self) -> crate::Result<Option<String>> {
+    match self.inner.message_bytes() {
+      None => Ok(None),
+      Some(bytes) => {
+        let message = std::str::from_utf8(bytes)?;
+        Ok(Some(message.to_string()))
+      }
+    }
   }
 }
 

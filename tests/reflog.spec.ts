@@ -87,9 +87,6 @@ describe('reflog', async () => {
       if (message) {
         expect(message.includes(commitMessage)).toBe(true);
       }
-
-      const messageBytes = entry.messageBytes();
-      expect(messageBytes).toBeDefined();
     }
   });
 

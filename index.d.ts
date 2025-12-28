@@ -2549,23 +2549,9 @@ export declare class ReflogEntry {
    * ```
    *
    * @returns Message of this reflog entry. Returns `null` if no message is present.
+   * @throws Throws error if the message is not valid utf-8.
    */
   message(): string | null
-  /**
-   * Get the message bytes of this reflog entry.
-   *
-   * @category ReflogEntry/Methods
-   *
-   * @signature
-   * ```ts
-   * class ReflogEntry {
-   *   messageBytes(): Uint8Array | null;
-   * }
-   * ```
-   *
-   * @returns Message bytes of this reflog entry. Returns `null` if no message is present.
-   */
-  messageBytes(): Uint8Array | null
 }
 
 /**
