@@ -61,7 +61,7 @@ impl Repository {
   #[napi(ts_return_type = "boolean | string | Buffer | null")]
   /// Get the value of a git attribute for a path.
   ///
-  /// @ository/Methods
+  /// @category Repository/Methods
   /// @signature
   /// ```ts
   /// class Repository {

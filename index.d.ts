@@ -2876,7 +2876,7 @@ export declare class Repository {
   /**
    * Get the value of a git attribute for a path.
    *
-   * @ository/Methods
+   * @category Repository/Methods
    * @signature
    * ```ts
    * class Repository {
