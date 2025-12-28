@@ -5173,7 +5173,7 @@ export declare class Repository {
    * @param {string} path - Path where the worktree should be created.
    * @param {WorktreeAddOptions} [options] - Options for adding the worktree.
    * @returns New worktree instance.
-   * @throws Throws error if adding the worktree fails.
+   * @throws Throws error if adding the worktree fails (e.g., path already exists, invalid reference name, or filesystem errors).
    */
   worktree(name: string, path: string, options?: WorktreeAddOptions | undefined | null): Worktree
   /**
@@ -5189,7 +5189,7 @@ export declare class Repository {
    * ```
    *
    * @returns Array of worktree names.
-   * @throws Throws error if listing worktrees fails.
+   * @throws Throws error if listing worktrees fails (e.g., filesystem errors or repository corruption).
    */
   worktrees(): Array<string>
   /**
@@ -9202,58 +9202,49 @@ export type TreeWalkMode =  'PreOrder'|
 export interface WorktreeAddOptions {
   /**
    * If enabled, this will cause the newly added worktree to be locked.
-   *
-   * Locking prevents the worktree from being pruned or deleted inadvertently.
-   * This is useful for worktrees stored on removable devices or network shares
-   * that may not always be accessible.
-   *
    * Defaults to `false`.
    */
   lock?: boolean
   /**
    * If enabled, this will checkout the existing branch matching the worktree name.
-   *
-   * When creating a worktree, if a branch with the same name as the worktree
-   * already exists, this option allows checking out that branch instead of
-   * creating a new one.
-   *
    * Defaults to `false`.
    */
   checkoutExisting?: boolean
   /**
-   * Reference to use for the new worktree HEAD.
-   *
-   * This should be a reference name (e.g., `"refs/heads/main"`). If not provided,
-   * the worktree will checkout the branch that HEAD currently points to in the
-   * main repository.
-   *
+   * reference name to use for the new worktree HEAD
    * Defaults to `null`.
    */
   refName?: string
 }
 
 /** Lock Status of a worktree */
-export type WorktreeLockStatus =
-  | { type: 'Unlocked' }
-  | { type: 'Locked', field0?: string }
+export interface WorktreeLockStatus {
+  /** Worktree is Unlocked */
+  status: WorktreeLockStatusType
+  /** Worktree is locked with the optional message */
+  reason?: string
+}
+
+/** Lock Status of a worktree */
+export type WorktreeLockStatusType = /** Worktree is Unlocked */
+'Unlocked'|
+/** Worktree is locked with the optional message */
+'Locked';
 
 /** Options to configure how worktree pruning is performed. */
 export interface WorktreePruneOptions {
   /**
    * Controls whether valid (still existing on the filesystem) worktrees will be pruned.
-   *
    * Defaults to `false`.
    */
   valid?: boolean
   /**
    * Controls whether locked worktrees will be pruned.
-   *
    * Defaults to `false`.
    */
   locked?: boolean
   /**
    * Controls whether the actual working tree on the filesystem is recursively removed.
-   *
    * Defaults to `false`.
    */
   workingTree?: boolean

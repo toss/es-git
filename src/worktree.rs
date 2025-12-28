@@ -6,13 +6,22 @@ use napi_derive::napi;
 use std::ops::Deref;
 use std::path::Path;
 
+#[napi(object)]
+/// Lock Status of a worktree
+pub struct WorktreeLockStatus {
+  /// Worktree is Unlocked
+  pub status: WorktreeLockStatusType,
+  /// Worktree is locked with the optional message
+  pub reason: Option<String>,
+}
+// (Option<String>)
 #[napi(string_enum)]
 /// Lock Status of a worktree
-pub enum WorktreeLockStatus {
+pub enum WorktreeLockStatusType {
   /// Worktree is Unlocked
   Unlocked,
   /// Worktree is locked with the optional message
-  Locked(Option<String>),
+  Locked,
 }
 
 #[napi(object)]
@@ -62,8 +71,14 @@ impl From<WorktreePruneOptions> for git2::WorktreePruneOptions {
 impl From<git2::WorktreeLockStatus> for WorktreeLockStatus {
   fn from(value: git2::WorktreeLockStatus) -> Self {
     match value {
-      git2::WorktreeLockStatus::Unlocked => WorktreeLockStatus::Unlocked,
-      git2::WorktreeLockStatus::Locked(reason) => WorktreeLockStatus::Locked(reason),
+      git2::WorktreeLockStatus::Unlocked => WorktreeLockStatus {
+        status: WorktreeLockStatusType::Unlocked,
+        reason: None,
+      },
+      git2::WorktreeLockStatus::Locked(reason) => WorktreeLockStatus {
+        status: WorktreeLockStatusType::Locked,
+        reason,
+      },
     }
   }
 }

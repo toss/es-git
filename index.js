@@ -669,4 +669,5 @@ module.exports.traceClear = nativeBinding.traceClear
 module.exports.TraceLevel = nativeBinding.TraceLevel
 module.exports.traceSet = nativeBinding.traceSet
 module.exports.TreeWalkMode = nativeBinding.TreeWalkMode
+module.exports.WorktreeLockStatusType = nativeBinding.WorktreeLockStatusType
 module.exports.zeroOid = nativeBinding.zeroOid
