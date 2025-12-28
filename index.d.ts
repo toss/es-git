@@ -2374,6 +2374,200 @@ export declare class Reference {
   rename(newName: string, options?: RenameReferenceOptions | undefined | null): Reference
 }
 
+/** A class to represent a git reflog. */
+export declare class Reflog {
+  /**
+   * Append a new entry to the reflog.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   append(newOid: string, committer: Signature, msg?: string | null | undefined): void;
+   * }
+   * ```
+   *
+   * @param {string} newOid - New object ID (SHA1) for this reflog entry.
+   * @param {Signature} committer - Committer signature for this reflog entry.
+   * @param {string} [msg] - Optional message for this reflog entry.
+   * @throws Throws error if the OID is invalid or if appending fails.
+   */
+  append(newOid: string, committer: Signature, msg?: string | undefined | null): void
+  /**
+   * Remove an entry from the reflog.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   remove(i: number, rewritePreviousEntry?: boolean): void;
+   * }
+   * ```
+   *
+   * @param {number} i - Index of the entry to remove.
+   * @param {boolean} [rewritePreviousEntry] - Whether to rewrite the previous entry. Defaults to 'false'.
+   * @throws Throws error if the index is invalid or if removal fails.
+   */
+  remove(i: number, rewritePreviousEntry?: boolean | undefined | null): void
+  /**
+   * Get a reflog entry by index.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   get(i: number): ReflogEntry | null;
+   * }
+   * ```
+   *
+   * @param {number} i - Index of the entry to get.
+   * @returns Reflog entry at the given index. Returns `null` if the index is out of bounds.
+   */
+  get(i: number): ReflogEntry | null
+  /**
+   * Get the number of entries in the reflog.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   len(): number;
+   * }
+   * ```
+   *
+   * @returns Number of entries in the reflog.
+   */
+  len(): number
+  /**
+   * Check if the reflog is empty.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   isEmpty(): boolean;
+   * }
+   * ```
+   *
+   * @returns `true` if the reflog is empty, `false` otherwise.
+   */
+  isEmpty(): boolean
+  /**
+   * Create an iterator over the entries in the reflog.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   iter(): ReflogIter;
+   * }
+   * ```
+   *
+   * @returns Iterator over the reflog entries.
+   */
+  iter(): ReflogIter
+  /**
+   * Write the reflog to disk.
+   *
+   * @category Reflog/Methods
+   *
+   * @signature
+   * ```ts
+   * class Reflog {
+   *   write(): void;
+   * }
+   * ```
+   *
+   * @throws Throws error if writing fails.
+   */
+  write(): void
+}
+
+/** A class to represent a git reflog entry. */
+export declare class ReflogEntry {
+  /**
+   * Get the committer of this reflog entry.
+   *
+   * @category ReflogEntry/Methods
+   *
+   * @signature
+   * ```ts
+   * class ReflogEntry {
+   *   committer(): Signature;
+   * }
+   * ```
+   *
+   * @returns Committer signature of this reflog entry.
+   */
+  committer(): Signature
+  /**
+   * Get the new object ID (SHA1) of this reflog entry.
+   *
+   * @category ReflogEntry/Methods
+   *
+   * @signature
+   * ```ts
+   * class ReflogEntry {
+   *   idNew(): string;
+   * }
+   * ```
+   *
+   * @returns New object ID (SHA1) of this reflog entry.
+   */
+  idNew(): string
+  /**
+   * Get the old object ID (SHA1) of this reflog entry.
+   *
+   * @category ReflogEntry/Methods
+   *
+   * @signature
+   * ```ts
+   * class ReflogEntry {
+   *   idOld(): string;
+   * }
+   * ```
+   *
+   * @returns Old object ID (SHA1) of this reflog entry.
+   */
+  idOld(): string
+  /**
+   * Get the message of this reflog entry.
+   *
+   * @category ReflogEntry/Methods
+   *
+   * @signature
+   * ```ts
+   * class ReflogEntry {
+   *   message(): string | null;
+   * }
+   * ```
+   *
+   * @returns Message of this reflog entry. Returns `null` if no message is present.
+   * @throws Throws error if the message is not valid utf-8.
+   */
+  message(): string | null
+}
+
+/**
+ * An iterator over the entries in a reflog.
+ *
+ * This type extends JavaScript's `Iterator`, and so has the iterator helper
+ * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
+ * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ */
+export declare class ReflogIter extends Iterator<ReflogEntry, void, void> {
+
+  next(value?: void): IteratorResult<ReflogEntry, void>
+}
+
 /**
  * A class representing a [remote][1] of a git repository.
  *
@@ -3785,6 +3979,56 @@ export declare class Repository {
    * ```
    */
   getReference(name: string): Reference
+  /**
+   * Lookup a reflog by its name.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   reflog(name: string): Reflog;
+   * }
+   * ```
+   *
+   * @param {string} name - Name of the reference whose reflog to lookup (e.g., "HEAD", "refs/heads/main").
+   * @returns Reflog instance for the given reference name.
+   * @throws Throws error if the reflog does not exist or cannot be opened.
+   */
+  reflog(name: string): Reflog
+  /**
+   * Rename a reflog.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   reflogRename(oldName: string, newName: string): void;
+   * }
+   * ```
+   *
+   * @param {string} oldName - Old name of the reference.
+   * @param {string} newName - New name of the reference.
+   * @throws Throws error if renaming fails.
+   */
+  reflogRename(oldName: string, newName: string): void
+  /**
+   * Delete a reflog.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   reflogDelete(name: string): void;
+   * }
+   * ```
+   *
+   * @param {string} name - Name of the reference whose reflog to delete.
+   * @throws Throws error if deletion fails.
+   */
+  reflogDelete(name: string): void
   /**
    * List all remotes for a given repository
    *
