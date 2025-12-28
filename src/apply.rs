@@ -57,6 +57,7 @@ impl Repository {
   /// Apply a Diff to the given repo, making changes directly in the working directory, the index, or both.
   ///
   /// @category Repository/Methods
+  /// @signature
   /// ```ts
   /// class Repository {
   ///   apply(diff: Diff, location: ApplyLocation, options?: ApplyOptions | null | undefined): void;
