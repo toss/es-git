@@ -91,7 +91,7 @@ impl ReflogEntry {
   /// @signature
   /// ```ts
   /// class ReflogEntry {
-  ///   message(): string | null;
+  ///   message(): string;
   /// }
   /// ```
   ///
