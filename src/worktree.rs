@@ -64,7 +64,9 @@ pub struct WorktreePruneOptions {
 impl From<WorktreePruneOptions> for git2::WorktreePruneOptions {
   fn from(value: WorktreePruneOptions) -> Self {
     let mut git2_worktree_prune_options = git2::WorktreePruneOptions::new();
-    value.valid.map(|_valid| git2_worktree_prune_options.valid(_valid));
+    if let Some(valid) = value.valid {
+      git2_worktree_prune_options.valid(valod);
+    }
     value.valid.map(|_locked| git2_worktree_prune_options.locked(_locked));
     value
       .valid
