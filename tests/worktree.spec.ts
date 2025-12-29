@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { Repository, Worktree, openRepository } from '../index';
+import { type Repository, openRepository, openRepositoryFromWorktree, openWorktreeFromRepository } from '../index';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -49,7 +49,7 @@ describe('worktree', () => {
 
     // Open test-worktree repository (path based)
     const originRepoHeadName = repo.head().name();
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     const head = worktreeRepo.head();
     expect(head.name()).include(worktreeName);
     expect(head.name()).not.toBe(originRepoHeadName);
@@ -71,7 +71,7 @@ describe('worktree', () => {
     expect(lockStatus.status).toBe('Locked');
 
     // Open test-worktree repository(reference based)
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     const head = worktreeRepo.head();
     expect(head.name()).toBe('refs/heads/worktree-branch');
   });
@@ -150,7 +150,7 @@ describe('worktree', () => {
   it('open repository from worktree', async () => {
     const worktreePath = path.join(baseWorktreePath, 'test-worktree-open-repo');
     const worktree = repo.worktree('test-worktree', worktreePath);
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     expect(worktreeRepo).toBeDefined();
     expect(worktreeRepo.isWorktree()).toBe(true);
   });
@@ -158,8 +158,8 @@ describe('worktree', () => {
   it('open worktree from repository', async () => {
     const worktreePath = path.join(baseWorktreePath, 'test-worktree-open-wt');
     const worktree = repo.worktree('test-worktree', worktreePath);
-    const worktreeRepo = Repository.openFromWorktree(worktree);
-    const openedWorktree = Worktree.openFromRepository(worktreeRepo);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
+    const openedWorktree = openWorktreeFromRepository(worktreeRepo);
     expect(openedWorktree).toBeDefined();
     expect(openedWorktree.name()).toBe('test-worktree');
   });
@@ -169,7 +169,7 @@ describe('worktree', () => {
 
     const worktreePath = path.join(baseWorktreePath, 'test-worktree-is-wt');
     const worktree = repo.worktree('test-worktree', worktreePath);
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     expect(worktreeRepo.isWorktree()).toBe(true);
   });
 
@@ -227,7 +227,7 @@ describe('worktree', () => {
     expect(worktree).toBeDefined();
     expect(worktree.name()).toBe('existing-branch');
     // Open worktree repository and check head
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     const head = worktreeRepo.head();
     expect(head.name()).toBe('refs/heads/existing-branch');
     expect(head.target()).toBe(commitOid);
@@ -240,7 +240,7 @@ describe('worktree', () => {
     });
     expect(worktree).toBeDefined();
 
-    const worktreeRepo = Repository.openFromWorktree(worktree);
+    const worktreeRepo = openRepositoryFromWorktree(worktree);
     const head = worktreeRepo.head();
     expect(head.name()).toBe('refs/heads/worktree-branch');
   });

@@ -5237,23 +5237,6 @@ export declare class Repository {
    * @throws Throws error if the worktree is not found or if opening fails.
    */
   findWorktree(name: string): Worktree
-  /**
-   * Open a repository from a worktree.
-   *
-   * @category Repository/Methods
-   *
-   * @signature
-   * ```ts
-   * class Repository {
-   *   static openFromWorktree(worktree: Worktree): Repository;
-   * }
-   * ```
-   *
-   * @param {Worktree} worktree - Worktree to open repository from.
-   * @returns Repository instance.
-   * @throws Throws error if opening the repository fails.
-   */
-  static openFromWorktree(worktree: Worktree): Repository
 }
 
 /**
@@ -6522,23 +6505,6 @@ export declare class TreeIter extends Iterator<TreeEntry, void, void> {
 
 /** A class to represent a git worktree. */
 export declare class Worktree {
-  /**
-   * Open a worktree from a repository.
-   *
-   * @category Worktree/Methods
-   *
-   * @signature
-   * ```ts
-   * class Worktree {
-   *   static openFromRepository(repo: Repository): Worktree;
-   * }
-   * ```
-   *
-   * @param {Repository} repo - Repository to open worktree from.
-   * @returns Worktree instance.
-   * @throws Throws error if the repository is not a worktree or if opening fails.
-   */
-  static openFromRepository(repo: Repository): Worktree
   /**
    * Get the name of this worktree.
    *
@@ -8336,6 +8302,65 @@ export declare function openDefaultConfig(): Config
  * ```
  */
 export declare function openRepository(path: string, options?: RepositoryOpenOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+
+/**
+ * Open a repository from a worktree.
+ *
+ * This will open the repository associated with the given worktree.
+ *
+ * @category Repository
+ *
+ * @signature
+ * ```ts
+ * function openRepositoryFromWorktree(worktree: Worktree): Repository;
+ * ```
+ *
+ * @param {Worktree} worktree - Worktree to open repository from.
+ * @returns Repository instance.
+ * @throws Throws error if opening the repository fails.
+ *
+ * @example
+ *
+ * Open a repository from a worktree.
+ *
+ * ```ts
+ * import { openWorktreeFromRepository, openRepositoryFromWorktree } from 'es-git';
+ *
+ * const worktree = openWorktreeFromRepository(repo);
+ * const repo = openRepositoryFromWorktree(worktree);
+ * ```
+ */
+export declare function openRepositoryFromWorktree(worktree: Worktree): Repository
+
+/**
+ * Open a worktree from a repository.
+ *
+ * This will open the worktree associated with the given repository if the
+ * repository is a worktree.
+ *
+ * @category Worktree
+ *
+ * @signature
+ * ```ts
+ * function openWorktreeFromRepository(repo: Repository): Worktree;
+ * ```
+ *
+ * @param {Repository} repo - Repository to open worktree from.
+ * @returns Worktree instance.
+ * @throws Throws error if the repository is not a worktree or if opening fails.
+ *
+ * @example
+ *
+ * Open a worktree from a repository.
+ *
+ * ```ts
+ * import { openRepository, openWorktreeFromRepository } from 'es-git';
+ *
+ * const repo = await openRepository('.');
+ * const worktree = openWorktreeFromRepository(repo);
+ * ```
+ */
+export declare function openWorktreeFromRepository(repo: Repository): Worktree
 
 /**
  * Parse a string as a bool.

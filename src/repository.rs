@@ -2,6 +2,7 @@ use crate::annotated_commit::AnnotatedCommit;
 use crate::commit::Commit;
 use crate::remote::FetchOptions;
 use crate::util;
+use crate::worktree::Worktree;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
@@ -859,4 +860,35 @@ pub fn clone_repository(
   signal: Option<AbortSignal>,
 ) -> AsyncTask<CloneRepositoryTask> {
   AsyncTask::with_optional_signal(CloneRepositoryTask { url, path, options }, signal)
+}
+
+#[napi]
+/// Open a repository from a worktree.
+///
+/// This will open the repository associated with the given worktree.
+///
+/// @category Repository
+///
+/// @signature
+/// ```ts
+/// function openRepositoryFromWorktree(worktree: Worktree): Repository;
+/// ```
+///
+/// @param {Worktree} worktree - Worktree to open repository from.
+/// @returns Repository instance.
+/// @throws Throws error if opening the repository fails.
+///
+/// @example
+///
+/// Open a repository from a worktree.
+///
+/// ```ts
+/// import { openWorktreeFromRepository, openRepositoryFromWorktree } from 'es-git';
+///
+/// const worktree = openWorktreeFromRepository(repo);
+/// const repo = openRepositoryFromWorktree(worktree);
+/// ```
+pub fn open_repository_from_worktree(worktree: &Worktree) -> crate::Result<Repository> {
+  let git2_repository: git2::Repository = git2::Repository::open_from_worktree(&worktree.inner)?;
+  Ok(Repository { inner: git2_repository })
 }

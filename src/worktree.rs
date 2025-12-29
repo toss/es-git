@@ -1,7 +1,5 @@
 use crate::repository::Repository;
 use crate::util::path_to_string;
-use napi::bindgen_prelude::{Reference, SharedReference};
-use napi::Env;
 use napi_derive::napi;
 use std::ops::Deref;
 use std::path::Path;
@@ -93,7 +91,7 @@ impl From<git2::WorktreeLockStatus> for WorktreeLockStatus {
 }
 
 pub(crate) enum WorktreeInner {
-  Repo(SharedReference<Repository, git2::Worktree>),
+  Owned(git2::Worktree),
 }
 
 impl Deref for WorktreeInner {
@@ -101,7 +99,7 @@ impl Deref for WorktreeInner {
 
   fn deref(&self) -> &Self::Target {
     match self {
-      Self::Repo(inner) => inner.deref(),
+      Self::Owned(inner) => inner,
     }
   }
 }
@@ -114,32 +112,6 @@ pub struct Worktree {
 
 #[napi]
 impl Worktree {
-  #[napi]
-  /// Open a worktree from a repository.
-  ///
-  /// @category Worktree/Methods
-  ///
-  /// @signature
-  /// ```ts
-  /// class Worktree {
-  ///   static openFromRepository(repo: Repository): Worktree;
-  /// }
-  /// ```
-  ///
-  /// @param {Repository} repo - Repository to open worktree from.
-  /// @returns Worktree instance.
-  /// @throws Throws error if the repository is not a worktree or if opening fails.
-  pub fn open_from_repository(repo: Reference<Repository>, env: Env) -> crate::Result<Worktree> {
-    let worktree = repo.share_with(env, |repo| {
-      git2::Worktree::open_from_repository(&repo.inner)
-        .map_err(crate::Error::from)
-        .map_err(|e| e.into())
-    })?;
-    Ok(Worktree {
-      inner: WorktreeInner::Repo(worktree),
-    })
-  }
-
   #[napi]
   /// Get the name of this worktree.
   ///
@@ -310,14 +282,7 @@ impl Repository {
   /// @param {WorktreeAddOptions} [options] - Options for adding the worktree.
   /// @returns New worktree instance.
   /// @throws Throws error if adding the worktree fails (e.g., path already exists, invalid reference name, or filesystem errors).
-  pub fn worktree(
-    &self,
-    this: Reference<Repository>,
-    env: Env,
-    name: String,
-    path: String,
-    options: Option<WorktreeAddOptions>,
-  ) -> crate::Result<Worktree> {
+  pub fn worktree(&self, name: String, path: String, options: Option<WorktreeAddOptions>) -> crate::Result<Worktree> {
     let mut git2_opts = git2::WorktreeAddOptions::new();
     // add non reference options
     if let Some(ref _options) = options {
@@ -338,16 +303,9 @@ impl Repository {
     git2_opts.reference(git2_reference.as_ref());
 
     // add worktree
-    let git2_worktree = this.share_with(env, |repo| {
-      repo
-        .inner
-        .worktree(&name, Path::new(&path), Some(&git2_opts))
-        .map_err(crate::Error::from)
-        .map_err(|e| e.into())
-    })?;
-
+    let git2_worktree = self.inner.worktree(&name, Path::new(&path), Some(&git2_opts))?;
     Ok(Worktree {
-      inner: WorktreeInner::Repo(git2_worktree),
+      inner: WorktreeInner::Owned(git2_worktree),
     })
   }
 
@@ -405,36 +363,44 @@ impl Repository {
   /// @param {string} name - Name of the worktree to find.
   /// @returns Worktree instance.
   /// @throws Throws error if the worktree is not found or if opening fails.
-  pub fn find_worktree(&self, this: Reference<Repository>, env: Env, name: String) -> crate::Result<Worktree> {
-    let git2_worktree = this.share_with(env, |repo| {
-      repo
-        .inner
-        .find_worktree(&name)
-        .map_err(crate::Error::from)
-        .map_err(|e| e.into())
-    })?;
+  pub fn find_worktree(&self, name: String) -> crate::Result<Worktree> {
+    let git2_worktree = self.inner.find_worktree(&name)?;
     Ok(Worktree {
-      inner: WorktreeInner::Repo(git2_worktree),
+      inner: WorktreeInner::Owned(git2_worktree),
     })
   }
+}
 
-  #[napi]
-  /// Open a repository from a worktree.
-  ///
-  /// @category Repository/Methods
-  ///
-  /// @signature
-  /// ```ts
-  /// class Repository {
-  ///   static openFromWorktree(worktree: Worktree): Repository;
-  /// }
-  /// ```
-  ///
-  /// @param {Worktree} worktree - Worktree to open repository from.
-  /// @returns Repository instance.
-  /// @throws Throws error if opening the repository fails.
-  pub fn open_from_worktree(worktree: &Worktree) -> crate::Result<Repository> {
-    let git2_repository = git2::Repository::open_from_worktree(&worktree.inner)?;
-    Ok(Repository { inner: git2_repository })
-  }
+#[napi]
+/// Open a worktree from a repository.
+///
+/// This will open the worktree associated with the given repository if the
+/// repository is a worktree.
+///
+/// @category Worktree
+///
+/// @signature
+/// ```ts
+/// function openWorktreeFromRepository(repo: Repository): Worktree;
+/// ```
+///
+/// @param {Repository} repo - Repository to open worktree from.
+/// @returns Worktree instance.
+/// @throws Throws error if the repository is not a worktree or if opening fails.
+///
+/// @example
+///
+/// Open a worktree from a repository.
+///
+/// ```ts
+/// import { openRepository, openWorktreeFromRepository } from 'es-git';
+///
+/// const repo = await openRepository('.');
+/// const worktree = openWorktreeFromRepository(repo);
+/// ```
+pub fn open_worktree_from_repository(repo: &Repository) -> crate::Result<Worktree> {
+  let worktree = git2::Worktree::open_from_repository(&repo.inner).map_err(crate::Error::from)?;
+  Ok(Worktree {
+    inner: WorktreeInner::Owned(worktree),
+  })
 }
