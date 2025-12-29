@@ -65,17 +65,14 @@ impl From<WorktreePruneOptions> for git2::WorktreePruneOptions {
   fn from(value: WorktreePruneOptions) -> Self {
     let mut git2_worktree_prune_options = git2::WorktreePruneOptions::new();
     if let Some(valid) = value.valid {
-      git2_worktree_prune_options.valid(valod);
+      git2_worktree_prune_options.valid(valid);
     }
     if let Some(locked) = value.locked {
-      // ..
+      git2_worktree_prune_options.locked(locked);
     }
     if let Some(working_tree) = value.working_tree {
-      // ..
+      git2_worktree_prune_options.working_tree(working_tree);
     }
-    value
-      .valid
-      .map(|_working_tree| git2_worktree_prune_options.working_tree(_working_tree));
     git2_worktree_prune_options
   }
 }
@@ -324,10 +321,12 @@ impl Repository {
     let mut git2_opts = git2::WorktreeAddOptions::new();
     // add non reference options
     if let Some(ref _options) = options {
-      _options.lock.map(|_lock| git2_opts.lock(_lock));
-      _options
-        .checkout_existing
-        .map(|_checkout_existing| git2_opts.checkout_existing(_checkout_existing));
+      if let Some(lock) = _options.lock {
+        git2_opts.lock(lock);
+      }
+      if let Some(checkout_existing) = _options.checkout_existing {
+        git2_opts.checkout_existing(checkout_existing);
+      }
     }
 
     // add reference option
