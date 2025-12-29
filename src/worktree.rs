@@ -14,7 +14,6 @@ pub struct WorktreeLockStatus {
   /// Worktree is locked with the optional message
   pub reason: Option<String>,
 }
-// (Option<String>)
 #[napi(string_enum)]
 /// Lock Status of a worktree
 pub enum WorktreeLockStatusType {
