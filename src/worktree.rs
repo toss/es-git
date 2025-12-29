@@ -67,7 +67,12 @@ impl From<WorktreePruneOptions> for git2::WorktreePruneOptions {
     if let Some(valid) = value.valid {
       git2_worktree_prune_options.valid(valod);
     }
-    value.valid.map(|_locked| git2_worktree_prune_options.locked(_locked));
+    if let Some(locked) = value.locked {
+      // ..
+    }
+    if let Some(working_tree) = value.working_tree {
+      // ..
+    }
     value
       .valid
       .map(|_working_tree| git2_worktree_prune_options.working_tree(_working_tree));
