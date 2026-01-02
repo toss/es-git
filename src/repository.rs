@@ -1,7 +1,8 @@
 use crate::annotated_commit::AnnotatedCommit;
 use crate::commit::Commit;
 use crate::remote::FetchOptions;
-use crate::util;
+use crate::worktree::Worktree;
+use crate::{napi_promise, util};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
@@ -276,22 +277,6 @@ impl Repository {
   /// @returns Returns `true` if repository is a shallow clone.
   pub fn is_shallow(&self) -> bool {
     self.inner.is_shallow()
-  }
-
-  #[napi]
-  /// Tests whether this repository is a worktree.
-  ///
-  /// @category Repository/Methods
-  /// @signature
-  /// ```ts
-  /// class Repository {
-  ///   isWorktree(): boolean;
-  /// }
-  /// ```
-  ///
-  /// @returns Returns `true` if repository is a worktree.
-  pub fn is_worktree(&self) -> bool {
-    self.inner.is_worktree()
   }
 
   #[napi]
@@ -875,4 +860,37 @@ pub fn clone_repository(
   signal: Option<AbortSignal>,
 ) -> AsyncTask<CloneRepositoryTask> {
   AsyncTask::with_optional_signal(CloneRepositoryTask { url, path, options }, signal)
+}
+
+#[napi]
+/// Open a repository from a worktree.
+///
+/// This will open the repository associated with the given worktree.
+///
+/// @category Repository
+///
+/// @signature
+/// ```ts
+/// function openRepositoryFromWorktree(worktree: Worktree): Promise<Repository>;
+/// ```
+///
+/// @param {Worktree} worktree - Worktree to open repository from.
+/// @returns {Promise<Repository>} Promise that resolves to a Repository instance.
+/// @throws Throws error if opening the repository fails.
+///
+/// @example
+///
+/// Open a repository from a worktree.
+///
+/// ```ts
+/// import { openWorktreeFromRepository, openRepositoryFromWorktree } from 'es-git';
+///
+/// const worktree = await openWorktreeFromRepository(repo);
+/// const repo = await openRepositoryFromWorktree(worktree);
+/// ```
+pub fn open_repository_from_worktree(worktree: &Worktree, env: Env) -> PromiseRaw<'_, Repository> {
+  napi_promise!(&env, || {
+    let git2_repository = git2::Repository::open_from_worktree(&worktree.inner)?;
+    Ok(Repository { inner: git2_repository })
+  })
 }
