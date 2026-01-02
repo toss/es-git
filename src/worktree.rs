@@ -1,5 +1,8 @@
+use crate::napi_promise;
 use crate::repository::Repository;
 use crate::util::path_to_string;
+use napi::bindgen_prelude::PromiseRaw;
+use napi::Env;
 use napi_derive::napi;
 use std::ops::Deref;
 use std::path::Path;
@@ -381,11 +384,11 @@ impl Repository {
 ///
 /// @signature
 /// ```ts
-/// function openWorktreeFromRepository(repo: Repository): Worktree;
+/// function openWorktreeFromRepository(repo: Repository): Promise<Worktree>;
 /// ```
 ///
 /// @param {Repository} repo - Repository to open worktree from.
-/// @returns Worktree instance.
+/// @returns {Promise<Worktree>} Promise that resolves to a Worktree instance.
 /// @throws Throws error if the repository is not a worktree or if opening fails.
 ///
 /// @example
@@ -396,11 +399,13 @@ impl Repository {
 /// import { openRepository, openWorktreeFromRepository } from 'es-git';
 ///
 /// const repo = await openRepository('.');
-/// const worktree = openWorktreeFromRepository(repo);
+/// const worktree = await openWorktreeFromRepository(repo);
 /// ```
-pub fn open_worktree_from_repository(repo: &Repository) -> crate::Result<Worktree> {
-  let worktree = git2::Worktree::open_from_repository(&repo.inner).map_err(crate::Error::from)?;
-  Ok(Worktree {
-    inner: WorktreeInner::Owned(worktree),
+pub fn open_worktree_from_repository(repo: &Repository, env: Env) -> PromiseRaw<'_, Worktree> {
+  napi_promise!(&env, || {
+    let worktree = git2::Worktree::open_from_repository(&repo.inner)?;
+    Ok(Worktree {
+      inner: WorktreeInner::Owned(worktree),
+    })
   })
 }
