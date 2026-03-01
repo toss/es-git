@@ -400,5 +400,7 @@ impl Repository {
 /// ```
 pub fn open_worktree_from_repository(repo: &Repository) -> crate::Result<Worktree> {
   let worktree = git2::Worktree::open_from_repository(&repo.inner)?;
-  Ok(Worktree { inner: WorktreeInner::Owned(worktree)})
+  Ok(Worktree {
+    inner: WorktreeInner::Owned(worktree),
+  })
 }

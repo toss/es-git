@@ -1,8 +1,8 @@
 use crate::annotated_commit::AnnotatedCommit;
 use crate::commit::Commit;
 use crate::remote::FetchOptions;
-use crate::worktree::Worktree;
 use crate::util;
+use crate::worktree::Worktree;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
