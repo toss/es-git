@@ -59,7 +59,7 @@ describe('commit', () => {
     expect(isValidOid(oid)).toBe(true);
     const revwalk = repo.revwalk();
     revwalk.pushHead();
-    expect([...revwalk][0]).toEqual(oid);
+    expect(revwalk.next()).toEqual(oid);
     const commit = repo.getCommit(oid);
     expect(commit.summary()).toEqual('test commit');
   });

@@ -5,6 +5,7 @@ use napi_derive::napi;
 use std::path::Path;
 
 #[napi(object)]
+#[derive(Clone)]
 pub struct CheckoutOptions {
   /// Indicate that this checkout should perform a dry run by checking for
   /// conflicts but not make any actual changes.

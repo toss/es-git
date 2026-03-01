@@ -1,22 +1,17 @@
 use bitflags::Flags;
-use napi::{Env, JsString};
 use std::path::Path;
 
-pub(crate) fn path_to_js_string(env: &Env, p: &Path) -> crate::Result<JsString> {
+pub(crate) fn path_to_string(p: &Path) -> String {
   #[cfg(unix)]
   {
-    use std::borrow::Borrow;
-
-    let path = p.to_string_lossy();
-    let str = env.create_string(path.borrow())?;
-    Ok(str)
+    p.to_string_lossy().to_string()
   }
   #[cfg(windows)]
   {
     use std::os::windows::ffi::OsStrExt;
     let path_buf = p.as_os_str().encode_wide().collect::<Vec<u16>>();
-    let str = env.create_string_utf16(path_buf.as_slice())?;
-    Ok(str)
+    let str = String::from_utf16_lossy(path_buf.as_slice()).to_string();
+    str
   }
 }
 

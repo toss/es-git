@@ -70,6 +70,7 @@ pub fn is_valid_reference_name(refname: String) -> bool {
 
 #[napi]
 #[repr(u32)]
+#[derive(Default)]
 /// - `ReferenceFormat.Normal` : No particular normalization.
 /// - `ReferenceFormat.AllowOnelevel` : Control whether one-level refname are accepted
 /// (i.e., refnames that do not contain multiple `/`-separated components). Those are
@@ -82,16 +83,11 @@ pub fn is_valid_reference_name(refname: String) -> bool {
 /// - `ReferenceFormat.RefspecShorthand` : Interpret the name as part of a refspec in shorthand
 /// form so the `AllowOnelevel` naming rules aren't enforced and `main` becomes a valid name.
 pub enum ReferenceFormat {
+  #[default]
   Normal = 0,
   AllowOnelevel = 1,
   RefspecPattern = 2,
   RefspecShorthand = 4,
-}
-
-impl Default for ReferenceFormat {
-  fn default() -> Self {
-    Self::Normal
-  }
 }
 
 #[napi]

@@ -32,7 +32,9 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: yarn build --target x86_64-unknown-linux-gnu
+            build: |-
+              rustup update stable &&
+              yarn build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
@@ -40,6 +42,7 @@ jobs:
               # `perl` needs for building openssl
               set -e &&
               apk add perl &&
+              rustup update stable &&
               yarn build
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
@@ -51,6 +54,7 @@ jobs:
               apt-get install -y perl &&
               unset CC_aarch64_unknown_linux_gnu &&
               unset CXX_aarch64_unknown_linux_gnu &&
+              rustup update stable &&
               yarn build --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
@@ -59,6 +63,7 @@ jobs:
               # `perl` needs for building openssl
               set -e &&
               apk add perl &&
+              rustup update stable &&
               rustup target add aarch64-unknown-linux-musl &&
               yarn build --target aarch64-unknown-linux-musl
           - host: ubuntu-latest
@@ -70,22 +75,22 @@ jobs:
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
       - name: Install rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
         if: ${{ !matrix.settings.docker }}
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
       - name: Cache cargo
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.cargo/registry/index/
@@ -97,7 +102,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Build in docker
-        uses: addnab/docker-run-action@v3
+        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3
         if: ${{ matrix.settings.docker }}
         with:
           image: ${{ matrix.settings.docker }}
@@ -108,7 +113,7 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         shell: bash
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: bindings-${{ matrix.settings.target }}
           path: ${{ env.APP_NAME }}.*.node
@@ -122,17 +127,19 @@ jobs:
     needs:
       - build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
+      - name: Update npm
+        run: npm install -g npm@11.5.1
       - name: Install dependencies
         run: yarn install
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: release-artifacts
       - name: Prepare next release
@@ -143,7 +150,7 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
       - name: Create npm dirs
-        run: yarn napi create-npm-dir -t .
+        run: yarn napi create-npm-dirs
       - name: Move artifacts
         run: yarn napi artifacts -d release-artifacts
       - name: List packages
@@ -160,7 +167,7 @@ jobs:
       - run: 'cat ${{ steps.extract-changelog.outputs.output-file }}'
       - name: Release
         id: gh-release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         if: github.ref_type == 'tag'
         with:
           body_path: ${{ steps.extract-changelog.outputs.output-file }}
@@ -171,17 +178,13 @@ jobs:
         id: publish
         run: |
           set -ex
-          npm config set provenance true
-          npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
-          npm config set access public
-          npm whoami
           if [[ "$GITHUB_REF_TYPE" = "tag" ]]; then
             yarn napi prepublish -t npm --gh-release-id ${{ steps.gh-release.outputs.id }}
-            npm publish --access public
+            npm publish --provenance --access public
           elif [[ "$GITHUB_REF_TYPE" = "branch" ]]; then
             npm config set tag next
-            yarn napi prepublish -t npm --skip-gh-release
-            npm publish --access public --tag next
+            yarn napi prepublish -t npm --no-gh-release
+            npm publish --provenance --access public --tag next
           else
             echo "Skip publish"
           fi
@@ -197,9 +200,9 @@ jobs:
     needs:
       - release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version-file: ".node-version"
           check-latest: true
@@ -218,11 +221,11 @@ jobs:
       - release
     if: github.ref_type == 'tag'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version-file: ".node-version"
+          node-version-file: '.node-version'
           check-latest: true
           cache: yarn
       - name: Install dependencies

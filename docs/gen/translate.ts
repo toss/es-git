@@ -23,6 +23,7 @@ If translating in Korean, translate "Git Object" as "Git 개체".
 If translating in Korean, translate "Tree" as "트리".
 If translating in Korean, translate "Repository" as "리포지토리".
 If translating in Japanese, finish the sentence in ます style.
+Don't translate signature/example codes (except comments) or parameters name.
 Finish with a noun if it is a explanation for a parameter or a return value.
 
 ===
@@ -32,7 +33,7 @@ ${JSON.stringify(doc, null, 2)}
   `;
 
   const response = await ai.chat.completions.create({
-    model: options?.model ?? 'gpt-4o',
+    model: options?.model ?? 'gpt-5.2',
     messages: [{ role: 'user', content: prompt }],
   });
 

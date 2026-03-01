@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { openRepository } from '../index';
+import { type RebaseOperation, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('rebase', () => {
@@ -64,12 +64,16 @@ describe('rebase', () => {
     const ids = [o2];
     const types = ['Pick'];
     let i = 0;
-    for (const op of rebase) {
-      expect(op.id).toEqual(ids[i]);
-      expect(op.type).toEqual(types[i]);
-      rebase.commit({ committer: sig });
-      i += 1;
-    }
+    let op: RebaseOperation | null = null;
+    do {
+      op = rebase.next();
+      if (op != null) {
+        expect(op.id).toEqual(ids[i]);
+        expect(op.type).toEqual(types[i]);
+        rebase.commit({ committer: sig });
+        i += 1;
+      }
+    } while (op != null);
     rebase.finish(sig);
 
     const featureAfter = repo.getReference('refs/heads/feature').target()!;
@@ -139,10 +143,9 @@ describe('rebase', () => {
     const rebase = repo.rebase(featureHead, mainHead);
 
     // next operation should apply and produce conflict
-    const iter = rebase[Symbol.iterator]();
-    const first = iter.next();
-    expect(first.value!.type).toEqual('Pick');
-    expect(first.value!.id).toEqual(conflictOid);
+    const first = rebase.next();
+    expect(first!.type).toEqual('Pick');
+    expect(first!.id).toEqual(conflictOid);
 
     // conflict expected
     index = repo.index();
@@ -158,8 +161,8 @@ describe('rebase', () => {
     expect(newOid).toMatch(/^[0-9a-f]{40}$/);
 
     // no more operations
-    const second = iter.next();
-    expect(second.done).toBeTruthy();
+    const second = rebase.next();
+    expect(second).toBeNull();
 
     // finish rebase
     rebase.finish(sig);
@@ -227,9 +230,8 @@ describe('rebase', () => {
     const rebase = repo.rebase(featureHead, mainHead, undefined, { quiet: true });
 
     // advance once to create conflict and then abort
-    const it = rebase[Symbol.iterator]();
-    const step = it.next();
-    expect(step.done).toBeFalsy();
+    const step = rebase.next();
+    expect(step).not.toBeNull();
 
     rebase.abort(); // abort rebase
     expect(repo.state()).toBe('Clean');
@@ -294,19 +296,22 @@ describe('rebase', () => {
       repo.getAnnotatedCommitFromReference(repo.getReference('refs/heads/feature')),
       repo.getAnnotatedCommitFromReference(repo.getReference('refs/heads/main'))
     );
-    const i = rb[Symbol.iterator]();
-    const first = i.next();
-    expect(first.done).toBeFalsy();
+    const first = rb.next();
+    expect(first).not.toBeNull();
     rb.commit({ committer: sig });
 
     const resumed = repo.openRebase();
     expect(resumed.len()).toEqual(2n);
-    const remainingFirst = resumed[Symbol.iterator]().next();
-    expect(remainingFirst.done).toBeFalsy();
+    const remainingFirst = resumed.next();
+    expect(remainingFirst).not.toBeNull();
 
-    for (const _op of resumed) {
-      resumed.commit({ committer: sig });
-    }
+    let op: RebaseOperation | null = null;
+    do {
+      op = resumed.next();
+      if (op != null) {
+        resumed.commit({ committer: sig });
+      }
+    } while (op != null);
     resumed.finish(sig);
 
     expect(repo.state()).toBe('Clean');
