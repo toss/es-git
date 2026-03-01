@@ -8312,11 +8312,11 @@ export declare function openRepository(path: string, options?: RepositoryOpenOpt
  *
  * @signature
  * ```ts
- * function openRepositoryFromWorktree(worktree: Worktree): Promise<Repository>;
+ * function openRepositoryFromWorktree(worktree: Worktree): Repository;
  * ```
  *
  * @param {Worktree} worktree - Worktree to open repository from.
- * @returns {Promise<Repository>} Promise that resolves to a Repository instance.
+ * @returns {Repository} Repository instance.
  * @throws Throws error if opening the repository fails.
  *
  * @example
@@ -8327,10 +8327,10 @@ export declare function openRepository(path: string, options?: RepositoryOpenOpt
  * import { openWorktreeFromRepository, openRepositoryFromWorktree } from 'es-git';
  *
  * const worktree = await openWorktreeFromRepository(repo);
- * const repo = await openRepositoryFromWorktree(worktree);
+ * const repo = openRepositoryFromWorktree(worktree);
  * ```
  */
-export declare function openRepositoryFromWorktree(worktree: Worktree): Promise<Repository>
+export declare function openRepositoryFromWorktree(worktree: Worktree): Repository
 
 /**
  * Open a worktree from a repository.
@@ -8342,11 +8342,11 @@ export declare function openRepositoryFromWorktree(worktree: Worktree): Promise<
  *
  * @signature
  * ```ts
- * function openWorktreeFromRepository(repo: Repository): Promise<Worktree>;
+ * function openWorktreeFromRepository(repo: Repository): Worktree;
  * ```
  *
  * @param {Repository} repo - Repository to open worktree from.
- * @returns {Promise<Worktree>} Promise that resolves to a Worktree instance.
+ * @returns {Worktree} Worktree instance.
  * @throws Throws error if the repository is not a worktree or if opening fails.
  *
  * @example
@@ -8357,10 +8357,10 @@ export declare function openRepositoryFromWorktree(worktree: Worktree): Promise<
  * import { openRepository, openWorktreeFromRepository } from 'es-git';
  *
  * const repo = await openRepository('.');
- * const worktree = await openWorktreeFromRepository(repo);
+ * const worktree = openWorktreeFromRepository(repo);
  * ```
  */
-export declare function openWorktreeFromRepository(repo: Repository): Promise<Worktree>
+export declare function openWorktreeFromRepository(repo: Repository): Worktree
 
 /**
  * Parse a string as a bool.
