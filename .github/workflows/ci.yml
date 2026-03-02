@@ -210,6 +210,12 @@ jobs:
           - "18"
           - "20"
           - "22"
+        exclude:
+        - settings:
+            host: windows-latest
+            target: aarch64-pc-windows-msvc
+            arch: arm64
+          node: "18"
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -233,7 +239,7 @@ jobs:
       - name: Test bindings
         run: yarn vitest run
   test-linux-binding:
-    name: test-linux-binding (${{ matrix.settings.target }}, node@${{ matrix.node }})
+    name: test-linux-binding (${{ matrix.target }}, node@${{ matrix.node }})
     needs:
       - build
     strategy:
@@ -244,7 +250,6 @@ jobs:
           - x86_64-unknown-linux-musl
           - aarch64-unknown-linux-gnu
           - aarch64-unknown-linux-musl
-          - armv7-unknown-linux-gnueabihf
         node:
           - "18"
           - "20"
