@@ -1070,6 +1070,263 @@ export declare class ConfigEntries extends Iterator<ConfigEntry, void, void> {
 }
 
 /**
+ * A structure to represent git credentials in libgit2.
+ *
+ * Create instances via the static factory methods: `default()`, `sshKeyFromAgent()`,
+ * `sshKey()`, `sshKeyFromMemory()`, `userpassPlaintext()`, `username()`, `credentialHelper()`.
+ */
+export declare class Cred {
+  /**
+   * Create a "default" credential usable for Negotiate mechanisms like NTLM or Kerberos authentication.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static default(): Cred;
+   * }
+   * ```
+   *
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.default();
+   * ```
+   */
+  static default(): Cred
+  /**
+   * Create a new SSH key credential object used for querying an ssh-agent.
+   *
+   * The username specified is the username to authenticate.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static sshKeyFromAgent(username: string): Cred;
+   * }
+   * ```
+   *
+   * @param {string} username - The username to authenticate.
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the ssh-agent is not available or the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.sshKeyFromAgent('git');
+   * ```
+   */
+  static sshKeyFromAgent(username: string): Cred
+  /**
+   * Create a new passphrase-protected SSH key credential object from file paths.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static sshKey(
+   *     username: string,
+   *     publicKeyPath: string | null | undefined,
+   *     privateKeyPath: string,
+   *     passphrase?: string | null | undefined,
+   *   ): Cred;
+   * }
+   * ```
+   *
+   * @param {string} username - The username to authenticate.
+   * @param {string | null | undefined} publicKeyPath - Path to the public key file. If `null` or `undefined`, the public key is derived from the private key.
+   * @param {string} privateKeyPath - Path to the private key file.
+   * @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the key files cannot be read or the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.sshKey('git', null, '/home/user/.ssh/id_ed25519', null);
+   * ```
+   */
+  static sshKey(username: string, publicKeyPath: string | undefined | null, privateKeyPath: string, passphrase?: string | undefined | null): Cred
+  /**
+   * Create a new SSH key credential object reading the keys from memory.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static sshKeyFromMemory(
+   *     username: string,
+   *     publicKey: string | null | undefined,
+   *     privateKey: string,
+   *     passphrase?: string | null | undefined,
+   *   ): Cred;
+   * }
+   * ```
+   *
+   * @param {string} username - The username to authenticate.
+   * @param {string | null | undefined} publicKey - The public key content. If `null` or `undefined`, the public key is derived from the private key.
+   * @param {string} privateKey - The private key content.
+   * @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the key content is invalid or the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const privateKey = await fs.readFile('/home/user/.ssh/id_ed25519', 'utf-8');
+   * const cred = Cred.sshKeyFromMemory('git', null, privateKey, null);
+   * ```
+   */
+  static sshKeyFromMemory(username: string, publicKey: string | undefined | null, privateKey: string, passphrase?: string | undefined | null): Cred
+  /**
+   * Create a new plain-text username and password credential object.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static userpassPlaintext(username: string, password: string): Cred;
+   * }
+   * ```
+   *
+   * @param {string} username - The username to authenticate.
+   * @param {string} password - The password to authenticate.
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.userpassPlaintext('user', 'password');
+   * ```
+   */
+  static userpassPlaintext(username: string, password: string): Cred
+  /**
+   * Attempt to read `credential.helper` according to gitcredentials(7).
+   *
+   * This function will attempt to parse the user's `credential.helper` configuration,
+   * invoke the necessary processes, and read off what the username/password should be
+   * for a particular URL. The returned credential will be a username/password credential
+   * if successful.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static credentialHelper(
+   *     config: Config,
+   *     url: string,
+   *     username?: string | null | undefined,
+   *   ): Cred;
+   * }
+   * ```
+   *
+   * @param {Config} config - Git configuration to read `credential.helper` from.
+   * @param {string} url - The URL to get credentials for.
+   * @param {string | null | undefined} [username] - Optional username hint.
+   * @returns {Cred} A new Cred instance containing the username/password from the helper.
+   * @throws Throws error if the helper fails or no credential is found.
+   *
+   * @example
+   *
+   * ```ts
+   * import { openRepository, Cred } from 'es-git';
+   *
+   * const repo = await openRepository('.');
+   * const config = repo.config();
+   * const cred = Cred.credentialHelper(config, 'https://github.com/user/repo');
+   * ```
+   */
+  static credentialHelper(config: Config, url: string, username?: string | undefined | null): Cred
+  /**
+   * Create a credential to specify a username.
+   *
+   * This is used with SSH authentication to query for the username if none is specified in the URL.
+   *
+   * @category Cred
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   static username(username: string): Cred;
+   * }
+   * ```
+   *
+   * @param {string} username - The username to authenticate.
+   * @returns {Cred} A new Cred instance.
+   * @throws Throws error if the credential cannot be created.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.username('git');
+   * ```
+   */
+  static username(username: string): Cred
+  /**
+   * Check whether a credential object contains username information.
+   *
+   * @category Cred/Methods
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   hasUsername(): boolean;
+   * }
+   * ```
+   *
+   * @returns {boolean} Returns `true` if this credential contains username information.
+   */
+  hasUsername(): boolean
+  /**
+   * Return the type of credentials that this object represents.
+   *
+   * @category Cred/Methods
+   *
+   * @signature
+   * ```ts
+   * class Cred {
+   *   credtype(): CredType;
+   * }
+   * ```
+   *
+   * @returns {CredType} The type of this credential.
+   *
+   * @example
+   *
+   * ```ts
+   * import { Cred } from 'es-git';
+   *
+   * const cred = Cred.userpassPlaintext('user', 'password');
+   * console.log(cred.credtype()); // 'UserpassPlaintext'
+   * ```
+   */
+  credtype(): CredType
+}
+
+/**
  * An iterator over the diffs in a delta.
  *
  * This type extends JavaScript's `Iterator`, and so has the iterator helper
@@ -7044,6 +7301,25 @@ export type CredentialType =  'Default'|
 'SSHKeyFromPath'|
 'SSHKey'|
 'Plain';
+
+/**
+ * - `UserpassPlaintext` : Username and password in plain text.
+ * - `SshKey` : SSH key (from file).
+ * - `SshCustom` : SSH key with custom signature.
+ * - `Default` : Default (e.g. NTLM, Kerberos).
+ * - `SshInteractive` : SSH interactive.
+ * - `Username` : Username only.
+ * - `SshMemory` : SSH key from memory.
+ */
+export declare enum CredType {
+  UserpassPlaintext = 0,
+  SshKey = 1,
+  SshCustom = 2,
+  Default = 3,
+  SshInteractive = 4,
+  Username = 5,
+  SshMemory = 6
+}
 
 export interface DeleteNoteOptions {
   /**
