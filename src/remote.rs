@@ -1,7 +1,7 @@
+use crate::cred::Cred;
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use std::path::Path;
 use std::sync::RwLock;
 
 #[napi(string_enum)]
@@ -76,32 +76,37 @@ pub struct Credential {
   pub password: Option<String>,
 }
 
+impl TryFrom<&Credential> for Cred {
+  type Error = crate::Error;
+
+  fn try_from(cred: &Credential) -> crate::Result<Self> {
+    let username = cred.username.clone().unwrap_or_else(|| "git".to_string());
+    match &cred.r#type {
+      CredentialType::Default => Cred::create_default(),
+      CredentialType::SSHKeyFromAgent => Cred::ssh_key_from_agent(username),
+      CredentialType::SSHKeyFromPath => Cred::ssh_key(
+        username,
+        cred.public_key_path.clone(),
+        cred.private_key_path.clone().unwrap_or_default(),
+        cred.passphrase.clone(),
+      ),
+      CredentialType::SSHKey => Cred::ssh_key_from_memory(
+        username,
+        cred.public_key.clone(),
+        cred.private_key.clone().unwrap_or_default(),
+        cred.passphrase.clone(),
+      ),
+      CredentialType::Plain => Cred::userpass_plaintext(username, cred.password.clone().unwrap_or_default()),
+    }
+  }
+}
+
 impl Credential {
   pub(crate) fn to_git2_cred(&self) -> std::result::Result<git2::Cred, git2::Error> {
-    let fallback = "git".to_string();
-    let cred = match self.r#type {
-      CredentialType::Default => git2::Cred::default(),
-      CredentialType::SSHKeyFromAgent => {
-        git2::Cred::ssh_key_from_agent(self.username.to_owned().unwrap_or(fallback).as_ref())
-      }
-      CredentialType::SSHKeyFromPath => git2::Cred::ssh_key(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
-        self.public_key_path.as_ref().map(Path::new),
-        Path::new(&self.private_key_path.to_owned().unwrap()),
-        self.passphrase.as_ref().map(String::as_ref),
-      ),
-      CredentialType::SSHKey => git2::Cred::ssh_key_from_memory(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
-        self.public_key.as_ref().map(String::as_ref),
-        &self.private_key.to_owned().unwrap(),
-        self.passphrase.as_ref().map(String::as_ref),
-      ),
-      CredentialType::Plain => git2::Cred::userpass_plaintext(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
-        &self.password.to_owned().unwrap(),
-      ),
-    }?;
-    Ok(cred)
+    Cred::try_from(self).map(Into::into).map_err(|e| match e {
+      crate::Error::Git2(g) => g,
+      other => git2::Error::from_str(&other.to_string()),
+    })
   }
 }
 
