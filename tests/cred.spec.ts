@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Cred, CredType, openRepository } from '../index';
-import { useFixture } from './fixtures';
+import { Cred, CredType } from '../index';
 
 describe('cred', () => {
   describe('default()', () => {
@@ -53,11 +52,6 @@ describe('cred', () => {
       expect(cred.credtype()).toBe(CredType.Username);
     });
 
-    it('hasUsername returns true', () => {
-      const cred = Cred.username('git');
-      expect(cred.hasUsername()).toBe(true);
-    });
-
     it('accepts arbitrary username', () => {
       const cred = Cred.username('my-github-user');
       expect(cred.credtype()).toBe(CredType.Username);
@@ -105,8 +99,8 @@ describe('cred', () => {
   });
 
   describe('sshKeyFromMemory()', () => {
-    // Minimal truncated PEM blocks — libgit2 may reject the content but the binding must
-    // accept the string parameters without panicking or type errors.
+    // libgit2 defers key content validation until the credential is actually used during
+    // authentication, so even truncated or invalid PEM does not throw at creation time.
     const DUMMY_PRIVATE_KEY = [
       '-----BEGIN OPENSSH PRIVATE KEY-----',
       'b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW',
@@ -157,29 +151,15 @@ describe('cred', () => {
   });
 
   describe('credentialHelper()', () => {
-    it('returns Cred or throws when no helper is configured', async () => {
-      const p = await useFixture('empty');
-      const repo = await openRepository(p);
-      const config = repo.config();
-      try {
-        const cred = Cred.credentialHelper(config, 'https://example.invalid/repo', null);
-        expect(cred).toBeDefined();
-        expect(cred.credtype()).toBeDefined();
-      } catch (e) {
-        expect(e).toBeDefined();
-      }
+    it('creates credential', () => {
+      const cred = Cred.credentialHelper('https://example.invalid/repo', null);
+      expect(cred).toBeDefined();
+      expect(cred.credtype()).toBe(CredType.UserpassPlaintext);
     });
 
-    it('accepts username hint', async () => {
-      const p = await useFixture('empty');
-      const repo = await openRepository(p);
-      const config = repo.config();
-      try {
-        const cred = Cred.credentialHelper(config, 'https://example.invalid/repo', 'user');
-        expect(cred).toBeDefined();
-      } catch (e) {
-        expect(e).toBeDefined();
-      }
+    it('accepts username hint', () => {
+      const cred = Cred.credentialHelper('https://example.invalid/repo', 'user');
+      expect(cred).toBeDefined();
     });
   });
 
@@ -198,6 +178,32 @@ describe('cred', () => {
 
     it('returns true for sshKey credential', () => {
       expect(Cred.sshKey('git', null, '/path/to/key', null).hasUsername()).toBe(true);
+    });
+
+    it('factory succeeds but hasUsername() throws if ssh-agent is unavailable', () => {
+      // sshKeyFromAgent() itself never throws — it only stores the recipe.
+      // hasUsername() calls to_git2_cred() which queries the agent, and may throw.
+      const cred = Cred.sshKeyFromAgent('git');
+      expect(cred).toBeDefined();
+      try {
+        const result = cred.hasUsername();
+        expect(result).toBe(true);
+      } catch (e) {
+        expect(e).toBeDefined();
+      }
+    });
+
+    it('factory succeeds but hasUsername() throws if credential helper is not configured', () => {
+      // credentialHelper() itself never throws — it only stores url + username hint.
+      // hasUsername() calls to_git2_cred() which runs the helper, and may throw.
+      const cred = Cred.credentialHelper('https://example.invalid/repo', null);
+      expect(cred).toBeDefined();
+      try {
+        const result = cred.hasUsername();
+        expect(result).toBe(true);
+      } catch (e) {
+        expect(e).toBeDefined();
+      }
     });
   });
 

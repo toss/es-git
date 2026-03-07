@@ -622,7 +622,6 @@ module.exports.cloneRepository = nativeBinding.cloneRepository
 module.exports.ConfigLevel = nativeBinding.ConfigLevel
 module.exports.createMailmapFromBuffer = nativeBinding.createMailmapFromBuffer
 module.exports.createSignature = nativeBinding.createSignature
-module.exports.CredentialType = nativeBinding.CredentialType
 module.exports.CredType = nativeBinding.CredType
 module.exports.DeltaType = nativeBinding.DeltaType
 module.exports.DiffFlags = nativeBinding.DiffFlags

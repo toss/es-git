@@ -52,64 +52,6 @@ impl<'a> TryFrom<git2::Refspec<'a>> for Refspec {
   }
 }
 
-#[napi(string_enum)]
-#[derive(Copy, Clone)]
-pub enum CredentialType {
-  Default,
-  SSHKeyFromAgent,
-  SSHKeyFromPath,
-  SSHKey,
-  Plain,
-}
-
-#[napi(object)]
-#[derive(Clone)]
-/// A interface to represent git credentials in libgit2.
-pub struct Credential {
-  pub r#type: CredentialType,
-  pub username: Option<String>,
-  pub public_key_path: Option<String>,
-  pub public_key: Option<String>,
-  pub private_key_path: Option<String>,
-  pub private_key: Option<String>,
-  pub passphrase: Option<String>,
-  pub password: Option<String>,
-}
-
-impl TryFrom<&Credential> for Cred {
-  type Error = crate::Error;
-
-  fn try_from(cred: &Credential) -> crate::Result<Self> {
-    let username = cred.username.clone().unwrap_or_else(|| "git".to_string());
-    match &cred.r#type {
-      CredentialType::Default => Cred::create_default(),
-      CredentialType::SSHKeyFromAgent => Cred::ssh_key_from_agent(username),
-      CredentialType::SSHKeyFromPath => Cred::ssh_key(
-        username,
-        cred.public_key_path.clone(),
-        cred.private_key_path.clone().unwrap_or_default(),
-        cred.passphrase.clone(),
-      ),
-      CredentialType::SSHKey => Cred::ssh_key_from_memory(
-        username,
-        cred.public_key.clone(),
-        cred.private_key.clone().unwrap_or_default(),
-        cred.passphrase.clone(),
-      ),
-      CredentialType::Plain => Cred::userpass_plaintext(username, cred.password.clone().unwrap_or_default()),
-    }
-  }
-}
-
-impl Credential {
-  pub(crate) fn to_git2_cred(&self) -> std::result::Result<git2::Cred, git2::Error> {
-    Cred::try_from(self).map(Into::into).map_err(|e| match e {
-      crate::Error::Git2(g) => g,
-      other => git2::Error::from_str(&other.to_string()),
-    })
-  }
-}
-
 #[napi(object)]
 pub struct ProxyOptions {
   /// Try to auto-detect the proxy from the git configuration.
@@ -203,7 +145,7 @@ impl From<RemoteRedirect> for git2::RemoteRedirect {
 
 #[napi(object)]
 pub struct FetchOptions {
-  pub credential: Option<Credential>,
+  pub credential: Option<Cred>,
   /// Set the proxy options to use for the fetch operation.
   pub proxy: Option<ProxyOptions>,
   /// Set whether to perform a prune after the fetch.
@@ -259,7 +201,8 @@ impl<'a> FetchOptions {
 #[napi(object)]
 /// Options to control the behavior of a git push.
 pub struct PushOptions {
-  pub credential: Option<Credential>,
+  /// Set credential for the push operation.
+  pub credential: Option<Cred>,
   /// Set the proxy options to use for the push operation.
   pub proxy: Option<ProxyOptions>,
   /// If the transport being used to push to the remote requires the creation
@@ -322,7 +265,7 @@ pub struct FetchRemoteOptions {
 
 #[napi(object)]
 pub struct PruneOptions {
-  pub credential: Option<Credential>,
+  pub credential: Option<Cred>,
 }
 
 pub struct FetchRemoteTask {
@@ -418,6 +361,7 @@ impl Task for PruneRemoteTask {
       Some(PruneOptions {
         credential: Some(cred), ..
       }) => {
+        let cred = cred.clone();
         let mut callbacks = git2::RemoteCallbacks::new();
         callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
         Some(callbacks)

@@ -1,4 +1,4 @@
-use crate::config::Config;
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
 
@@ -50,24 +50,93 @@ impl From<u32> for CredType {
   }
 }
 
+/// Stores the parameters needed to construct a `git2::Cred` on demand.
+/// Call `to_git2_cred()` to materialise the credential at the desired point in time.
+#[derive(Clone)]
+pub(crate) enum CredRecipe {
+  Default,
+  SshKeyFromAgent {
+    username: String,
+  },
+  SshKey {
+    username: String,
+    public_key_path: Option<String>,
+    private_key_path: String,
+    passphrase: Option<String>,
+  },
+  SshKeyFromMemory {
+    username: String,
+    public_key: Option<String>,
+    private_key: String,
+    passphrase: Option<String>,
+  },
+  UserpassPlaintext {
+    username: String,
+    password: String,
+  },
+  Username {
+    username: String,
+  },
+  CredentialHelper {
+    url: String,
+    username: Option<String>,
+  },
+}
+
 #[napi]
+#[derive(Clone)]
 /// A structure to represent git credentials in libgit2.
 ///
 /// Create instances via the static factory methods: `default()`, `sshKeyFromAgent()`,
 /// `sshKey()`, `sshKeyFromMemory()`, `userpassPlaintext()`, `username()`, `credentialHelper()`.
 pub struct Cred {
-  pub(crate) inner: git2::Cred,
+  pub(crate) recipe: CredRecipe,
 }
 
-impl From<git2::Cred> for Cred {
-  fn from(inner: git2::Cred) -> Self {
-    Cred { inner }
+// Required so that `Cred` can be used as a field inside `#[napi(object)]` structs (e.g. `FetchOptions`).
+// napi-rs does not auto-generate `FromNapiValue` for `#[napi]` classes, so we implement it manually.
+// Because `Cred: Clone`, we extract the raw pointer via `napi_unwrap` and clone the value.
+impl FromNapiValue for Cred {
+  unsafe fn from_napi_value(env: napi::sys::napi_env, napi_val: napi::sys::napi_value) -> napi::Result<Self> {
+    let mut ptr = std::ptr::null_mut::<std::ffi::c_void>();
+    check_status!(
+      napi::sys::napi_unwrap(env, napi_val, &mut ptr),
+      "Failed to unwrap `Cred` from JS value"
+    )?;
+    Ok((*(ptr as *const Cred)).clone())
   }
 }
 
-impl From<Cred> for git2::Cred {
-  fn from(cred: Cred) -> Self {
-    cred.inner
+// Crate-internal methods: not exposed to JS. Converts the stored recipe into a live `git2::Cred`.
+impl Cred {
+  pub(crate) fn to_git2_cred(&self) -> std::result::Result<git2::Cred, git2::Error> {
+    match &self.recipe {
+      CredRecipe::Default => git2::Cred::default(),
+      CredRecipe::SshKeyFromAgent { username } => git2::Cred::ssh_key_from_agent(username),
+      CredRecipe::SshKey {
+        username,
+        public_key_path,
+        private_key_path,
+        passphrase,
+      } => git2::Cred::ssh_key(
+        username,
+        public_key_path.as_deref().map(Path::new),
+        Path::new(private_key_path),
+        passphrase.as_deref(),
+      ),
+      CredRecipe::SshKeyFromMemory {
+        username,
+        public_key,
+        private_key,
+        passphrase,
+      } => git2::Cred::ssh_key_from_memory(username, public_key.as_deref(), private_key, passphrase.as_deref()),
+      CredRecipe::UserpassPlaintext { username, password } => git2::Cred::userpass_plaintext(username, password),
+      CredRecipe::Username { username } => git2::Cred::username(username),
+      CredRecipe::CredentialHelper { url, username } => {
+        let config = git2::Config::open_default()?;
+        git2::Cred::credential_helper(&config, url, username.as_deref())
+      }
+    }
   }
 }
 
@@ -86,7 +155,6 @@ impl Cred {
   /// ```
   ///
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the credential cannot be created.
   ///
   /// @example
   ///
@@ -95,9 +163,10 @@ impl Cred {
   ///
   /// const cred = Cred.default();
   /// ```
-  pub fn create_default() -> crate::Result<Cred> {
-    let inner = git2::Cred::default().map_err(crate::Error::from)?;
-    Ok(Cred { inner })
+  pub fn create_default() -> Cred {
+    Cred {
+      recipe: CredRecipe::Default,
+    }
   }
 
   #[napi]
@@ -116,7 +185,6 @@ impl Cred {
   ///
   /// @param {string} username - The username to authenticate.
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the ssh-agent is not available or the credential cannot be created.
   ///
   /// @example
   ///
@@ -125,9 +193,10 @@ impl Cred {
   ///
   /// const cred = Cred.sshKeyFromAgent('git');
   /// ```
-  pub fn ssh_key_from_agent(username: String) -> crate::Result<Cred> {
-    let inner = git2::Cred::ssh_key_from_agent(&username)?;
-    Ok(Cred { inner })
+  pub fn ssh_key_from_agent(username: String) -> Cred {
+    Cred {
+      recipe: CredRecipe::SshKeyFromAgent { username },
+    }
   }
 
   #[napi]
@@ -152,7 +221,6 @@ impl Cred {
   /// @param {string} privateKeyPath - Path to the private key file.
   /// @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the key files cannot be read or the credential cannot be created.
   ///
   /// @example
   ///
@@ -166,14 +234,15 @@ impl Cred {
     public_key_path: Option<String>,
     private_key_path: String,
     passphrase: Option<String>,
-  ) -> crate::Result<Cred> {
-    let inner = git2::Cred::ssh_key(
-      &username,
-      public_key_path.as_deref().map(Path::new),
-      Path::new(&private_key_path),
-      passphrase.as_deref(),
-    )?;
-    Ok(Cred { inner })
+  ) -> Cred {
+    Cred {
+      recipe: CredRecipe::SshKey {
+        username,
+        public_key_path,
+        private_key_path,
+        passphrase,
+      },
+    }
   }
 
   #[napi]
@@ -198,7 +267,6 @@ impl Cred {
   /// @param {string} privateKey - The private key content.
   /// @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the key content is invalid or the credential cannot be created.
   ///
   /// @example
   ///
@@ -213,9 +281,15 @@ impl Cred {
     public_key: Option<String>,
     private_key: String,
     passphrase: Option<String>,
-  ) -> crate::Result<Cred> {
-    let inner = git2::Cred::ssh_key_from_memory(&username, public_key.as_deref(), &private_key, passphrase.as_deref())?;
-    Ok(Cred { inner })
+  ) -> Cred {
+    Cred {
+      recipe: CredRecipe::SshKeyFromMemory {
+        username,
+        public_key,
+        private_key,
+        passphrase,
+      },
+    }
   }
 
   #[napi]
@@ -233,7 +307,6 @@ impl Cred {
   /// @param {string} username - The username to authenticate.
   /// @param {string} password - The password to authenticate.
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the credential cannot be created.
   ///
   /// @example
   ///
@@ -242,9 +315,10 @@ impl Cred {
   ///
   /// const cred = Cred.userpassPlaintext('user', 'password');
   /// ```
-  pub fn userpass_plaintext(username: String, password: String) -> crate::Result<Cred> {
-    let inner = git2::Cred::userpass_plaintext(&username, &password)?;
-    Ok(Cred { inner })
+  pub fn userpass_plaintext(username: String, password: String) -> Cred {
+    Cred {
+      recipe: CredRecipe::UserpassPlaintext { username, password },
+    }
   }
 
   #[napi]
@@ -261,31 +335,27 @@ impl Cred {
   /// ```ts
   /// class Cred {
   ///   static credentialHelper(
-  ///     config: Config,
   ///     url: string,
   ///     username?: string | null | undefined,
   ///   ): Cred;
   /// }
   /// ```
   ///
-  /// @param {Config} config - Git configuration to read `credential.helper` from.
   /// @param {string} url - The URL to get credentials for.
   /// @param {string | null | undefined} [username] - Optional username hint.
   /// @returns {Cred} A new Cred instance containing the username/password from the helper.
-  /// @throws Throws error if the helper fails or no credential is found.
   ///
   /// @example
   ///
   /// ```ts
-  /// import { openRepository, Cred } from 'es-git';
+  /// import { Cred } from 'es-git';
   ///
-  /// const repo = await openRepository('.');
-  /// const config = repo.config();
-  /// const cred = Cred.credentialHelper(config, 'https://github.com/user/repo');
+  /// const cred = Cred.credentialHelper('https://github.com/user/repo');
   /// ```
-  pub fn credential_helper(config: &Config, url: String, username: Option<String>) -> crate::Result<Cred> {
-    let inner = git2::Cred::credential_helper(&config.inner, &url, username.as_deref())?;
-    Ok(Cred { inner })
+  pub fn credential_helper(url: String, username: Option<String>) -> Cred {
+    Cred {
+      recipe: CredRecipe::CredentialHelper { url, username },
+    }
   }
 
   #[napi]
@@ -304,7 +374,6 @@ impl Cred {
   ///
   /// @param {string} username - The username to authenticate.
   /// @returns {Cred} A new Cred instance.
-  /// @throws Throws error if the credential cannot be created.
   ///
   /// @example
   ///
@@ -313,9 +382,10 @@ impl Cred {
   ///
   /// const cred = Cred.username('git');
   /// ```
-  pub fn username(username: String) -> crate::Result<Cred> {
-    let inner = git2::Cred::username(&username)?;
-    Ok(Cred { inner })
+  pub fn username(username: String) -> Cred {
+    Cred {
+      recipe: CredRecipe::Username { username },
+    }
   }
 
   #[napi]
@@ -331,8 +401,10 @@ impl Cred {
   /// ```
   ///
   /// @returns {boolean} Returns `true` if this credential contains username information.
-  pub fn has_username(&self) -> bool {
-    self.inner.has_username()
+  ///
+  /// @throws Throws if the underlying resource is no longer available (e.g. key file deleted, credential helper config changed) since the credential was created.
+  pub fn has_username(&self) -> crate::Result<bool> {
+    Ok(self.to_git2_cred()?.has_username())
   }
 
   #[napi]
@@ -358,6 +430,12 @@ impl Cred {
   /// console.log(cred.credtype()); // 'UserpassPlaintext'
   /// ```
   pub fn credtype(&self) -> CredType {
-    self.inner.credtype().into()
+    match &self.recipe {
+      CredRecipe::Default => CredType::Default,
+      CredRecipe::SshKeyFromAgent { .. } | CredRecipe::SshKey { .. } => CredType::SshKey,
+      CredRecipe::SshKeyFromMemory { .. } => CredType::SshMemory,
+      CredRecipe::UserpassPlaintext { .. } | CredRecipe::CredentialHelper { .. } => CredType::UserpassPlaintext,
+      CredRecipe::Username { .. } => CredType::Username,
+    }
   }
 }

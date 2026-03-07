@@ -1089,7 +1089,6 @@ export declare class Cred {
    * ```
    *
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the credential cannot be created.
    *
    * @example
    *
@@ -1116,7 +1115,6 @@ export declare class Cred {
    *
    * @param {string} username - The username to authenticate.
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the ssh-agent is not available or the credential cannot be created.
    *
    * @example
    *
@@ -1149,7 +1147,6 @@ export declare class Cred {
    * @param {string} privateKeyPath - Path to the private key file.
    * @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the key files cannot be read or the credential cannot be created.
    *
    * @example
    *
@@ -1182,7 +1179,6 @@ export declare class Cred {
    * @param {string} privateKey - The private key content.
    * @param {string | null | undefined} [passphrase] - Passphrase for the private key, if any.
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the key content is invalid or the credential cannot be created.
    *
    * @example
    *
@@ -1209,7 +1205,6 @@ export declare class Cred {
    * @param {string} username - The username to authenticate.
    * @param {string} password - The password to authenticate.
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the credential cannot be created.
    *
    * @example
    *
@@ -1234,30 +1229,25 @@ export declare class Cred {
    * ```ts
    * class Cred {
    *   static credentialHelper(
-   *     config: Config,
    *     url: string,
    *     username?: string | null | undefined,
    *   ): Cred;
    * }
    * ```
    *
-   * @param {Config} config - Git configuration to read `credential.helper` from.
    * @param {string} url - The URL to get credentials for.
    * @param {string | null | undefined} [username] - Optional username hint.
    * @returns {Cred} A new Cred instance containing the username/password from the helper.
-   * @throws Throws error if the helper fails or no credential is found.
    *
    * @example
    *
    * ```ts
-   * import { openRepository, Cred } from 'es-git';
+   * import { Cred } from 'es-git';
    *
-   * const repo = await openRepository('.');
-   * const config = repo.config();
-   * const cred = Cred.credentialHelper(config, 'https://github.com/user/repo');
+   * const cred = Cred.credentialHelper('https://github.com/user/repo');
    * ```
    */
-  static credentialHelper(config: Config, url: string, username?: string | undefined | null): Cred
+  static credentialHelper(url: string, username?: string | undefined | null): Cred
   /**
    * Create a credential to specify a username.
    *
@@ -1274,7 +1264,6 @@ export declare class Cred {
    *
    * @param {string} username - The username to authenticate.
    * @returns {Cred} A new Cred instance.
-   * @throws Throws error if the credential cannot be created.
    *
    * @example
    *
@@ -1298,6 +1287,8 @@ export declare class Cred {
    * ```
    *
    * @returns {boolean} Returns `true` if this credential contains username information.
+   *
+   * @throws Throws if the underlying resource is no longer available (e.g. key file deleted, credential helper config changed) since the credential was created.
    */
   hasUsername(): boolean
   /**
@@ -7453,36 +7444,6 @@ export interface CreateTagOptions {
   force?: boolean
 }
 
-/** A interface to represent git credentials in libgit2. */
-export type Credential = {
- type: 'Default';
-} | {
- type: 'SSHKeyFromAgent';
- username?: string;
-} | {
- type: 'SSHKeyFromPath';
- username?: string;
- publicKeyPath?: string;
- privateKeyPath: string;
- passphrase?: string;
-} | {
- type: 'SSHKey';
- username?: string;
- publicKey?: string;
- privateKey: string;
- passphrase?: string;
-} | {
- type: 'Plain';
- username?: string;
- password: string;
-};
-
-export type CredentialType =  'Default'|
-'SSHKeyFromAgent'|
-'SSHKeyFromPath'|
-'SSHKey'|
-'Plain';
-
 /**
  * - `UserpassPlaintext` : Username and password in plain text.
  * - `SshKey` : SSH key (from file).
@@ -7911,7 +7872,7 @@ export interface ExtractedSignature {
 }
 
 export interface FetchOptions {
-  credential?: Credential
+  credential?: Cred
   /** Set the proxy options to use for the fetch operation. */
   proxy?: ProxyOptions
   /** Set whether to perform a prune after the fetch. */
@@ -8699,12 +8660,13 @@ export interface ProxyOptions {
 }
 
 export interface PruneOptions {
-  credential?: Credential
+  credential?: Cred
 }
 
 /** Options to control the behavior of a git push. */
 export interface PushOptions {
-  credential?: Credential
+  /** Set credential for the push operation. */
+  credential?: Cred
   /** Set the proxy options to use for the push operation. */
   proxy?: ProxyOptions
   /**
