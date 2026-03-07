@@ -10,6 +10,7 @@ pub mod checkout;
 pub mod cherrypick;
 pub mod commit;
 pub mod config;
+pub mod cred;
 pub mod describe;
 pub mod diff;
 mod error;
