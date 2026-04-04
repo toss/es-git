@@ -331,7 +331,8 @@ impl Reference {
   #[napi]
   /// Return the peeled OID target of this reference.
   ///
-  /// This peeled OID only applies to direct references that point to a hard.
+  /// This peeled OID only applies to direct references that point to a hard
+  /// Tag object: it is the result of peeling such Tag.
   ///
   /// @category Reference/Methods
   /// @signature
