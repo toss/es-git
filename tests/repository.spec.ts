@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
@@ -56,6 +56,37 @@ describe('Repository', () => {
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.state()).toBe('Clean');
   });
+
+  it('clone from remote with callbacks', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
+    const p = await makeTmpDir('clone');
+    const transferProgress = vi.fn().mockImplementation(() => true);
+    await cloneRepository('https://github.com/seokju-na/dummy-repo', p, {
+      fetch: {
+        callbacks: {
+          transferProgress,
+        },
+      },
+    });
+    expect(transferProgress).toHaveBeenCalled();
+  });
+
+  it(
+    'reject clone when transfer progress calback returns `false`',
+    { skip: isTarget('linux', undefined, 'gnu') },
+    async () => {
+      const p = await makeTmpDir('clone');
+      const transferProgress = vi.fn().mockImplementation(() => false);
+      await expect(
+        cloneRepository('https://github.com/seokju-na/dummy-repo', p, {
+          fetch: {
+            callbacks: {
+              transferProgress,
+            },
+          },
+        })
+      ).rejects.toThrowError(/progress callback returned -1/);
+    }
+  );
 
   it('get head', async () => {
     const p = await useFixture('commits');

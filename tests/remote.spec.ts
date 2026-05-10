@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { cloneRepository, openRepository } from '../index';
+import { describe, expect, it, vi } from 'vitest';
+import { cloneRepository, initRepository, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
@@ -49,5 +49,75 @@ describe('remote', () => {
     const remote = repo.getRemote('origin');
     const branch = await remote.defaultBranch();
     expect(branch).toEqual('refs/heads/main');
+  });
+
+  it('push remote to local bare repository', async () => {
+    const localPath = await useFixture('commits');
+    const remotePath = await makeTmpDir('remote-bare');
+    const localRepo = await openRepository(localPath);
+    const remoteRepo = await initRepository(remotePath, { bare: true });
+
+    const remote = localRepo.createRemote('origin', remotePath);
+    const localHead = localRepo.head().target()!;
+
+    await remote.push(['refs/heads/main:refs/heads/main']);
+
+    expect(remoteRepo.getReference('refs/heads/main').target()).toEqual(localHead);
+  });
+
+  it('push remote with explicit refspec', async () => {
+    const localPath = await useFixture('commits');
+    const remotePath = await makeTmpDir('remote-bare');
+    const localRepo = await openRepository(localPath);
+    const remoteRepo = await initRepository(remotePath, { bare: true });
+
+    const remote = localRepo.createRemote('origin', remotePath);
+    const localHead = localRepo.head().target()!;
+
+    await remote.push(['refs/heads/main:refs/heads/pushed-main']);
+
+    expect(remoteRepo.getReference('refs/heads/pushed-main').target()).toEqual(localHead);
+  });
+
+  it('push remote with callbacks', async () => {
+    const localPath = await useFixture('commits');
+    const remotePath = await makeTmpDir('remote-bare');
+    const localRepo = await openRepository(localPath);
+    const remoteRepo = await initRepository(remotePath, { bare: true });
+
+    const remote = localRepo.createRemote('origin', remotePath);
+    const localHead = localRepo.head().target()!;
+    const updateTips = vi.fn().mockImplementation(() => true);
+    const pushUpdateReference = vi.fn();
+    const pushTransferProgress = vi.fn();
+    const pushNegotiation = vi.fn();
+    const packProgress = vi.fn();
+
+    await remote.push(['refs/heads/main:refs/heads/main'], {
+      callbacks: {
+        updateTips,
+        pushUpdateReference,
+        pushTransferProgress,
+        pushNegotiation,
+        packProgress,
+      },
+    });
+
+    expect(remoteRepo.getReference('refs/heads/main').target()).toEqual(localHead);
+    expect(updateTips).toHaveBeenCalledWith(
+      'refs/remotes/origin/main',
+      '0000000000000000000000000000000000000000',
+      localHead
+    );
+    expect(pushUpdateReference).toHaveBeenCalledWith('refs/heads/main', null);
+    expect(pushNegotiation).toHaveBeenCalledWith([
+      {
+        src: '0000000000000000000000000000000000000000',
+        dst: localHead,
+        srcRefname: 'refs/heads/main',
+        dstRefname: 'refs/heads/main',
+      },
+    ]);
+    expect(packProgress).toHaveBeenCalled();
   });
 });

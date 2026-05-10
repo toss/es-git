@@ -1,3 +1,4 @@
+use crate::js::{JsCallback, JsCallbackExt};
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -197,8 +198,130 @@ impl From<RemoteRedirect> for git2::RemoteRedirect {
 }
 
 #[napi(object)]
+pub struct RemoteTransferProgress {
+  pub total_objects: u32,
+  pub indexed_objects: u32,
+  pub received_objects: u32,
+  pub local_objects: u32,
+  pub total_deltas: u32,
+  pub indexed_deltas: u32,
+  pub received_bytes: u32,
+}
+
+impl From<git2::Progress<'_>> for RemoteTransferProgress {
+  fn from(progress: git2::Progress<'_>) -> Self {
+    Self {
+      total_objects: progress.total_objects() as u32,
+      indexed_objects: progress.indexed_objects() as u32,
+      received_objects: progress.received_objects() as u32,
+      local_objects: progress.local_objects() as u32,
+      total_deltas: progress.total_deltas() as u32,
+      indexed_deltas: progress.indexed_deltas() as u32,
+      received_bytes: progress.received_bytes() as u32,
+    }
+  }
+}
+
+#[napi(string_enum = "snake_case")]
+pub enum PackBuilderStage {
+  AddingObjects,
+  Deltafication,
+}
+
+impl From<git2::PackBuilderStage> for PackBuilderStage {
+  fn from(stage: git2::PackBuilderStage) -> Self {
+    match stage {
+      git2::PackBuilderStage::AddingObjects => PackBuilderStage::AddingObjects,
+      git2::PackBuilderStage::Deltafication => PackBuilderStage::Deltafication,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct PushUpdate {
+  /// The source name of the reference, or `null` if it is not valid UTF-8.
+  pub src_refname: Option<String>,
+  /// The name of the reference to update on the server, or `null` if it is not valid UTF-8.
+  pub dst_refname: Option<String>,
+  /// The current target oid of the reference.
+  pub src: String,
+  /// The new target oid for the reference.
+  pub dst: String,
+}
+
+impl From<&git2::PushUpdate<'_>> for PushUpdate {
+  fn from(update: &git2::PushUpdate<'_>) -> Self {
+    let src_refname = std::str::from_utf8(update.src_refname_bytes())
+      .ok()
+      .map(|x| x.to_string());
+    let dst_refname = std::str::from_utf8(update.dst_refname_bytes())
+      .ok()
+      .map(|x| x.to_string());
+    Self {
+      src_refname,
+      dst_refname,
+      src: update.src().to_string(),
+      dst: update.dst().to_string(),
+    }
+  }
+}
+
+pub type TransferProgress = JsCallback<RemoteTransferProgress, bool>;
+pub type SidebandProgress = JsCallback<Uint8Array, bool>;
+pub type UpdateTips = JsCallback<FnArgs<(String, String, String)>, bool>;
+pub type PushUpdateReference = JsCallback<FnArgs<(String, Option<String>)>>;
+pub type PushTransferProgress = JsCallback<FnArgs<(u32, u32, u32)>>;
+pub type PackProgress = JsCallback<FnArgs<(PackBuilderStage, u32, u32)>>;
+pub type PushNegotiation = JsCallback<Vec<PushUpdate>>;
+
+#[napi(object, object_to_js = false)]
+pub struct RemoteCallbacks {
+  /// Called with transfer progress during fetch.
+  ///
+  /// Return `false` to cancel the operation.
+  #[napi(ts_type = "(data: RemoteTransferProgress) => boolean")]
+  pub transfer_progress: Option<TransferProgress>,
+  /// Textual progress from the remote.
+  ///
+  /// Text sent over the progress side-band will be passed to this function
+  /// (this is the 'counting objects' output).
+  #[napi(ts_type = "(data: Uint8Array) => boolean")]
+  pub sideband_progress: Option<SidebandProgress>,
+  /// Each time a reference is updated locally, the callback will be called
+  /// with information about it.
+  #[napi(ts_type = "(refname: string, oldId: string, newId: string) => boolean")]
+  pub update_tips: Option<UpdateTips>,
+  // TODO: certificate_check
+  /// Set a callback to get invoked for each updated reference on a push.
+  ///
+  /// The first argument to the callback is the name of the reference and the
+  /// second is a status message sent by the server. If the status is not `null`
+  /// then the push was rejected.
+  #[napi(ts_type = "(refname: string, status: string | null) => void")]
+  pub push_update_reference: Option<PushUpdateReference>,
+  /// The callback through which progress of push transfer is monitored
+  #[napi(ts_type = "(current: number, total: number, bytes: number) => void")]
+  pub push_transfer_progress: Option<PushTransferProgress>,
+  /// Function to call with progress information during pack building.
+  ///
+  /// Be aware that this is called inline with pack building operations,
+  /// so performance may be affected.
+  #[napi(ts_type = "(stage: PackBuilderStage, current: number, total: number) => void")]
+  pub pack_progress: Option<PackProgress>,
+  /// The callback is called once between the negotiation step and the upload.
+  ///
+  /// The argument to the callback is a slice containing the updates which
+  /// will be sent as commands to the destination.
+  ///
+  /// TODO: Improved to allow throwing git2 errors
+  #[napi(ts_type = "(update: PushUpdate[]) => void")]
+  pub push_negotiation: Option<PushNegotiation>,
+}
+
+#[napi(object, object_to_js = false)]
 pub struct FetchOptions {
   pub credential: Option<Credential>,
+  pub callbacks: Option<RemoteCallbacks>,
   /// Set the proxy options to use for the fetch operation.
   pub proxy: Option<ProxyOptions>,
   /// Set whether to perform a prune after the fetch.
@@ -221,12 +344,78 @@ pub struct FetchOptions {
   pub custom_headers: Option<Vec<String>>,
 }
 
+trait ApplyRemoteCallbacks {
+  fn apply(&mut self, cbs: &RemoteCallbacks) -> &mut Self;
+}
+
+impl<'a> ApplyRemoteCallbacks for git2::RemoteCallbacks<'a> {
+  fn apply(&mut self, cbs: &RemoteCallbacks) -> &mut Self {
+    if let Some(cb) = &cbs.transfer_progress {
+      self.transfer_progress({
+        let cb = cb.clone();
+        move |progress| cb.invoke(RemoteTransferProgress::from(progress)).unwrap_or(false)
+      });
+    }
+    if let Some(cb) = &cbs.sideband_progress {
+      self.sideband_progress({
+        let cb = cb.clone();
+        move |data| cb.invoke(Uint8Array::from(data)).unwrap_or(false)
+      });
+    }
+    if let Some(cb) = &cbs.update_tips {
+      self.update_tips({
+        let cb = cb.clone();
+        move |refname, old_oid, new_oid| {
+          let refname = refname.to_string();
+          let old_oid = old_oid.to_string();
+          let new_oid = new_oid.to_string();
+          cb.invoke((refname, old_oid, new_oid).into()).unwrap_or(false)
+        }
+      });
+    }
+    if let Some(cb) = &cbs.push_update_reference {
+      self.push_update_reference({
+        let cb = cb.clone();
+        move |refname, status| {
+          let _ = cb.invoke((refname.to_string(), status.map(|x| x.to_string())).into());
+          Ok(())
+        }
+      });
+    }
+    if let Some(cb) = &cbs.push_transfer_progress {
+      let cb = cb.clone();
+      self.push_transfer_progress(move |current, total, bytes| {
+        let _ = cb.invoke((current as u32, total as u32, bytes as u32).into());
+      });
+    }
+    if let Some(cb) = &cbs.pack_progress {
+      let cb = cb.clone();
+      self.pack_progress(move |stage, current, total| {
+        let _ = cb.invoke((stage.into(), current as u32, total as u32).into());
+      });
+    }
+    if let Some(cb) = &cbs.push_negotiation {
+      let cb = cb.clone();
+      self.push_negotiation(move |update| {
+        let updates = update.iter().map(PushUpdate::from).collect::<Vec<_>>();
+        let _ = cb.invoke(updates);
+        Ok(())
+      });
+    }
+    self
+  }
+}
+
 impl<'a> FetchOptions {
   pub(crate) fn to_git2_fetch_options(&'a self) -> git2::FetchOptions<'a> {
     let mut fetch = git2::FetchOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
+      // TODO: support credential callback
       callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+    }
+    if let Some(cbs) = &self.callbacks {
+      callbacks.apply(cbs);
     }
     fetch.remote_callbacks(callbacks);
     if let Some(proxy) = &self.proxy {
@@ -251,10 +440,11 @@ impl<'a> FetchOptions {
   }
 }
 
-#[napi(object)]
+#[napi(object, object_to_js = false)]
 /// Options to control the behavior of a git push.
 pub struct PushOptions {
   pub credential: Option<Credential>,
+  pub callbacks: Option<RemoteCallbacks>,
   /// Set the proxy options to use for the push operation.
   pub proxy: Option<ProxyOptions>,
   /// If the transport being used to push to the remote requires the creation
@@ -281,7 +471,11 @@ impl<'a> PushOptions {
     let mut push = git2::PushOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
+      // TODO: support credential callback
       callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+    }
+    if let Some(cbs) = &self.callbacks {
+      callbacks.apply(cbs);
     }
     push.remote_callbacks(callbacks);
     if let Some(proxy) = &self.proxy {
@@ -308,7 +502,7 @@ pub struct CreateRemoteOptions {
   pub fetch_refspec: Option<String>,
 }
 
-#[napi(object)]
+#[napi(object, object_to_js = false)]
 pub struct FetchRemoteOptions {
   /// Options which can be specified to various fetch operations.
   pub fetch: Option<FetchOptions>,
