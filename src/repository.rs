@@ -210,7 +210,7 @@ impl RepositoryOpenOptions {
   }
 }
 
-#[napi(object)]
+#[napi(object, object_to_js = false)]
 pub struct RepositoryCloneOptions {
   /// Indicate whether the repository will be cloned as a bare repository or
   /// not.

@@ -650,6 +650,7 @@ module.exports.openDefaultConfig = nativeBinding.openDefaultConfig
 module.exports.openRepository = nativeBinding.openRepository
 module.exports.openRepositoryFromWorktree = nativeBinding.openRepositoryFromWorktree
 module.exports.openWorktreeFromRepository = nativeBinding.openWorktreeFromRepository
+module.exports.PackBuilderStage = nativeBinding.PackBuilderStage
 module.exports.parseConfigBool = nativeBinding.parseConfigBool
 module.exports.parseConfigI32 = nativeBinding.parseConfigI32
 module.exports.parseConfigI64 = nativeBinding.parseConfigI64
