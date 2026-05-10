@@ -8612,24 +8612,20 @@ export interface Refspec {
 }
 
 export interface RemoteCallbacks {
-  /**
-   * Called with transfer progress during fetch.
-   *
-   * Return `false` to cancel the operation.
-   */
-  transferProgress?: (data: RemoteTransferProgress) => boolean
+  /** Called with transfer progress during fetch. */
+  transferProgress?: (data: RemoteTransferProgress) => void
   /**
    * Textual progress from the remote.
    *
    * Text sent over the progress side-band will be passed to this function
    * (this is the 'counting objects' output).
    */
-  sidebandProgress?: (data: Uint8Array) => boolean
+  sidebandProgress?: (data: Uint8Array) => void
   /**
    * Each time a reference is updated locally, the callback will be called
    * with information about it.
    */
-  updateTips?: (refname: string, oldId: string, newId: string) => boolean
+  updateTips?: (refname: string, oldId: string, newId: string) => void
   /**
    * Set a callback to get invoked for each updated reference on a push.
    *
@@ -8652,8 +8648,6 @@ export interface RemoteCallbacks {
    *
    * The argument to the callback is a slice containing the updates which
    * will be sent as commands to the destination.
-   *
-   * TODO: Improved to allow throwing git2 errors
    */
   pushNegotiation?: (update: PushUpdate[]) => void
 }

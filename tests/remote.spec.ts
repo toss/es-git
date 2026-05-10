@@ -87,7 +87,7 @@ describe('remote', () => {
 
     const remote = localRepo.createRemote('origin', remotePath);
     const localHead = localRepo.head().target()!;
-    const updateTips = vi.fn().mockImplementation(() => true);
+    const updateTips = vi.fn();
     const pushUpdateReference = vi.fn();
     const pushTransferProgress = vi.fn();
     const pushNegotiation = vi.fn();
@@ -104,20 +104,22 @@ describe('remote', () => {
     });
 
     expect(remoteRepo.getReference('refs/heads/main').target()).toEqual(localHead);
-    expect(updateTips).toHaveBeenCalledWith(
-      'refs/remotes/origin/main',
-      '0000000000000000000000000000000000000000',
-      localHead
-    );
-    expect(pushUpdateReference).toHaveBeenCalledWith('refs/heads/main', null);
-    expect(pushNegotiation).toHaveBeenCalledWith([
-      {
-        src: '0000000000000000000000000000000000000000',
-        dst: localHead,
-        srcRefname: 'refs/heads/main',
-        dstRefname: 'refs/heads/main',
-      },
-    ]);
-    expect(packProgress).toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(updateTips).toHaveBeenCalledWith(
+        'refs/remotes/origin/main',
+        '0000000000000000000000000000000000000000',
+        localHead
+      );
+      expect(pushUpdateReference).toHaveBeenCalledWith('refs/heads/main', null);
+      expect(pushNegotiation).toHaveBeenCalledWith([
+        {
+          src: '0000000000000000000000000000000000000000',
+          dst: localHead,
+          srcRefname: 'refs/heads/main',
+          dstRefname: 'refs/heads/main',
+        },
+      ]);
+      expect(packProgress).toHaveBeenCalled();
+    });
   });
 });

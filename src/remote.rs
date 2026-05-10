@@ -266,9 +266,9 @@ impl From<&git2::PushUpdate<'_>> for PushUpdate {
   }
 }
 
-pub type TransferProgress = JsCallback<RemoteTransferProgress, bool>;
-pub type SidebandProgress = JsCallback<Uint8Array, bool>;
-pub type UpdateTips = JsCallback<FnArgs<(String, String, String)>, bool>;
+pub type TransferProgress = JsCallback<RemoteTransferProgress>;
+pub type SidebandProgress = JsCallback<Uint8Array>;
+pub type UpdateTips = JsCallback<FnArgs<(String, String, String)>>;
 pub type PushUpdateReference = JsCallback<FnArgs<(String, Option<String>)>>;
 pub type PushTransferProgress = JsCallback<FnArgs<(u32, u32, u32)>>;
 pub type PackProgress = JsCallback<FnArgs<(PackBuilderStage, u32, u32)>>;
@@ -277,19 +277,17 @@ pub type PushNegotiation = JsCallback<Vec<PushUpdate>>;
 #[napi(object, object_to_js = false)]
 pub struct RemoteCallbacks {
   /// Called with transfer progress during fetch.
-  ///
-  /// Return `false` to cancel the operation.
-  #[napi(ts_type = "(data: RemoteTransferProgress) => boolean")]
+  #[napi(ts_type = "(data: RemoteTransferProgress) => void")]
   pub transfer_progress: Option<TransferProgress>,
   /// Textual progress from the remote.
   ///
   /// Text sent over the progress side-band will be passed to this function
   /// (this is the 'counting objects' output).
-  #[napi(ts_type = "(data: Uint8Array) => boolean")]
+  #[napi(ts_type = "(data: Uint8Array) => void")]
   pub sideband_progress: Option<SidebandProgress>,
   /// Each time a reference is updated locally, the callback will be called
   /// with information about it.
-  #[napi(ts_type = "(refname: string, oldId: string, newId: string) => boolean")]
+  #[napi(ts_type = "(refname: string, oldId: string, newId: string) => void")]
   pub update_tips: Option<UpdateTips>,
   // TODO: certificate_check
   /// Set a callback to get invoked for each updated reference on a push.
@@ -312,8 +310,6 @@ pub struct RemoteCallbacks {
   ///
   /// The argument to the callback is a slice containing the updates which
   /// will be sent as commands to the destination.
-  ///
-  /// TODO: Improved to allow throwing git2 errors
   #[napi(ts_type = "(update: PushUpdate[]) => void")]
   pub push_negotiation: Option<PushNegotiation>,
 }
@@ -353,13 +349,19 @@ impl<'a> ApplyRemoteCallbacks for git2::RemoteCallbacks<'a> {
     if let Some(cb) = &cbs.transfer_progress {
       self.transfer_progress({
         let cb = cb.clone();
-        move |progress| cb.invoke(RemoteTransferProgress::from(progress)).unwrap_or(false)
+        move |progress| {
+          let _ = cb.invoke(RemoteTransferProgress::from(progress));
+          true
+        }
       });
     }
     if let Some(cb) = &cbs.sideband_progress {
       self.sideband_progress({
         let cb = cb.clone();
-        move |data| cb.invoke(Uint8Array::from(data)).unwrap_or(false)
+        move |data| {
+          let _ = cb.invoke(Uint8Array::from(data));
+          true
+        }
       });
     }
     if let Some(cb) = &cbs.update_tips {
@@ -369,7 +371,8 @@ impl<'a> ApplyRemoteCallbacks for git2::RemoteCallbacks<'a> {
           let refname = refname.to_string();
           let old_oid = old_oid.to_string();
           let new_oid = new_oid.to_string();
-          cb.invoke((refname, old_oid, new_oid).into()).unwrap_or(false)
+          let _ = cb.invoke((refname, old_oid, new_oid).into());
+          true
         }
       });
     }
