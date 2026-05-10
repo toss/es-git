@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RevparseMode, openRepository, revparseModeContains } from '../index';
+import { openRepository, RevparseMode, revparseModeContains } from '../index';
 import { useFixture } from './fixtures';
 
 describe('revparse', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ObjectType, isValidTagName, openRepository } from '../index';
+import { isValidTagName, openRepository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('tag', () => {

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { type Repository, openRepository, openRepositoryFromWorktree, openWorktreeFromRepository } from '../index';
+import { openRepository, openRepositoryFromWorktree, openWorktreeFromRepository, type Repository } from '../index';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
@@ -77,8 +77,8 @@ describe('worktree', () => {
   });
 
   it('list worktrees', async () => {
-    const worktree1 = repo.worktree('worktree1', path.join(baseWorktreePath, 'wt1-dir'));
-    const worktree2 = repo.worktree('worktree2', path.join(baseWorktreePath, 'wt2-dir'));
+    repo.worktree('worktree1', path.join(baseWorktreePath, 'wt1-dir'));
+    repo.worktree('worktree2', path.join(baseWorktreePath, 'wt2-dir'));
 
     const worktrees = repo.worktrees();
     expect(worktrees).toContain('worktree1');

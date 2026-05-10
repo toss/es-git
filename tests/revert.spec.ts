@@ -268,7 +268,7 @@ describe('revert', () => {
       committer: signature,
       parents: [baseOid],
     });
-    const aCommit = repo.getCommit(aOid);
+    repo.getCommit(aOid);
 
     repo.createBranch('branch-b', baseCommit);
     repo.setHead('refs/heads/branch-b');
@@ -284,7 +284,7 @@ describe('revert', () => {
       committer: signature,
       parents: [baseOid],
     });
-    const bCommit = repo.getCommit(bOid);
+    repo.getCommit(bOid);
 
     repo.setHead('refs/heads/branch-a');
     repo.checkoutHead({ force: true });
@@ -653,7 +653,7 @@ describe('revert', () => {
       committer: signature,
       parents: [repo.head().target()!],
     });
-    const firstCommit = repo.getCommit(firstOid);
+    repo.getCommit(firstOid);
 
     await fs.writeFile(path.join(p, 'manual.txt'), 'changed');
     index = repo.index();
