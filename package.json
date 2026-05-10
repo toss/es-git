@@ -13,7 +13,7 @@
     "url": "https://github.com/toss/es-git.git"
   },
   "license": "MIT",
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.14.1",
   "napi": {
     "binaryName": "es-git",
     "targets": [
