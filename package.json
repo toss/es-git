@@ -44,7 +44,7 @@
     "check:fix": "biome check --write --unsafe"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "2.4.15",
     "@napi-rs/cli": "3.4.1",
     "@types/jscodeshift": "^0.12.0",
     "@types/node": "^22.8.4",
