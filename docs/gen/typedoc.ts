@@ -8,8 +8,19 @@ const ReflectionKind = {
   TypeAlias: 2097152,
 } as const;
 
+function stripTodoComments(text: string): string | undefined {
+  const stripped = text
+    .split('\n')
+    .filter(line => !/^\s*TODO\b:?\s*/i.test(line))
+    .join('\n')
+    .trim();
+
+  return stripped.length > 0 ? stripped : undefined;
+}
+
 function getSummary(reflection: Reflection): string | undefined {
-  return reflection.comment?.summary.map(x => x.text).join('');
+  const summary = reflection.comment?.summary.map(x => x.text).join('');
+  return summary != null ? stripTodoComments(summary) : undefined;
 }
 
 function getSignature(reflection: SignatureReflection): string {
@@ -111,7 +122,7 @@ function getReturnsDoc(reflection: SignatureReflection): ReturnsDoc | undefined 
   const child = getChildReflectionOfParameter(reflection.type);
   const children =
     child != null && isDeclarationReflection(child) ? (child.children?.filter(isDeclarationReflection) ?? []) : [];
-  const returnsText = returnsTag.content.map(x => x.text).join(' ');
+  const returnsText = stripTodoComments(returnsTag.content.map(x => x.text).join(' '));
   const doc: ReturnsDoc = {
     type: formatType(reflection.type),
     description: returnsText,
