@@ -7637,6 +7637,7 @@ export interface ExtractedSignature {
 
 export interface FetchOptions {
   credential?: Credential
+  callbacks?: RemoteCallbacks
   /** Set the proxy options to use for the fetch operation. */
   proxy?: ProxyOptions
   /** Set whether to perform a prune after the fetch. */
@@ -8363,6 +8364,9 @@ export declare function openRepositoryFromWorktree(worktree: Worktree): Reposito
  */
 export declare function openWorktreeFromRepository(repo: Repository): Worktree
 
+export type PackBuilderStage =  'adding_objects'|
+'deltafication';
+
 /**
  * Parse a string as a bool.
  *
@@ -8430,6 +8434,7 @@ export interface PruneOptions {
 /** Options to control the behavior of a git push. */
 export interface PushOptions {
   credential?: Credential
+  callbacks?: RemoteCallbacks
   /** Set the proxy options to use for the push operation. */
   proxy?: ProxyOptions
   /**
@@ -8453,6 +8458,17 @@ export interface PushOptions {
   customHeaders?: Array<string>
   /** Set "push options" to deliver to the remote. */
   remoteOptions?: Array<string>
+}
+
+export interface PushUpdate {
+  /** The source name of the reference, or `null` if it is not valid UTF-8. */
+  srcRefname?: string
+  /** The name of the reference to update on the server, or `null` if it is not valid UTF-8. */
+  dstRefname?: string
+  /** The current target oid of the reference. */
+  src: string
+  /** The new target oid for the reference. */
+  dst: string
 }
 
 export interface RebaseCommitOptions {
@@ -8595,6 +8611,47 @@ export interface Refspec {
   force: boolean
 }
 
+export interface RemoteCallbacks {
+  /** Called with transfer progress during fetch. */
+  transferProgress?: (data: RemoteTransferProgress) => void
+  /**
+   * Textual progress from the remote.
+   *
+   * Text sent over the progress side-band will be passed to this function
+   * (this is the 'counting objects' output).
+   */
+  sidebandProgress?: (data: Uint8Array) => void
+  /**
+   * Each time a reference is updated locally, the callback will be called
+   * with information about it.
+   */
+  updateTips?: (refname: string, oldId: string, newId: string) => void
+  /**
+   * Set a callback to get invoked for each updated reference on a push.
+   *
+   * The first argument to the callback is the name of the reference and the
+   * second is a status message sent by the server. If the status is not `null`
+   * then the push was rejected.
+   */
+  pushUpdateReference?: (refname: string, status: string | null) => void
+  /** The callback through which progress of push transfer is monitored */
+  pushTransferProgress?: (current: number, total: number, bytes: number) => void
+  /**
+   * Function to call with progress information during pack building.
+   *
+   * Be aware that this is called inline with pack building operations,
+   * so performance may be affected.
+   */
+  packProgress?: (stage: PackBuilderStage, current: number, total: number) => void
+  /**
+   * The callback is called once between the negotiation step and the upload.
+   *
+   * The argument to the callback is a slice containing the updates which
+   * will be sent as commands to the destination.
+   */
+  pushNegotiation?: (update: PushUpdate[]) => void
+}
+
 /**
  * - `None` : Do not follow any off-site redirects at any stage of the fetch or push.
  * - `Initial` : Allow off-site redirects only upon the initial request. This is the default.
@@ -8603,6 +8660,16 @@ export interface Refspec {
 export type RemoteRedirect =  'None'|
 'Initial'|
 'All';
+
+export interface RemoteTransferProgress {
+  totalObjects: number
+  indexedObjects: number
+  receivedObjects: number
+  localObjects: number
+  totalDeltas: number
+  indexedDeltas: number
+  receivedBytes: number
+}
 
 export interface RenameReferenceOptions {
   /**

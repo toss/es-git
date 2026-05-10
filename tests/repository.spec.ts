@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
@@ -55,6 +55,21 @@ describe('Repository', () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     expect(repo.state()).toBe('Clean');
+  });
+
+  it('clone from remote with callbacks', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
+    const p = await makeTmpDir('clone');
+    const transferProgress = vi.fn().mockImplementation(() => true);
+    await cloneRepository('https://github.com/seokju-na/dummy-repo', p, {
+      fetch: {
+        callbacks: {
+          transferProgress,
+        },
+      },
+    });
+    await vi.waitFor(() => {
+      expect(transferProgress).toHaveBeenCalled();
+    });
   });
 
   it('get head', async () => {
