@@ -1,6 +1,6 @@
 use crate::repository::Repository;
 use crate::util;
-use chrono::{DateTime, Timelike, Utc};
+use chrono::{DateTime, Utc};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::path::Path;
@@ -58,8 +58,8 @@ impl TryFrom<IndexEntry> for git2::IndexEntry {
 
   fn try_from(value: IndexEntry) -> std::result::Result<Self, Self::Error> {
     Ok(git2::IndexEntry {
-      ctime: git2::IndexTime::new(value.ctime.second() as i32, value.ctime.nanosecond()),
-      mtime: git2::IndexTime::new(value.mtime.second() as i32, value.mtime.nanosecond()),
+      ctime: git2::IndexTime::new(value.ctime.timestamp() as i32, value.ctime.timestamp_subsec_nanos()),
+      mtime: git2::IndexTime::new(value.mtime.timestamp() as i32, value.mtime.timestamp_subsec_nanos()),
       dev: value.dev,
       ino: value.ino,
       mode: value.mode,
