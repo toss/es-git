@@ -2,7 +2,7 @@ import { exec as execChildProcess } from 'node:child_process';
 import { Repository as SimpleGitRepository } from '@napi-rs/simple-git';
 import { Repository as NodeGitRepository } from 'nodegit';
 import { type BenchOptions, bench } from 'vitest';
-import { type Repository, openRepository } from '../index';
+import { openRepository, type Repository } from '../index';
 
 export function exec(command: string, cwd: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
