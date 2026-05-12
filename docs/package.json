@@ -16,13 +16,13 @@
     "micromatch": "^4.0.8",
     "openai": "^6.15.0",
     "typanion": "^3.14.0",
-    "typedoc": "0.28.0",
+    "typedoc": "0.28.19",
     "vitepress": "^1.6.3",
     "vitepress-jsdoc": "^1.0.4"
   },
   "devDependencies": {
     "@types/micromatch": "^4",
     "tsx": "^4.19.3",
-    "typescript": "5.7.3"
+    "typescript": "6.0.3"
   }
 }

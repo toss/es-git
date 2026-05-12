@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ReferenceFormat, isValidReferenceName, normalizeReferenceName, openRepository } from '../index';
+import { isValidReferenceName, normalizeReferenceName, openRepository, ReferenceFormat } from '../index';
 import { useFixture } from './fixtures';
 
 describe('reference', () => {
