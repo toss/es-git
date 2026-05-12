@@ -180,6 +180,9 @@ jobs:
           check-latest: true
           cache: yarn
           architecture: ${{ matrix.settings.architecture }}
+      - name: Enable corepack
+        if: ${{ matrix.node == '26' }}
+        run: npm install -g corepack
       - name: Install dependencies
         run: yarn install --immutable
       - name: Download artifacts
@@ -220,6 +223,9 @@ jobs:
           check-latest: true
           cache: yarn
           architecture: ${{ matrix.architecture }}
+      - name: Enable corepack
+        if: ${{ matrix.node == '26' }}
+        run: npm install -g corepack
       - name: Install dependencies
         run: yarn install --immutable
       - name: Download artifacts
@@ -276,6 +282,9 @@ jobs:
               console.log('IMAGE=node:${{ matrix.node }}-slim')
             }
           " >> $GITHUB_OUTPUT
+      - name: Enable corepack
+        if: ${{ matrix.node == '26' }}
+        run: npm install -g corepack
       - name: Install dependencies
         run: |
           yarn config set --json supportedArchitectures.cpu '["current", "arm64", "x64", "arm"]'
