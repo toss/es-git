@@ -50,7 +50,7 @@
     "@types/node": "^22.8.4",
     "fast-glob": "^3.3.3",
     "jscodeshift": "^17.1.2",
-    "typescript": "5.8.2",
+    "typescript": "6.0.3",
     "vitest": "^3.0.5"
   }
 }
