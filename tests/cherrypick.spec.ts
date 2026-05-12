@@ -288,7 +288,7 @@ describe('cherrypick', () => {
     index = repo.index();
     index.addPath('conflict.txt');
     const c3_tree = repo.getTree(index.writeTree());
-    const c3_oid = repo.commit(c3_tree, 'c3', {
+    repo.commit(c3_tree, 'c3', {
       updateRef: 'refs/heads/main',
       author: signature,
       committer: signature,

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { type Repository, openRepository } from '../index';
+import { openRepository, type Repository } from '../index';
 import { useFixture } from './fixtures';
 
 describe('reflog', async () => {
