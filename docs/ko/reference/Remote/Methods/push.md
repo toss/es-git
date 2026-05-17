@@ -31,6 +31,47 @@ class Remote {
     <p class="param-description">푸시 작업을 위한 옵션이에요.</p>
     <ul class="param-ul">
       <li class="param-li">
+        <span class="param-name">callbacks</span><span class="param-type">RemoteCallbacks</span>
+        <br>
+        <ul class="param-ul">
+          <li class="param-li">
+            <span class="param-name">packProgress</span><span class="param-type">(stage: PackBuilderStage, current: number, total: number) =&gt; void</span>
+            <br>
+            <p class="param-description">팩 빌드 중 진행 정보를 전달하기 위해 호출할 함수예요. 팩 빌드 작업과 인라인으로 호출되므로 성능에 영향을 줄 수 있어요.</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">pushNegotiation</span><span class="param-type">(update: PushUpdate[]) =&gt; void</span>
+            <br>
+            <p class="param-description">협상 단계와 업로드 사이에 한 번 호출되는 콜백이에요. 콜백에 전달되는 인수는 대상에 명령으로 전송될 업데이트를 포함하는 슬라이스예요.</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">pushTransferProgress</span><span class="param-type">(current: number, total: number, bytes: number) =&gt; void</span>
+            <br>
+            <p class="param-description">푸시 전송 진행 상황을 모니터링하는 콜백.</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">pushUpdateReference</span><span class="param-type">(refname: string, status: string | null) =&gt; void</span>
+            <br>
+            <p class="param-description">푸시 시 업데이트된 각 참조에 대해 호출되는 콜백을 설정해요. 콜백의 첫 번째 인수는 참조 이름이고, 두 번째는 서버가 보낸 상태 메시지예요. 상태가 <code>null</code>이 아니면 푸시가 거부된 거예요.</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">sidebandProgress</span><span class="param-type">(data: Uint8Array) =&gt; void</span>
+            <br>
+            <p class="param-description">원격으로부터의 텍스트 진행 정보예요. 진행 사이드 밴드를 통해 전송된 텍스트가 이 함수에 전달돼요 (이는 &#39;counting objects&#39; 출력이에요).</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">transferProgress</span><span class="param-type">(data: RemoteTransferProgress) =&gt; void</span>
+            <br>
+            <p class="param-description">페치 중 전송 진행 상황과 함께 호출돼요.</p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">updateTips</span><span class="param-type">(refname: string, oldId: string, newId: string) =&gt; void</span>
+            <br>
+            <p class="param-description">로컬에서 참조가 업데이트될 때마다 해당 정보와 함께 콜백이 호출돼요.</p>
+          </li>
+        </ul>
+      </li>
+      <li class="param-li">
         <span class="param-name">credential</span><span class="param-type">Credential</span>
         <br>
         <p class="param-description">Git 인증 정보를 나타내는 인터페이스예요.</p>
