@@ -1,5 +1,25 @@
 # Changelog
 
+## Version v0.7.0
+
+Released on May 17th, 2026.
+
+- chore: upgrade vitest 4.1.5 (#205)
+- chore: upgrade node version to 24 and drop 18 (#209)
+- chore: upgrade biome 2.4.15 (#207)
+- chore: upgrade typescript 6.0.3 (#208)
+- ci: update ci workflow with using napi cross compilation (#194)
+- chore: upgrade yarn 4.14.1 (#206)
+- feat: add remote callbacks (#203)
+- chore: Ignore todo comment when generating doc reference (#204)
+- fix: use timestamp() for IndexEntry to git2::IndexEntry conversion (#201)
+- fix: complete truncated doc comment for targetPeel method (#199)
+- chore(deps): bump git2 from 0.20.2 to 0.20.4 (#185)
+- feat: add worktree feature with tests (#183)
+- chore: update GitHub Actions to pinned versions (#186)
+
+We sincerely thank @racgoo, @xxxxxxjun for their contributions. We appreciate your great efforts!
+
 ## Version v0.6.0
 
 Released on Dec 30rd, 2025.
