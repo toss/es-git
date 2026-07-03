@@ -12,6 +12,8 @@ pub struct Signature {
   pub email: String,
   /// Time in seconds, from epoch
   pub timestamp: i64,
+  /// Timezone offset, in minutes
+  pub offset: i32,
 }
 
 impl<'a> TryFrom<git2::Signature<'a>> for Signature {
@@ -21,7 +23,13 @@ impl<'a> TryFrom<git2::Signature<'a>> for Signature {
     let name = std::str::from_utf8(value.name_bytes())?.to_string();
     let email = std::str::from_utf8(value.email_bytes())?.to_string();
     let timestamp = value.when().seconds();
-    Ok(Self { name, email, timestamp })
+    let offset = value.when().offset_minutes();
+    Ok(Self {
+      name,
+      email,
+      timestamp,
+      offset,
+    })
   }
 }
 
