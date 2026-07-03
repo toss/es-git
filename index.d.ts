@@ -182,9 +182,10 @@ export declare class Blame {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class BlameHunks extends Iterator<BlameHunk, void, void> {
+export declare class BlameHunks implements IterableIterator<BlameHunk> {
 
   next(value?: void): IteratorResult<BlameHunk, void>
+  [Symbol.iterator](): IterableIterator<BlameHunk>
 }
 
 /**
@@ -196,9 +197,10 @@ export declare class BlameHunks extends Iterator<BlameHunk, void, void> {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class BlameHunksByLine extends Iterator<BlameHunk, void, void> {
+export declare class BlameHunksByLine implements IterableIterator<BlameHunk> {
 
   next(value?: void): IteratorResult<BlameHunk, void>
+  [Symbol.iterator](): IterableIterator<BlameHunk>
 }
 
 /**
@@ -416,9 +418,10 @@ export declare class Branch {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Branches extends Iterator<BranchesItem, void, void> {
+export declare class Branches implements IterableIterator<BranchesItem> {
 
   next(value?: void): IteratorResult<BranchesItem, void>
+  [Symbol.iterator](): IterableIterator<BranchesItem>
 }
 
 /** A class to represent a git commit. */
@@ -1064,9 +1067,10 @@ export declare class Config {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class ConfigEntries extends Iterator<ConfigEntry, void, void> {
+export declare class ConfigEntries implements IterableIterator<ConfigEntry> {
 
   next(value?: void): IteratorResult<ConfigEntry, void>
+  [Symbol.iterator](): IterableIterator<ConfigEntry>
 }
 
 /**
@@ -1078,9 +1082,10 @@ export declare class ConfigEntries extends Iterator<ConfigEntry, void, void> {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Deltas extends Iterator<DiffDelta, void, void> {
+export declare class Deltas implements IterableIterator<DiffDelta> {
 
   next(value?: void): IteratorResult<DiffDelta, void>
+  [Symbol.iterator](): IterableIterator<DiffDelta>
 }
 
 /**
@@ -1879,9 +1884,10 @@ export declare class Index {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class IndexEntries extends Iterator<IndexEntry, void, void> {
+export declare class IndexEntries implements IterableIterator<IndexEntry> {
 
   next(value?: void): IteratorResult<IndexEntry, void>
+  [Symbol.iterator](): IterableIterator<IndexEntry>
 }
 
 /** A wrapper around git2::Mailmap providing Node.js bindings */
@@ -2008,9 +2014,10 @@ export declare class Note {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Notes extends Iterator<NoteIterItem, void, void> {
+export declare class Notes implements IterableIterator<NoteIterItem> {
 
   next(value?: void): IteratorResult<NoteIterItem, void>
+  [Symbol.iterator](): IterableIterator<NoteIterItem>
 }
 
 /**
@@ -2565,9 +2572,10 @@ export declare class ReflogEntry {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class ReflogIter extends Iterator<ReflogEntry, void, void> {
+export declare class ReflogIter implements IterableIterator<ReflogEntry> {
 
   next(value?: void): IteratorResult<ReflogEntry, void>
+  [Symbol.iterator](): IterableIterator<ReflogEntry>
 }
 
 /**
@@ -2814,7 +2822,7 @@ export declare class Repository {
    * @param {Reference} reference - Reference to creates a Annotated Commit.
    * @returns An Annotated Commit created from reference.
    */
-  getAnnotatedCommitFromReference(reference: GitReference): AnnotatedCommit
+  getAnnotatedCommitFromReference(reference: Reference): AnnotatedCommit
   /**
    * Creates a Annotated Commit from `FETCH_HEAD`.
    *
@@ -5673,9 +5681,10 @@ export declare class StashList {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class StashListIter extends Iterator<StashEntry, void, void> {
+export declare class StashListIter implements IterableIterator<StashEntry> {
 
   next(value?: void): IteratorResult<StashEntry, void>
+  [Symbol.iterator](): IterableIterator<StashEntry>
 }
 
 /** A structure representing an entry in the `Statuses` structure. */
@@ -5801,9 +5810,10 @@ export declare class Statuses {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class StatusesIter extends Iterator<StatusEntry, void, void> {
+export declare class StatusesIter implements IterableIterator<StatusEntry> {
 
   next(value?: void): IteratorResult<StatusEntry, void>
+  [Symbol.iterator](): IterableIterator<StatusEntry>
 }
 
 export declare class Submodule {
@@ -6499,9 +6509,10 @@ export declare class TreeEntry {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class TreeIter extends Iterator<TreeEntry, void, void> {
+export declare class TreeIter implements IterableIterator<TreeEntry> {
 
   next(value?: void): IteratorResult<TreeEntry, void>
+  [Symbol.iterator](): IterableIterator<TreeEntry>
 }
 
 /** A class to represent a git worktree. */

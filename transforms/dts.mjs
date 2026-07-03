@@ -17,6 +17,8 @@ export default function transform(file, { j }) {
   let source = file.source;
   source = transformStringEnums(source, j, ['CredentialType']);
   source = transformCredentialUnion(source, j);
+  source = transformIteratorClasses(source);
+  source = transformReferenceTypeNames(source);
   return source;
 }
 
@@ -146,6 +148,36 @@ function transformCredentialUnion(source, j) {
     .toSource(options);
 
   return modified;
+}
+
+/**
+ * napi-rs currently emits iterator classes as `extends Iterator<...>`.
+ * TypeScript exposes `Iterator` as an interface in common consumer configs, so
+ * declaration consumers fail with TS2689. The runtime values are iterable, so
+ * model them as `IterableIterator<...>` instead.
+ * @param {string} source
+ * @returns {string}
+ */
+function transformIteratorClasses(source) {
+  return source.replace(
+    /export declare class (\w+) extends Iterator<([^>{]+), void, void> \{\n\n {2}next\(value\?: void\): IteratorResult<\2, void>\n\}/g,
+    [
+      'export declare class $1 implements IterableIterator<$2> {',
+      '',
+      '  next(value?: void): IteratorResult<$2, void>',
+      '  [Symbol.iterator](): IterableIterator<$2>',
+      '}',
+    ].join('\n')
+  );
+}
+
+/**
+ * Keep generated declarations aligned with the exported Reference class name.
+ * @param {string} source
+ * @returns {string}
+ */
+function transformReferenceTypeNames(source) {
+  return source.replaceAll('GitReference', 'Reference');
 }
 
 export const parser = 'ts';
