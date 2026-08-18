@@ -1,0 +1,141 @@
+name: Prepare release
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the version to raise
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+env:
+  DEBUG: napi:*
+concurrency:
+  group: prepare-release
+jobs:
+  prepare:
+    # Releases are cut from main. A clean checkout of it is also why this needs none of the
+    # "is the working tree dirty / is main behind origin" checks a local script would.
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # git-cliff reads the history and the tags to work out what is unreleased.
+          fetch-depth: 0
+      - name: Setup node
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version-file: ".node-version"
+          check-latest: true
+          cache: yarn
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        with:
+          toolchain: "1.91.0"
+      - name: Cache cargo
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: prepare-release-cargo
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Raise the version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -eu
+          # npm version resolves a prerelease down to its release rather than raising it, so
+          # 0.8.0-next.5 would quietly become 0.8.0. main should never carry one.
+          current=$(node -p "require('./package.json').version")
+          case "$current" in
+            *-*)
+              echo "::error::package.json is at the prerelease version $current. Releases are cut from plain versions."
+              exit 1
+              ;;
+          esac
+          tag=$(npm version --no-git-tag-version "$BUMP")
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "branch=release/$tag" >> "$GITHUB_OUTPUT"
+      - name: Refuse a release that already exists
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          set -eu
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          fi
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "::error::Branch $BRANCH already exists."
+            exit 1
+          fi
+      - name: Write the changelog
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -eu
+          # git-cliff prepends a section whether or not anything landed, so ask it what it would
+          # write before letting it write.
+          if ! yarn dlx git-cliff@2.13.1 --unreleased --tag "$TAG" | grep -q '^- '; then
+            echo "::error::Nothing to release: no commits since the last tag."
+            exit 1
+          fi
+          yarn dlx git-cliff@2.13.1 --unreleased --tag "$TAG" --prepend CHANGELOG.md
+      # The generated binding is committed, and the release job publishes what a build produces.
+      # Build here so the release branch carries a binding that matches the crate at this commit.
+      - name: Build
+        run: yarn build
+      - name: Push the release branch
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add CHANGELOG.md package.json index.js index.d.ts
+          git commit -m "$TAG"
+          leftover=$(git status --porcelain)
+          if [ -n "$leftover" ]; then
+            echo "::error::The build touched files the release commit did not stage:"
+            echo "$leftover"
+            exit 1
+          fi
+          # The build takes minutes, and the changelog was rendered from the commit this run checked
+          # out. If main moved meanwhile, the eventual tag would cover commits no section mentions.
+          git fetch origin main
+          if [ "$(git rev-parse FETCH_HEAD)" != "$GITHUB_SHA" ]; then
+            echo "::error::main moved while this ran, so the changelog would miss what landed. Re-run."
+            exit 1
+          fi
+          # Create-only: an empty expected value makes git refuse if the branch appeared since the
+          # guard above, even when it could be fast-forwarded.
+          if ! git push --force-with-lease="refs/heads/$BRANCH:" origin "$BRANCH"; then
+            echo "::error::Could not create $BRANCH. It may have appeared while this ran."
+            exit 1
+          fi
+      - name: Summarise
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          {
+            echo "### $TAG is ready on \`$BRANCH\`"
+            echo
+            echo "1. Add the thank-you line to CHANGELOG.md if outside contributors landed anything."
+            echo "2. [Open the pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1) and merge it. Opening it yourself is what gets CI to run."
+            echo "3. \`git checkout main && git pull && git tag $TAG && git push origin $TAG\` starts the release."
+          } >> "$GITHUB_STEP_SUMMARY"

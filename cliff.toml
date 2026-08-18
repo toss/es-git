@@ -1,0 +1,23 @@
+[changelog]
+header = "# Changelog\n"
+body = """
+## Version {{ version }}
+
+Released on {{ timestamp | date(format="%B %-d, %Y") }}.
+{% for commit in commits %}
+- {{ commit.message | split(pat="\n") | first | trim }}
+{%- endfor %}
+"""
+trim = false
+
+[git]
+conventional_commits = false
+filter_commits = false
+sort_commits = "newest"
+commit_parsers = [
+  # The previous release commits are named after the bare version.
+  { message = "^v[0-9]+\\.[0-9]+\\.[0-9]+$", skip = true },
+  # Merges GitHub writes itself. This matches on the subject rather than on parent count, which
+  # git-cliff cannot see, so a merge someone gave a real subject to still shows up.
+  { message = "^Merge ", skip = true },
+]
