@@ -101,11 +101,6 @@ async function main() {
   const rootdir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
   const { name, version } = JSON.parse(await fs.readFile(path.join(rootdir, 'package.json'), 'utf8'));
 
-  const tag = process.env.GITHUB_REF_NAME;
-  if (tag !== `v${version}`) {
-    throw new Error(`Tag ${tag} does not match the package version ${version}. Bump package.json or retag.`);
-  }
-
   const published = await fetchPublishedVersion(name);
   if (published == null) {
     console.info(`${name} has no published version yet. Releasing ${version}.`);

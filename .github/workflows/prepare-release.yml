@@ -136,6 +136,6 @@ jobs:
             echo "### $TAG is ready on \`$BRANCH\`"
             echo
             echo "1. Add the thank-you line to CHANGELOG.md if outside contributors landed anything."
-            echo "2. [Open the pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1) and merge it. Opening it yourself is what gets CI to run."
-            echo "3. \`git checkout main && git pull && git tag $TAG && git push origin $TAG\` starts the release."
+            echo "2. [Open the pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1) yourself, which is what gets CI to run on it."
+            echo "3. Merge it. Landing a version no tag exists for is what releases it: the tag, the GitHub release and the npm publish all follow from the merge."
           } >> "$GITHUB_STEP_SUMMARY"
