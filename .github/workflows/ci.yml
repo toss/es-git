@@ -146,6 +146,14 @@ jobs:
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
+      - name: Check generated bindings are up to date
+        if: ${{ matrix.settings.target == 'aarch64-apple-darwin' }}
+        run: |
+          if ! git diff --exit-code -- index.js index.d.ts; then
+            echo "::error::index.js / index.d.ts are out of date. Run \`yarn build\` and commit the result."
+            exit 1
+          fi
+        shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
