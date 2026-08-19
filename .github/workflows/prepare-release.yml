@@ -167,14 +167,39 @@ jobs:
             echo "::error::Could not create $BRANCH. It may have appeared while this ran."
             exit 1
           fi
+      # Opened with a personal token rather than GITHUB_TOKEN, because CI does not run on a pull
+      # request GITHUB_TOKEN opened. If the secret is missing or has expired this step is skipped and
+      # the branch is still there to open by hand, which is what the summary below falls back to.
+      - name: Open the pull request
+        id: pr
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          set -eu
+          if [ -z "${GH_TOKEN:-}" ]; then
+            # Not configured is not a failure. Only a token that is set and does not work is.
+            echo "No RELEASE_PR_TOKEN. Leaving the pull request to be opened by hand."
+            exit 0
+          fi
+          body="Prepared by the Prepare release workflow. Merging this releases $TAG: the tag, the GitHub release and the npm publish all follow from it. Read the changelog section it carries first."
+          url=$(gh pr create --base main --head "$BRANCH" --title "$TAG" --body "$body")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Summarise
         env:
           TAG: ${{ steps.version.outputs.tag }}
           BRANCH: ${{ steps.version.outputs.branch }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: |
           {
             echo "### $TAG is ready on \`$BRANCH\`"
             echo
-            echo "1. [Open the pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1) yourself, which is what gets CI to run on it. Read the changelog while you are there."
+            if [ -n "${PR_URL:-}" ]; then
+              echo "1. Read [the pull request]($PR_URL), and the changelog section it carries."
+            else
+              echo "1. [Open the pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1) yourself, which is what gets CI to run on it. Read the changelog while you are there."
+            fi
             echo "2. Merge it. Landing a version no tag exists for is what releases it: the tag, the GitHub release and the npm publish all follow from the merge."
           } >> "$GITHUB_STEP_SUMMARY"

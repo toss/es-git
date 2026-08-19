@@ -96,8 +96,10 @@ Maintainers release from `main`.
    workflow and choose whether to raise the major, minor or patch version. It raises the version,
    writes the changelog section from the commits since the last release, thanks the outside
    contributors among them, rebuilds the binding and pushes a `release/vX.Y.Z` branch.
-2. Open a pull request from that branch and merge it. Open it yourself rather than leaving it to a
-   bot, because a pull request a bot opens gets no CI run.
+2. Read the pull request it opens, and merge it. The pull request is opened with a maintainer's
+   token rather than the workflow's own, because CI does not run on one the workflow opens itself.
+   If that token is missing or has expired the branch is still pushed, so open the pull request by
+   hand and nothing else changes.
 
 Merging is what releases. A commit landing on `main` whose version has no tag yet is tagged, gets a
 GitHub release built from its changelog section, and is published to npm. Every other push to `main`
