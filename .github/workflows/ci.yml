@@ -80,10 +80,14 @@ jobs:
           - host: macos-latest
             target: aarch64-apple-darwin
             build: yarn build --target aarch64-apple-darwin
-          - host: windows-latest
+          # Pinned: windows-latest now means Windows Server 2025 with Visual Studio 2026, and the
+          # cmake crate cannot work out a generator for it, so libz-sys fails to build. Support
+          # exists on cmake-rs master but is not in a published version yet. Move back to
+          # windows-latest once it is released.
+          - host: windows-2022
             target: x86_64-pc-windows-msvc
             build: yarn build --target x86_64-pc-windows-msvc
-          - host: windows-latest
+          - host: windows-2022
             target: aarch64-pc-windows-msvc
             build: yarn build --target aarch64-pc-windows-msvc
           - host: ubuntu-22.04
