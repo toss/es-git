@@ -1,3 +1,4 @@
+import { createHash, generateKeyPairSync, sign, verify } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -6,6 +7,28 @@ import { useFixture } from './fixtures';
 
 describe('commit', () => {
   const signature = { name: 'Seokju Na', email: 'seokju.me@gmail.com' };
+  const fixedSignature = {
+    ...signature,
+    timeOptions: { timestamp: 1_700_000_000, offset: 0 },
+  };
+  const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+
+  function oidForCommitContent(content: string) {
+    return createHash('sha1')
+      .update(`commit ${Buffer.byteLength(content)}\0${content}`)
+      .digest('hex');
+  }
+
+  function signCommitContent(content: string) {
+    const encoded = sign('sha256', Buffer.from(content, 'utf8'), privateKey).toString('base64');
+    const body = encoded.match(/.{1,64}/g)?.join('\n') ?? encoded;
+    return `-----BEGIN TEST SIGNATURE-----\n${body}\n-----END TEST SIGNATURE-----`;
+  }
+
+  function verifyCommitSignature(content: string, signature: string) {
+    const encoded = signature.split('\n').slice(1, -1).join('');
+    return verify('sha256', Buffer.from(content, 'utf8'), publicKey, Buffer.from(encoded, 'base64'));
+  }
 
   it('get commit', async () => {
     const p = await useFixture('commits');
@@ -72,13 +95,18 @@ describe('commit', () => {
     index.addPath('signed');
     const treeSha = index.writeTree();
     const tree = repo.getTree(treeSha);
+    const parents = [repo.head().target()!];
+    const content = repo.commitCreateBuffer(tree, 'signed commit', {
+      author: fixedSignature,
+      committer: fixedSignature,
+      parents,
+    });
+    const externalSignature = signCommitContent(content);
     const oid = repo.commit(tree, 'signed commit', {
-      updateRef: 'HEAD',
-      author: signature,
-      committer: signature,
-      parents: [repo.head().target()!],
-      signature:
-        '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
+      author: fixedSignature,
+      committer: fixedSignature,
+      parents,
+      signature: externalSignature,
     });
     expect(isValidOid(oid)).toBe(true);
     const signatureInfo = repo.extractSignature(oid);
@@ -86,15 +114,68 @@ describe('commit', () => {
 
     const { signature: extractedSignature = '', signedData = '' } = signatureInfo || {};
 
-    expect(extractedSignature).toEqual(
-      '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
-    );
+    expect(extractedSignature).toEqual(externalSignature);
+    expect(signedData).toEqual(content);
+    expect(verifyCommitSignature(signedData, extractedSignature)).toBe(true);
+  });
 
-    expect(signedData).toContain('tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e');
-    expect(signedData).toContain('parent a01e9888e46729ef4aa68953ba19b02a7a64eb82');
-    expect(signedData).toMatch(/author Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
-    expect(signedData).toMatch(/committer Seokju Na <seokju\.me@gmail\.com> \d+ \+0000/);
-    expect(signedData).toContain('signed commit');
+  it('creates commit content for external signing without writing an object', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'buffered'), 'buffered');
+    const index = repo.index();
+    index.addPath('buffered');
+    const tree = repo.getTree(index.writeTree());
+
+    const content = repo.commitCreateBuffer(tree, 'externally signed commit', {
+      author: fixedSignature,
+      committer: fixedSignature,
+      parents: [repo.head().target()!],
+    });
+
+    expect(content).toContain('parent a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+    expect(content).toContain('author Seokju Na <seokju.me@gmail.com> 1700000000 +0000');
+    expect(content).toContain('committer Seokju Na <seokju.me@gmail.com> 1700000000 +0000');
+    expect(content).toContain('externally signed commit');
+    expect(repo.findCommit(oidForCommitContent(content))).toBeNull();
+  });
+
+  it('rejects an invalid explicit signature instead of using the repository default', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+
+    expect(() =>
+      repo.commitCreateBuffer(tree, 'invalid signature', {
+        author: { name: 'invalid\0name', email: signature.email },
+        committer: fixedSignature,
+      })
+    ).toThrow();
+  });
+
+  it('creates a signed commit from externally signed content', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    await fs.writeFile(path.join(p, 'externally-signed'), 'externally-signed');
+    const index = repo.index();
+    index.addPath('externally-signed');
+    const tree = repo.getTree(index.writeTree());
+    const content = repo.commitCreateBuffer(tree, 'externally signed commit', {
+      author: fixedSignature,
+      committer: fixedSignature,
+      parents: [repo.head().target()!],
+    });
+    const externalSignature = signCommitContent(content);
+
+    const oid = repo.commitSigned(content, externalSignature);
+
+    expect(isValidOid(oid)).toBe(true);
+    expect(oid).not.toEqual(oidForCommitContent(content));
+    const signatureInfo = repo.extractSignature(oid);
+    expect(signatureInfo).not.toBeNull();
+    expect(signatureInfo?.signature).toEqual(externalSignature);
+    expect(signatureInfo?.signedData).toEqual(content);
+    expect(verifyCommitSignature(signatureInfo?.signedData ?? '', signatureInfo?.signature ?? '')).toBe(true);
   });
 
   it('extract signature from unsigned commit', async () => {

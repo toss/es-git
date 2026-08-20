@@ -32,6 +32,22 @@ pub struct CommitOptions {
 }
 
 #[napi(object)]
+pub struct CommitCreateBufferOptions {
+  /// Signature for author.
+  ///
+  /// If not provided, the default signature of the repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
+  pub author: Option<SignaturePayload>,
+  /// Signature for committer.
+  ///
+  /// If not provided, the default signature of the repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
+  pub committer: Option<SignaturePayload>,
+  /// Parent commit IDs in their intended order.
+  pub parents: Option<Vec<String>>,
+}
+
+#[napi(object)]
 #[derive(Default)]
 pub struct AmendOptions {
   /// If not NULL, name of the reference that will be updated to point to this commit.
@@ -380,6 +396,116 @@ impl Repository {
     Ok(Commit {
       inner: CommitInner::Repo(commit),
     })
+  }
+
+  #[napi]
+  /// Create commit content for external signing.
+  ///
+  /// This creates the unsigned commit object content without writing it to the
+  /// object database. Sign the exact UTF-8 content returned by this method,
+  /// then pass both values to `commitSigned`. Changing whitespace or line
+  /// endings after signing invalidates the signature.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   commitCreateBuffer(
+  ///     tree: Tree,
+  ///     message: string,
+  ///     options?: CommitCreateBufferOptions | null | undefined,
+  ///   ): string;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} tree - Tree object to create commit content from.
+  /// @param {string} message - Commit message.
+  /// @param {CommitCreateBufferOptions} [options] - Options for creating commit content.
+  /// @returns Commit content to sign externally.
+  /// @throws If a signature cannot be resolved or a parent commit does not exist.
+  ///
+  /// @example
+  /// ```ts
+  /// const content = repo.commitCreateBuffer(tree, 'signed commit', {
+  ///   parents: [repo.head().target()!],
+  /// });
+  /// const signature = await signingBackend.sign(Buffer.from(content, 'utf8'));
+  /// const oid = repo.commitSigned(content, signature);
+  /// ```
+  pub fn commit_create_buffer(
+    &self,
+    tree: &Tree,
+    message: String,
+    options: Option<CommitCreateBufferOptions>,
+  ) -> crate::Result<String> {
+    let (author, committer, parents) = match options {
+      Some(opts) => {
+        let parents = match opts.parents {
+          Some(parents) => {
+            let commits: crate::Result<Vec<git2::Commit>> = parents
+              .iter()
+              .map(|x| self.inner.find_commit_by_prefix(x).map_err(crate::Error::from))
+              .collect();
+            Some(commits?)
+          }
+          None => None,
+        };
+        (opts.author, opts.committer, parents)
+      }
+      None => (None, None, None),
+    };
+    let author = match author {
+      Some(author) => git2::Signature::try_from(Signature::try_from(author)?)?,
+      None => self.inner.signature().map_err(|_| crate::Error::SignatureNotFound)?,
+    };
+    let committer = match committer {
+      Some(committer) => git2::Signature::try_from(Signature::try_from(committer)?)?,
+      None => self.inner.signature().map_err(|_| crate::Error::SignatureNotFound)?,
+    };
+
+    let commit_content = self.inner.commit_create_buffer(
+      &author,
+      &committer,
+      &message,
+      &tree.inner,
+      &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+    )?;
+
+    Ok(std::str::from_utf8(&commit_content)?.to_string())
+  }
+
+  #[napi]
+  /// Create a signed commit from externally signed commit content.
+  ///
+  /// This writes the signed commit to the object database but does not update
+  /// `HEAD` or any other reference. If `signatureField` is omitted, Git's
+  /// default `gpgsig` field is used.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   commitSigned(commitContent: string, signature: string, signatureField?: string | null | undefined): string;
+  /// }
+  /// ```
+  ///
+  /// @param {string} commitContent - Commit content returned by `commitCreateBuffer`.
+  /// @param {string} signature - External signature for the commit content.
+  /// @param {string} [signatureField] - Signature field name. Defaults to `gpgsig`.
+  /// @returns ID(SHA1) of created commit.
+  /// @throws If the commit content, signature, or signature field is invalid.
+  pub fn commit_signed(
+    &self,
+    commit_content: String,
+    signature: String,
+    signature_field: Option<String>,
+  ) -> crate::Result<String> {
+    let oid = self
+      .inner
+      .commit_signed(&commit_content, &signature, signature_field.as_deref())?;
+    Ok(oid.to_string())
   }
 
   #[napi]

@@ -38,7 +38,9 @@ index.write();
 
 ## Creating Signed Commits
 
-You can create GPG signed commits by providing a signature string:
+External signing is a two-step process. First, create the unsigned commit content and pass its exact UTF-8 bytes to your signing backend. Then, write the signed commit with the returned signature.
+
+Do not normalize whitespace or line endings in the content returned by `commitCreateBuffer()`. `commitSigned()` writes the commit to the object database, but it does not update `HEAD` or another reference.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -49,26 +51,19 @@ const treeOid = index.writeTree();
 const tree = repo.getTree(treeOid);
 
 const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
-
-// Create a signed commit
-const oid = repo.commit(tree, 'signed commit', {
-    updateRef: 'HEAD',
-    author: signature,
-    committer: signature,
-    parents: [repo.head().target()!],
-    signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+const commitContent = repo.commitCreateBuffer(tree, 'signed commit', {
+  author: signature,
+  committer: signature,
+  parents: [repo.head().target()!],
 });
 
-// Extract signature from the commit
+// Implement this call with your GPG or other Git-compatible signing backend.
+const externalSignature = await signCommitContent(Buffer.from(commitContent, 'utf8'));
+const oid = repo.commitSigned(commitContent, externalSignature);
+
 const signatureInfo = repo.extractSignature(oid);
-console.log(signatureInfo.signature);
-// {
-//  signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
-//  signedData: 'tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e\n' +
-//  'parent a01e9888e46729ef4aa68953ba19b02a7a64eb82\n' +
-//  'author Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  'committer Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  '\n' +
-//  'signed commit'
-// }
+console.log(signatureInfo?.signature === externalSignature); // true
+console.log(signatureInfo?.signedData === commitContent); // true
 ```
+
+If you already have a signature for the exact commit content that `commit()` will create, you can continue to pass it through `CommitOptions.signature`.
