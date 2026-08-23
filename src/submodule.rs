@@ -323,7 +323,7 @@ impl Task for SubmoduleUpdateTask {
         opts.checkout(checkout.clone().into());
       }
       if let Some(fetch) = &options.fetch {
-        opts.fetch(fetch.to_git2_fetch_options());
+        opts.fetch(fetch.to_git2_fetch_options()?);
       }
       if let Some(allow_fetch) = options.allow_fetch {
         opts.allow_fetch(allow_fetch);
@@ -360,7 +360,7 @@ impl Task for SubmoduleCloneTask {
         opts.checkout(checkout.clone().into());
       }
       if let Some(fetch) = &options.fetch {
-        opts.fetch(fetch.to_git2_fetch_options());
+        opts.fetch(fetch.to_git2_fetch_options()?);
       }
       if let Some(allow_fetch) = options.allow_fetch {
         opts.allow_fetch(allow_fetch);

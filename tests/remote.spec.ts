@@ -4,6 +4,14 @@ import { isTarget } from './env';
 import { useFixture } from './fixtures';
 import { makeTmpDir } from './tmp';
 
+async function createLocalRemote() {
+  const localPath = await makeTmpDir('credential-validation-local');
+  const remotePath = await makeTmpDir('credential-validation-remote');
+  const repo = await initRepository(localPath);
+  await initRepository(remotePath, { bare: true });
+  return repo.createRemote('origin', remotePath);
+}
+
 describe('remote', () => {
   it('get remote names', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
@@ -121,5 +129,35 @@ describe('remote', () => {
       ]);
       expect(packProgress).toHaveBeenCalled();
     });
+  });
+
+  it.each([
+    {
+      credential: { type: 'SSHKeyFromPath' },
+      message: 'credential.privateKeyPath is required for SSHKeyFromPath credentials',
+    },
+    {
+      credential: { type: 'SSHKey' },
+      message: 'credential.privateKey is required for SSHKey credentials',
+    },
+    {
+      credential: { type: 'Plain' },
+      message: 'credential.password is required for Plain credentials',
+    },
+  ])('rejects missing required fields for $credential.type credentials', async ({ credential, message }) => {
+    const remote = await createLocalRemote();
+    await expect(remote.fetch([], { fetch: { credential: credential as any } })).rejects.toMatchObject({
+      code: 'InvalidArg',
+      message,
+    });
+  });
+
+  it.each([
+    { type: 'SSHKeyFromPath', privateKeyPath: 'synthetic-private-key-path' },
+    { type: 'SSHKey', privateKey: 'synthetic-private-key' },
+    { type: 'Plain', password: 'synthetic-password' },
+  ])('accepts valid $type credentials', async credential => {
+    const remote = await createLocalRemote();
+    await expect(remote.fetch([], { fetch: { credential: credential as any } })).resolves.toBeUndefined();
   });
 });

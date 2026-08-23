@@ -78,31 +78,146 @@ pub struct Credential {
 }
 
 impl Credential {
+  fn username(&self) -> &str {
+    self.username.as_deref().unwrap_or("git")
+  }
+
+  fn validate(&self) -> Result<()> {
+    if let Some((field_name, credential_type)) = self.missing_required_field() {
+      return Err(Error::new(
+        Status::InvalidArg,
+        required_credential_field_message(field_name, credential_type),
+      ));
+    }
+    Ok(())
+  }
+
+  fn missing_required_field(&self) -> Option<(&'static str, &'static str)> {
+    match self.r#type {
+      CredentialType::SSHKeyFromPath if self.private_key_path.is_none() => {
+        Some(("credential.privateKeyPath", "SSHKeyFromPath"))
+      }
+      CredentialType::SSHKey if self.private_key.is_none() => Some(("credential.privateKey", "SSHKey")),
+      CredentialType::Plain if self.password.is_none() => Some(("credential.password", "Plain")),
+      _ => None,
+    }
+  }
+
   pub(crate) fn to_git2_cred(&self) -> std::result::Result<git2::Cred, git2::Error> {
-    let fallback = "git".to_string();
+    let username = self.username();
     let cred = match self.r#type {
       CredentialType::Default => git2::Cred::default(),
-      CredentialType::SSHKeyFromAgent => {
-        git2::Cred::ssh_key_from_agent(self.username.to_owned().unwrap_or(fallback).as_ref())
-      }
+      CredentialType::SSHKeyFromAgent => git2::Cred::ssh_key_from_agent(username),
       CredentialType::SSHKeyFromPath => git2::Cred::ssh_key(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
+        username,
         self.public_key_path.as_ref().map(Path::new),
-        Path::new(&self.private_key_path.to_owned().unwrap()),
+        Path::new(required_credential_field(
+          &self.private_key_path,
+          "credential.privateKeyPath",
+          "SSHKeyFromPath",
+        )?),
         self.passphrase.as_ref().map(String::as_ref),
       ),
       CredentialType::SSHKey => git2::Cred::ssh_key_from_memory(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
+        username,
         self.public_key.as_ref().map(String::as_ref),
-        &self.private_key.to_owned().unwrap(),
+        required_credential_field(&self.private_key, "credential.privateKey", "SSHKey")?,
         self.passphrase.as_ref().map(String::as_ref),
       ),
       CredentialType::Plain => git2::Cred::userpass_plaintext(
-        self.username.to_owned().unwrap_or(fallback).as_ref(),
-        &self.password.to_owned().unwrap(),
+        username,
+        required_credential_field(&self.password, "credential.password", "Plain")?,
       ),
     }?;
     Ok(cred)
+  }
+}
+
+fn required_credential_field<'a>(
+  value: &'a Option<String>,
+  field_name: &str,
+  credential_type: &str,
+) -> std::result::Result<&'a str, git2::Error> {
+  value
+    .as_deref()
+    .ok_or_else(|| git2::Error::from_str(&required_credential_field_message(field_name, credential_type)))
+}
+
+fn required_credential_field_message(field_name: &str, credential_type: &str) -> String {
+  format!("{field_name} is required for {credential_type} credentials")
+}
+
+#[cfg(test)]
+mod credential_tests {
+  use super::{Credential, CredentialType};
+
+  fn credential(r#type: CredentialType) -> Credential {
+    Credential {
+      r#type,
+      username: None,
+      public_key_path: None,
+      public_key: None,
+      private_key_path: None,
+      private_key: None,
+      passphrase: None,
+      password: None,
+    }
+  }
+
+  fn assert_missing_field_error(credential: Credential, message: &str) {
+    let git2_error = match credential.to_git2_cred() {
+      Ok(_) => panic!("credential conversion should fail"),
+      Err(error) => error,
+    };
+    assert_eq!(git2_error.message(), message);
+  }
+
+  #[test]
+  fn missing_private_key_path_returns_an_error() {
+    assert_missing_field_error(
+      credential(CredentialType::SSHKeyFromPath),
+      "credential.privateKeyPath is required for SSHKeyFromPath credentials",
+    );
+  }
+
+  #[test]
+  fn missing_private_key_returns_an_error() {
+    assert_missing_field_error(
+      credential(CredentialType::SSHKey),
+      "credential.privateKey is required for SSHKey credentials",
+    );
+  }
+
+  #[test]
+  fn missing_password_returns_an_error() {
+    assert_missing_field_error(
+      credential(CredentialType::Plain),
+      "credential.password is required for Plain credentials",
+    );
+  }
+
+  #[test]
+  fn defaults_username_to_git() {
+    assert_eq!(credential(CredentialType::Plain).username(), "git");
+
+    let mut credential = credential(CredentialType::Plain);
+    credential.username = Some("custom".to_string());
+    assert_eq!(credential.username(), "custom");
+  }
+
+  #[test]
+  fn converts_valid_credentials() {
+    let mut ssh_key_from_path = credential(CredentialType::SSHKeyFromPath);
+    ssh_key_from_path.private_key_path = Some("private-key".to_string());
+    assert!(ssh_key_from_path.to_git2_cred().is_ok());
+
+    let mut ssh_key = credential(CredentialType::SSHKey);
+    ssh_key.private_key = Some("private-key".to_string());
+    assert!(ssh_key.to_git2_cred().is_ok());
+
+    let mut plain = credential(CredentialType::Plain);
+    plain.password = Some("password".to_string());
+    assert!(plain.to_git2_cred().is_ok());
   }
 }
 
@@ -410,10 +525,11 @@ impl<'a> ApplyRemoteCallbacks for git2::RemoteCallbacks<'a> {
 }
 
 impl<'a> FetchOptions {
-  pub(crate) fn to_git2_fetch_options(&'a self) -> git2::FetchOptions<'a> {
+  pub(crate) fn to_git2_fetch_options(&'a self) -> Result<git2::FetchOptions<'a>> {
     let mut fetch = git2::FetchOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
+      cred.validate()?;
       // TODO: support credential callback
       callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
     }
@@ -439,7 +555,7 @@ impl<'a> FetchOptions {
     if let Some(custom_headers) = &self.custom_headers {
       fetch.custom_headers(&custom_headers.iter().map(|x| x.as_str()).collect::<Vec<_>>());
     }
-    fetch
+    Ok(fetch)
   }
 }
 
@@ -470,10 +586,11 @@ pub struct PushOptions {
 }
 
 impl<'a> PushOptions {
-  pub(crate) fn to_git2_push_options(&'a self) -> git2::PushOptions<'a> {
+  pub(crate) fn to_git2_push_options(&'a self) -> Result<git2::PushOptions<'a>> {
     let mut push = git2::PushOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
+      cred.validate()?;
       // TODO: support credential callback
       callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
     }
@@ -496,7 +613,7 @@ impl<'a> PushOptions {
     if let Some(remote_options) = &self.remote_options {
       push.remote_push_options(&remote_options.iter().map(|x| x.as_str()).collect::<Vec<_>>());
     }
-    push
+    Ok(push)
   }
 }
 
@@ -536,7 +653,7 @@ impl Task for FetchRemoteTask {
       .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
     let mut fetch_options = match &self.options {
-      Some(FetchRemoteOptions { fetch: Some(fetch), .. }) => Some(fetch.to_git2_fetch_options()),
+      Some(FetchRemoteOptions { fetch: Some(fetch), .. }) => Some(fetch.to_git2_fetch_options()?),
       _ => None,
     };
     let reflog_msg = match &self.options {
@@ -576,7 +693,11 @@ impl Task for PushRemoteTask {
       .remote
       .write()
       .map_err(|e| Error::new(Status::GenericFailure, format!("{e}")))?;
-    let mut push_options = self.options.as_ref().map(|x| x.to_git2_push_options());
+    let mut push_options = self
+      .options
+      .as_ref()
+      .map(PushOptions::to_git2_push_options)
+      .transpose()?;
     remote
       .inner
       .push(&self.refspecs, push_options.as_mut())
@@ -610,6 +731,7 @@ impl Task for PruneRemoteTask {
       Some(PruneOptions {
         credential: Some(cred), ..
       }) => {
+        cred.validate()?;
         let mut callbacks = git2::RemoteCallbacks::new();
         callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
         Some(callbacks)

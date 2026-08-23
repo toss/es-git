@@ -770,7 +770,7 @@ impl Task for CloneRepositoryTask {
         builder.branch(branch);
       }
       if let Some(fetch) = &opts.fetch {
-        let fetch_options = fetch.to_git2_fetch_options();
+        let fetch_options = fetch.to_git2_fetch_options()?;
         builder.fetch_options(fetch_options);
       }
       if let Some(true) = &opts.recursive {
