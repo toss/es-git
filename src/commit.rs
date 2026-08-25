@@ -444,9 +444,23 @@ impl Repository {
 
       let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
 
-      self
+      let oid = self
         .inner
-        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?
+        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?;
+
+      // commit_signed only writes the object; honor update_ref like the unsigned path.
+      if let Some(name) = update_ref.as_deref() {
+        match self.inner.find_reference(name) {
+          Ok(mut reference) => {
+            reference.set_target(oid, "commit (signed)")?;
+          }
+          Err(_) => {
+            self.inner.reference(name, oid, true, "commit (signed)")?;
+          }
+        }
+      }
+
+      oid
     } else {
       self.inner.commit(
         update_ref.as_deref(),
