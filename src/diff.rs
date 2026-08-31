@@ -381,7 +381,15 @@ impl Diff {
     let mut lines: Vec<String> = vec![];
     let _ = self.inner.print(format.into(), |_delta, _hunk, line| {
       if let Ok(content) = std::str::from_utf8(line.content()) {
-        lines.push(content.to_string());
+        let origin = line.origin();
+        match origin {
+          ' ' | '+' | '-' => {
+            lines.push(format!("{}{}", origin, content));
+          }
+          _ => {
+            lines.push(content.to_string());
+          }
+        }
       }
       true
     });
