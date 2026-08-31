@@ -35,7 +35,9 @@ index.write();
 
 ## 서명된 커밋 생성하기
 
-GPG 서명 문자열을 제공하여 서명된 커밋을 생성할 수 있어요:
+외부 서명은 두 단계로 진행해요. 먼저 서명되지 않은 커밋 내용을 만들고, 반환된 문자열의 UTF-8 바이트를 그대로 서명 백엔드에 전달해요. 그런 다음 반환된 서명으로 커밋을 저장해요.
+
+`commitCreateBuffer()`가 반환한 문자열의 공백이나 줄바꿈을 변경하면 서명이 유효하지 않게 돼요. `commitSigned()`는 커밋을 객체 데이터베이스에 저장하지만 `HEAD`나 다른 레퍼런스를 갱신하지 않아요.
 
 ```ts
 import { openRepository } from 'es-git';
@@ -46,26 +48,19 @@ const treeOid = index.writeTree();
 const tree = repo.getTree(treeOid);
 
 const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
-
-// 서명된 커밋 생성
-const oid = repo.commit(tree, 'signed commit', {
-    updateRef: 'HEAD',
-    author: signature,
-    committer: signature,
-    parents: [repo.head().target()!],
-    signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+const commitContent = repo.commitCreateBuffer(tree, 'signed commit', {
+  author: signature,
+  committer: signature,
+  parents: [repo.head().target()!],
 });
 
-// 커밋에서 서명 추출
+// 사용하는 GPG 또는 다른 Git 호환 서명 백엔드로 이 함수를 구현하세요.
+const externalSignature = await signCommitContent(Buffer.from(commitContent, 'utf8'));
+const oid = repo.commitSigned(commitContent, externalSignature);
+
 const signatureInfo = repo.extractSignature(oid);
-console.log(signatureInfo.signature);
-// {
-//  signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
-//  signedData: 'tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e\n' +
-//  'parent a01e9888e46729ef4aa68953ba19b02a7a64eb82\n' +
-//  'author Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  'committer Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  '\n' +
-//  'signed commit'
-// }
+console.log(signatureInfo?.signature === externalSignature); // true
+console.log(signatureInfo?.signedData === commitContent); // true
 ```
+
+`commit()`이 생성할 커밋 내용과 정확히 일치하는 서명이 이미 있다면 `CommitOptions.signature`로 계속 전달할 수 있어요.

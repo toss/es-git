@@ -3182,6 +3182,66 @@ export declare class Repository {
    */
   getCommit(oid: string): Commit
   /**
+   * Create commit content for external signing.
+   *
+   * This creates the unsigned commit object content without writing it to the
+   * object database. Sign the exact UTF-8 content returned by this method,
+   * then pass both values to `commitSigned`. Changing whitespace or line
+   * endings after signing invalidates the signature.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commitCreateBuffer(
+   *     tree: Tree,
+   *     message: string,
+   *     options?: CommitCreateBufferOptions | null | undefined,
+   *   ): string;
+   * }
+   * ```
+   *
+   * @param {Tree} tree - Tree object to create commit content from.
+   * @param {string} message - Commit message.
+   * @param {CommitCreateBufferOptions} [options] - Options for creating commit content.
+   * @returns Commit content to sign externally.
+   * @throws If a signature cannot be resolved or a parent commit does not exist.
+   *
+   * @example
+   * ```ts
+   * const content = repo.commitCreateBuffer(tree, 'signed commit', {
+   *   parents: [repo.head().target()!],
+   * });
+   * const signature = await signingBackend.sign(Buffer.from(content, 'utf8'));
+   * const oid = repo.commitSigned(content, signature);
+   * ```
+   */
+  commitCreateBuffer(tree: Tree, message: string, options?: CommitCreateBufferOptions | undefined | null): string
+  /**
+   * Create a signed commit from externally signed commit content.
+   *
+   * This writes the signed commit to the object database but does not update
+   * `HEAD` or any other reference. If `signatureField` is omitted, Git's
+   * default `gpgsig` field is used.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commitSigned(commitContent: string, signature: string, signatureField?: string | null | undefined): string;
+   * }
+   * ```
+   *
+   * @param {string} commitContent - Commit content returned by `commitCreateBuffer`.
+   * @param {string} signature - External signature for the commit content.
+   * @param {string} [signatureField] - Signature field name. Defaults to `gpgsig`.
+   * @returns ID(SHA1) of created commit.
+   * @throws If the commit content, signature, or signature field is invalid.
+   */
+  commitSigned(commitContent: string, signature: string, signatureField?: string | undefined | null): string
+  /**
    * Create new commit in the repository.
    *
    * If the `updateRef` is not `null`, name of the reference that will be
@@ -7018,6 +7078,25 @@ export interface CherrypickOptions {
  * ```
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
+
+export interface CommitCreateBufferOptions {
+  /**
+   * Signature for author.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  author?: SignaturePayload
+  /**
+   * Signature for committer.
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  committer?: SignaturePayload
+  /** Parent commit IDs in their intended order. */
+  parents?: Array<string>
+}
 
 export interface CommitOptions {
   updateRef?: string
