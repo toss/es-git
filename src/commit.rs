@@ -434,19 +434,50 @@ impl Repository {
       .ok_or(crate::Error::SignatureNotFound)?;
 
     let oid = if let Some(signature_str) = signature {
+      // `commit_signed()` only writes the commit object, unlike `commit()` which
+      // also validates parents against the ref tip and moves the ref inside
+      // libgit2. Mirror that behavior here so both paths behave the same.
+      let update_target = update_ref
+        .as_deref()
+        .map(|name| self.resolve_commit_update_ref(name))
+        .transpose()?;
+
+      let parents = parents.unwrap_or_default();
+      if let Some(CommitUpdateRef::Resolved(reference)) = &update_target {
+        // Validate before writing the object so a failure leaves no orphaned
+        // commit in the odb, matching libgit2's ordering.
+        let first_parent = parents.first().map(|parent| parent.id());
+        if reference.target() != first_parent {
+          return Err(
+            git2::Error::new(
+              git2::ErrorCode::Modified,
+              git2::ErrorClass::Object,
+              "failed to create commit: current tip is not the first parent",
+            )
+            .into(),
+          );
+        }
+      }
+
       let commit_content = self.inner.commit_create_buffer(
         &author,
         &committer,
         &message,
         &tree.inner,
-        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+        &parents.iter().collect::<Vec<_>>(),
       )?;
 
       let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
 
-      self
+      let oid = self
         .inner
-        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?
+        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?;
+
+      if let Some(update_target) = update_target {
+        self.update_ref_for_commit(update_target, oid)?;
+      }
+
+      oid
     } else {
       self.inner.commit(
         update_ref.as_deref(),
@@ -459,5 +490,61 @@ impl Repository {
     };
 
     Ok(oid.to_string())
+  }
+}
+
+/// Resolution of an `updateRef` name for commit creation, mirroring how libgit2
+/// treats the ref on its unsigned commit path (`git_commit__create_internal`).
+enum CommitUpdateRef<'repo> {
+  /// The name resolved to an existing direct reference.
+  Resolved(git2::Reference<'repo>),
+  /// The name (or the branch its symbolic ref points to) does not exist yet;
+  /// a reference with this name should be created.
+  Create(String),
+}
+
+impl Repository {
+  /// Mirrors `git_reference_lookup_resolved` as used by libgit2 when creating
+  /// a commit: a missing ref or a symbolic ref to an unborn branch (e.g. HEAD
+  /// in a fresh repository) is not an error, anything else propagates.
+  fn resolve_commit_update_ref(&self, name: &str) -> crate::Result<CommitUpdateRef<'_>> {
+    match self.inner.find_reference(name) {
+      Ok(reference) => match reference.resolve() {
+        Ok(resolved) => Ok(CommitUpdateRef::Resolved(resolved)),
+        Err(e) if e.code() == git2::ErrorCode::NotFound => {
+          let target = reference.symbolic_target().unwrap_or(name).to_string();
+          Ok(CommitUpdateRef::Create(target))
+        }
+        Err(e) => Err(e.into()),
+      },
+      Err(e) if e.code() == git2::ErrorCode::NotFound => Ok(CommitUpdateRef::Create(name.to_string())),
+      Err(e) => Err(e.into()),
+    }
+  }
+
+  /// Points the resolved ref at the new commit, mirroring
+  /// `git_reference__update_for_commit`: same reflog message format, and
+  /// updating an existing ref asserts its target has not moved since it was
+  /// resolved. The reflog identity falls back to the repository default since
+  /// git2 does not accept a signature on reference updates.
+  fn update_ref_for_commit(&self, target: CommitUpdateRef<'_>, oid: git2::Oid) -> crate::Result<()> {
+    let commit = self.inner.find_commit(oid)?;
+    let commit_type = match commit.parent_count() {
+      0 => " (initial)",
+      1 => "",
+      _ => " (merge)",
+    };
+    let reflog_message = format!("commit{}: {}", commit_type, commit.summary().unwrap_or_default());
+    match target {
+      CommitUpdateRef::Resolved(mut reference) => {
+        reference.set_target(oid, &reflog_message)?;
+      }
+      CommitUpdateRef::Create(name) => {
+        // Create-only (no force), like libgit2's `git_reference__update_terminal`:
+        // if the ref appeared in the meantime this errors instead of clobbering it.
+        self.inner.reference(&name, oid, false, &reflog_message)?;
+      }
+    }
+    Ok(())
   }
 }
