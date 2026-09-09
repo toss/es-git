@@ -68,6 +68,17 @@ jobs:
           components: clippy
       - name: Run clippy
         run: cargo clippy
+  test-rust:
+    if: '!contains(github.event.head_commit.message, ''skip ci'')'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
+        with:
+          toolchain: "1.91.0"
+      - name: Run cargo test
+        run: cargo test --no-fail-fast
   build:
     if: '!contains(github.event.head_commit.message, ''skip ci'')'
     strategy:
