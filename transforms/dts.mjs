@@ -17,7 +17,62 @@ export default function transform(file, { j }) {
   let source = file.source;
   source = transformStringEnums(source, j, ['CredentialType']);
   source = transformCredentialUnion(source, j);
+  source = transformIteratorClasses(source, j);
   return source;
+}
+
+/**
+ * `#[napi(iterator)]` classes are generated as `extends Iterator<Yield, Return, Next>`,
+ * but the global `Iterator` only exists as an extendable class when the esnext.iterator
+ * lib is loaded. Under a plain ES2022 target it resolves to the ES2015 `Iterator`
+ * interface, which a class cannot `extends`. napi-rs links these classes to
+ * `Iterator.prototype` when the runtime provides it, but that is not available in every
+ * supported runtime. Declare the portable iterator shape that is always present instead.
+ * @param {string} source
+ * @param {import('jscodeshift').API.j} j
+ * @returns {string}
+ */
+function transformIteratorClasses(source, j) {
+  return j(source)
+    .find(j.ClassDeclaration, node => node.superClass?.type === 'Identifier' && node.superClass.name === 'Iterator')
+    .forEach(path => {
+      const node = path.node;
+      const yieldType = node.superTypeParameters?.params[0] ?? j.tsAnyKeyword();
+
+      node.superClass = null;
+      node.superTypeParameters = null;
+      node.implements = [
+        ...(node.implements ?? []),
+        j.tsExpressionWithTypeArguments(j.identifier('IterableIterator'), j.tsTypeParameterInstantiation([yieldType])),
+      ];
+
+      for (const comment of path.parent.node.comments ?? []) {
+        comment.value = comment.value.replace(
+          /\n \* This type extends JavaScript's `Iterator`, and so has the iterator helper\n \* methods\. It may extend the upcoming TypeScript `Iterator` class in the future\.\n \*\n \* @see https:\/\/developer\.mozilla\.org\/en-US\/docs\/Web\/JavaScript\/Reference\/Global_Objects\/Iterator#iterator_helper_methods\n \* @see https:\/\/www\.typescriptlang\.org\/docs\/handbook\/release-notes\/typescript-5-6\.html#iterator-helper-methods/,
+          '\n * This type implements the standard iterable iterator protocol.'
+        );
+      }
+
+      const hasSymbolIterator = node.body.body.some(
+        member =>
+          member.computed &&
+          member.key.type === 'MemberExpression' &&
+          member.key.object.name === 'Symbol' &&
+          member.key.property.name === 'iterator'
+      );
+      if (!hasSymbolIterator) {
+        const method = j.tsDeclareMethod(
+          j.memberExpression(j.identifier('Symbol'), j.identifier('iterator')),
+          [],
+          j.tsTypeAnnotation(
+            j.tsTypeReference(j.identifier('IterableIterator'), j.tsTypeParameterInstantiation([yieldType]))
+          )
+        );
+        method.computed = true;
+        node.body.body.push(method);
+      }
+    })
+    .toSource(options);
 }
 
 /**

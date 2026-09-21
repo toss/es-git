@@ -176,29 +176,21 @@ export declare class Blame {
 /**
  * An iterator over blame hunks.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class BlameHunks extends Iterator<BlameHunk, void, void> {
-
-  next(value?: void): IteratorResult<BlameHunk, void>
+export declare class BlameHunks implements IterableIterator<BlameHunk> {
+ next(value?: void): IteratorResult<BlameHunk, void>
+ [Symbol.iterator](): IterableIterator<BlameHunk>;
 }
 
 /**
  * Iterator over blame hunks collected line by line.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class BlameHunksByLine extends Iterator<BlameHunk, void, void> {
-
-  next(value?: void): IteratorResult<BlameHunk, void>
+export declare class BlameHunksByLine implements IterableIterator<BlameHunk> {
+ next(value?: void): IteratorResult<BlameHunk, void>
+ [Symbol.iterator](): IterableIterator<BlameHunk>;
 }
 
 /**
@@ -410,15 +402,11 @@ export declare class Branch {
 /**
  * An iterator over the branches inside of a repository.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class Branches extends Iterator<BranchesItem, void, void> {
-
-  next(value?: void): IteratorResult<BranchesItem, void>
+export declare class Branches implements IterableIterator<BranchesItem> {
+ next(value?: void): IteratorResult<BranchesItem, void>
+ [Symbol.iterator](): IterableIterator<BranchesItem>;
 }
 
 /** A class to represent a git commit. */
@@ -1058,29 +1046,21 @@ export declare class Config {
 /**
  * An iterator over the `ConfigEntry` values of a config.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class ConfigEntries extends Iterator<ConfigEntry, void, void> {
-
-  next(value?: void): IteratorResult<ConfigEntry, void>
+export declare class ConfigEntries implements IterableIterator<ConfigEntry> {
+ next(value?: void): IteratorResult<ConfigEntry, void>
+ [Symbol.iterator](): IterableIterator<ConfigEntry>;
 }
 
 /**
  * An iterator over the diffs in a delta.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class Deltas extends Iterator<DiffDelta, void, void> {
-
-  next(value?: void): IteratorResult<DiffDelta, void>
+export declare class Deltas implements IterableIterator<DiffDelta> {
+ next(value?: void): IteratorResult<DiffDelta, void>
+ [Symbol.iterator](): IterableIterator<DiffDelta>;
 }
 
 /**
@@ -1873,15 +1853,11 @@ export declare class Index {
 /**
  * An iterator over the entries in an index.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class IndexEntries extends Iterator<IndexEntry, void, void> {
-
-  next(value?: void): IteratorResult<IndexEntry, void>
+export declare class IndexEntries implements IterableIterator<IndexEntry> {
+ next(value?: void): IteratorResult<IndexEntry, void>
+ [Symbol.iterator](): IterableIterator<IndexEntry>;
 }
 
 /** A wrapper around git2::Mailmap providing Node.js bindings */
@@ -2002,15 +1978,11 @@ export declare class Note {
 /**
  * An iterator over all of the notes within a repository.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class Notes extends Iterator<NoteIterItem, void, void> {
-
-  next(value?: void): IteratorResult<NoteIterItem, void>
+export declare class Notes implements IterableIterator<NoteIterItem> {
+ next(value?: void): IteratorResult<NoteIterItem, void>
+ [Symbol.iterator](): IterableIterator<NoteIterItem>;
 }
 
 /**
@@ -2559,15 +2531,11 @@ export declare class ReflogEntry {
 /**
  * An iterator over the entries in a reflog.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class ReflogIter extends Iterator<ReflogEntry, void, void> {
-
-  next(value?: void): IteratorResult<ReflogEntry, void>
+export declare class ReflogIter implements IterableIterator<ReflogEntry> {
+ next(value?: void): IteratorResult<ReflogEntry, void>
+ [Symbol.iterator](): IterableIterator<ReflogEntry>;
 }
 
 /**
@@ -2814,7 +2782,7 @@ export declare class Repository {
    * @param {Reference} reference - Reference to creates a Annotated Commit.
    * @returns An Annotated Commit created from reference.
    */
-  getAnnotatedCommitFromReference(reference: GitReference): AnnotatedCommit
+  getAnnotatedCommitFromReference(reference: Reference): AnnotatedCommit
   /**
    * Creates a Annotated Commit from `FETCH_HEAD`.
    *
@@ -5667,15 +5635,11 @@ export declare class StashList {
 }
 
 /**
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class StashListIter extends Iterator<StashEntry, void, void> {
-
-  next(value?: void): IteratorResult<StashEntry, void>
+export declare class StashListIter implements IterableIterator<StashEntry> {
+ next(value?: void): IteratorResult<StashEntry, void>
+ [Symbol.iterator](): IterableIterator<StashEntry>;
 }
 
 /** A structure representing an entry in the `Statuses` structure. */
@@ -5795,15 +5759,11 @@ export declare class Statuses {
 }
 
 /**
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class StatusesIter extends Iterator<StatusEntry, void, void> {
-
-  next(value?: void): IteratorResult<StatusEntry, void>
+export declare class StatusesIter implements IterableIterator<StatusEntry> {
+ next(value?: void): IteratorResult<StatusEntry, void>
+ [Symbol.iterator](): IterableIterator<StatusEntry>;
 }
 
 export declare class Submodule {
@@ -6493,15 +6453,11 @@ export declare class TreeEntry {
 /**
  * An iterator over the entries in a tree.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
- * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
+ * This type implements the standard iterable iterator protocol.
  */
-export declare class TreeIter extends Iterator<TreeEntry, void, void> {
-
-  next(value?: void): IteratorResult<TreeEntry, void>
+export declare class TreeIter implements IterableIterator<TreeEntry> {
+ next(value?: void): IteratorResult<TreeEntry, void>
+ [Symbol.iterator](): IterableIterator<TreeEntry>;
 }
 
 /** A class to represent a git worktree. */

@@ -1,5 +1,4 @@
 use crate::commit::Commit;
-use crate::reference::Reference as GitReference;
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -114,7 +113,7 @@ impl Repository {
   /// @returns An Annotated Commit created from reference.
   pub fn get_annotated_commit_from_reference(
     &self,
-    reference: &GitReference,
+    reference: &crate::reference::Reference,
     this: Reference<Repository>,
     env: Env,
   ) -> crate::Result<AnnotatedCommit> {
