@@ -166,9 +166,50 @@ class Submodule {
         <p class="param-description">콜백을 포함해 fetch를 제어하는 옵션</p>
         <ul class="param-ul">
           <li class="param-li">
+            <span class="param-name">callbacks</span><span class="param-type">RemoteCallbacks</span>
+            <br>
+            <ul class="param-ul">
+              <li class="param-li">
+                <span class="param-name">packProgress</span><span class="param-type">(stage: PackBuilderStage, current: number, total: number) =&gt; void</span>
+                <br>
+                <p class="param-description">팩 빌드 중 진행 정보를 전달하기 위해 호출할 함수예요. 이 함수는 팩 빌드 작업과 인라인으로 호출되므로 성능에 영향을 줄 수 있어요.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushNegotiation</span><span class="param-type">(update: PushUpdate[]) =&gt; void</span>
+                <br>
+                <p class="param-description">협상 단계와 업로드 사이에 한 번 호출되는 콜백이에요. 콜백의 인수는 대상에 명령으로 전송될 업데이트를 포함하는 슬라이스예요.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushTransferProgress</span><span class="param-type">(current: number, total: number, bytes: number) =&gt; void</span>
+                <br>
+                <p class="param-description">push 전송 진행 상황을 모니터링하는 콜백.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushUpdateReference</span><span class="param-type">(refname: string, status: string | null) =&gt; void</span>
+                <br>
+                <p class="param-description">push 시 업데이트된 각 참조에 대해 호출되는 콜백을 설정해요. 콜백의 첫 번째 인수는 참조 이름이고, 두 번째는 서버에서 보낸 상태 메시지예요. 상태가 <code>null</code>이 아니면 push가 거부된 것이에요.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">sidebandProgress</span><span class="param-type">(data: Uint8Array) =&gt; void</span>
+                <br>
+                <p class="param-description">리모트의 텍스트 진행 정보예요. progress 사이드 밴드를 통해 전송된 텍스트가 이 함수로 전달돼요 (이것은 &#39;counting objects&#39; 출력이에요).</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">transferProgress</span><span class="param-type">(data: RemoteTransferProgress) =&gt; void</span>
+                <br>
+                <p class="param-description">fetch 중 전송 진행 상황과 함께 호출돼요.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">updateTips</span><span class="param-type">(refname: string, oldId: string, newId: string) =&gt; void</span>
+                <br>
+                <p class="param-description">참조가 로컬에서 업데이트될 때마다 해당 정보와 함께 콜백이 호출돼요.</p>
+              </li>
+            </ul>
+          </li>
+          <li class="param-li">
             <span class="param-name">credential</span><span class="param-type">Credential</span>
             <br>
-            <p class="param-description">libgit2에서 git 자격 증명을 나타내는 인터페이스</p>
+            <p class="param-description">libgit2에서 Git 인증 정보를 나타내는 인터페이스예요.<br><br><code>SSHKeyFromPath</code>에는 <code>privateKeyPath</code>, <code>SSHKey</code>에는 <code>privateKey</code>, <code>Plain</code>에는 <code>password</code>가 필요해요. 빈 비밀번호도 허용하며, 사용자 이름의 기본값은 <code>&quot;git&quot;</code>이에요. 공개 키와 패스프레이즈는 선택 사항이에요.<br><br>인증 정보는 연결 전에 검증하며, 인증이 필요 없는 공개 또는 로컬 리모트에도 적용돼요. 인증이 필요하지 않으면 <code>credential</code>을 생략하세요.</p>
           </li>
           <li class="param-li">
             <span class="param-name">customHeaders</span><span class="param-type">string[]</span>
@@ -233,5 +274,15 @@ class Submodule {
     <span class="param-type">Promise&lt;Repository&gt;</span>
     <br>
     <p class="param-description">새로 생성된 리포지토리 개체</p>
+  </li>
+</ul>
+
+### 에러
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description"><code>options.fetch.credential</code>에 <code>type</code>별 필수 필드(<code>SSHKeyFromPath</code>의 <code>privateKeyPath</code>, <code>SSHKey</code>의 <code>privateKey</code>, <code>Plain</code>의 <code>password</code>)가 없으면 <code>InvalidArg</code> 오류가 발생해요. 인증이 필요 없는 리모트에도 적용돼요. clone 작업이 실패해도 오류가 발생해요.</p>
   </li>
 </ul>

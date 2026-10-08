@@ -152,11 +152,22 @@ describe('remote', () => {
     });
   });
 
+  it.each(['push', 'prune'] as const)('rejects a missing password before %s', async operation => {
+    const remote = await createLocalRemote();
+    const options = { credential: { type: 'Plain' } as any };
+    const result = operation === 'push' ? remote.push([], options) : remote.prune(options);
+    await expect(result).rejects.toMatchObject({
+      code: 'InvalidArg',
+      message: 'credential.password is required for Plain credentials',
+    });
+  });
+
   it.each([
     { type: 'SSHKeyFromPath', privateKeyPath: 'synthetic-private-key-path' },
     { type: 'SSHKey', privateKey: 'synthetic-private-key' },
     { type: 'Plain', password: 'synthetic-password' },
-  ])('accepts valid $type credentials', async credential => {
+    { type: 'Plain', password: '' },
+  ])('does not reject $type credentials with required fields present', async credential => {
     const remote = await createLocalRemote();
     await expect(remote.fetch([], { fetch: { credential: credential as any } })).resolves.toBeUndefined();
   });

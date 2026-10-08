@@ -19,7 +19,7 @@ class Submodule {
 
 <ul class="param-ul">
   <li class="param-li param-li-root">
-    <span class="param-name">options</span><span class="param-type">null | SubmoduleUpdateOptions</span>
+    <span class="param-name">options</span><span class="param-type">SubmoduleUpdateOptions | null</span>
     <br>
     <p class="param-description">The options to use.</p>
     <ul class="param-ul">
@@ -166,9 +166,50 @@ class Submodule {
         <p class="param-description">Options which control the fetch, including callbacks.</p>
         <ul class="param-ul">
           <li class="param-li">
+            <span class="param-name">callbacks</span><span class="param-type">RemoteCallbacks</span>
+            <br>
+            <ul class="param-ul">
+              <li class="param-li">
+                <span class="param-name">packProgress</span><span class="param-type">(stage: PackBuilderStage, current: number, total: number) =&gt; void</span>
+                <br>
+                <p class="param-description">Function to call with progress information during pack building.  Be aware that this is called inline with pack building operations, so performance may be affected.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushNegotiation</span><span class="param-type">(update: PushUpdate[]) =&gt; void</span>
+                <br>
+                <p class="param-description">The callback is called once between the negotiation step and the upload.  The argument to the callback is a slice containing the updates which will be sent as commands to the destination.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushTransferProgress</span><span class="param-type">(current: number, total: number, bytes: number) =&gt; void</span>
+                <br>
+                <p class="param-description">The callback through which progress of push transfer is monitored</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushUpdateReference</span><span class="param-type">(refname: string, status: string | null) =&gt; void</span>
+                <br>
+                <p class="param-description">Set a callback to get invoked for each updated reference on a push.  The first argument to the callback is the name of the reference and the second is a status message sent by the server. If the status is not <code>null</code> then the push was rejected.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">sidebandProgress</span><span class="param-type">(data: Uint8Array) =&gt; void</span>
+                <br>
+                <p class="param-description">Textual progress from the remote.  Text sent over the progress side-band will be passed to this function (this is the &#39;counting objects&#39; output).</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">transferProgress</span><span class="param-type">(data: RemoteTransferProgress) =&gt; void</span>
+                <br>
+                <p class="param-description">Called with transfer progress during fetch.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">updateTips</span><span class="param-type">(refname: string, oldId: string, newId: string) =&gt; void</span>
+                <br>
+                <p class="param-description">Each time a reference is updated locally, the callback will be called with information about it.</p>
+              </li>
+            </ul>
+          </li>
+          <li class="param-li">
             <span class="param-name">credential</span><span class="param-type">Credential</span>
             <br>
-            <p class="param-description">A interface to represent git credentials in libgit2.</p>
+            <p class="param-description">An interface to represent git credentials in libgit2.<br><br><code>SSHKeyFromPath</code> requires <code>privateKeyPath</code>, <code>SSHKey</code> requires <code>privateKey</code>, and<br><code>Plain</code> requires <code>password</code> (an empty password is allowed). The username defaults<br>to <code>&quot;git&quot;</code>. Public keys and passphrases are optional.<br><br>Credentials are validated before connecting, even for public or local remotes<br>that do not require authentication. Omit <code>credential</code> when authentication is not needed.</p>
           </li>
           <li class="param-li">
             <span class="param-name">customHeaders</span><span class="param-type">string[]</span>
@@ -220,7 +261,7 @@ class Submodule {
     </ul>
   </li>
   <li class="param-li param-li-root">
-    <span class="param-name">signal</span><span class="param-type">null | AbortSignal</span>
+    <span class="param-name">signal</span><span class="param-type">AbortSignal | null</span>
     <br>
     <p class="param-description">Optional AbortSignal to cancel the operation.</p>
   </li>
@@ -233,5 +274,15 @@ class Submodule {
     <span class="param-type">Promise&lt;Repository&gt;</span>
     <br>
     <p class="param-description">The newly created repository object.</p>
+  </li>
+</ul>
+
+### Errors
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description">Throws an  <code>InvalidArg</code>  error if  <code>options.fetch.credential</code>  is missing a field required by its  <code>type</code> <br>( <code>privateKeyPath</code>  for  <code>SSHKeyFromPath</code> ,  <code>privateKey</code>  for  <code>SSHKey</code> ,  <code>password</code>  for  <code>Plain</code> ),<br>even if the remote does not require authentication. Throws an error if the clone fails.</p>
   </li>
 </ul>

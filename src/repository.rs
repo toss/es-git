@@ -815,6 +815,10 @@ impl Task for CloneRepositoryTask {
 /// @param {AbortSignal|undefined|null} [signal] - Abort signal.
 /// @returns Repository instance
 ///
+/// @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+/// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+/// even if the remote does not require authentication. Throws an error if the clone fails.
+///
 /// @example
 ///
 /// Clone repository using `https://` protocol.

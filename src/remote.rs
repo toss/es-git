@@ -65,15 +65,29 @@ pub enum CredentialType {
 
 #[napi(object)]
 #[derive(Clone)]
-/// A interface to represent git credentials in libgit2.
+/// An interface to represent git credentials in libgit2.
+///
+/// `SSHKeyFromPath` requires `privateKeyPath`, `SSHKey` requires `privateKey`, and
+/// `Plain` requires `password` (an empty password is allowed). The username defaults
+/// to `"git"`. Public keys and passphrases are optional.
+///
+/// Credentials are validated before connecting, even for public or local remotes
+/// that do not require authentication. Omit `credential` when authentication is not needed.
 pub struct Credential {
   pub r#type: CredentialType,
+  /// Username. Defaults to `"git"`.
   pub username: Option<String>,
+  /// Path to the public key. Optional for `SSHKeyFromPath`.
   pub public_key_path: Option<String>,
+  /// Public key contents. Optional for `SSHKey`.
   pub public_key: Option<String>,
+  /// Path to the private key. Required for `SSHKeyFromPath`.
   pub private_key_path: Option<String>,
+  /// Private key contents. Required for `SSHKey`.
   pub private_key: Option<String>,
+  /// Passphrase for the private key, if it is encrypted. Optional for SSH keys.
   pub passphrase: Option<String>,
+  /// Password or personal access token. Required for `Plain`; an empty string is allowed.
   pub password: Option<String>,
 }
 
@@ -103,6 +117,8 @@ impl Credential {
     }
   }
 
+  // Required-field checks are defensive: options conversion calls validate() before
+  // installing the callback, so these checks cannot fail through the public APIs.
   pub(crate) fn to_git2_cred(&self) -> std::result::Result<git2::Cred, git2::Error> {
     let username = self.username();
     let cred = match self.r#type {
@@ -909,6 +925,10 @@ impl Remote {
   /// @param {FetchRemoteOptions} [options] - Options for fetch remote.
   /// @param {AbortSignal} [signal] Abort signal.
   ///
+  /// @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+  /// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+  /// even if the remote does not require authentication. Throws an error if the fetch fails.
+  ///
   /// @example
   /// ```ts
   /// import { openRepository } from 'es-git';
@@ -958,8 +978,12 @@ impl Remote {
   /// ```
   ///
   /// @param {string[]} refspecs - Refspecs to push to remote.
-  /// @param {FetchRemoteOptions} [options] - Options for push remote.
+  /// @param {PushOptions} [options] - Options for push remote.
   /// @param {AbortSignal} [signal] Abort signal.
+  ///
+  /// @throws Throws an `InvalidArg` error if `options.credential` is missing a field required by its `type`
+  /// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+  /// even if the remote does not require authentication. Throws an error if the push fails.
   ///
   /// @example
   /// ```ts
@@ -1009,6 +1033,10 @@ impl Remote {
   ///
   /// @param {PruneOptions} [options] - Options for prune remote.
   /// @param {AbortSignal} [signal] Abort signal.
+  ///
+  /// @throws Throws an `InvalidArg` error if `options.credential` is missing a field required by its `type`
+  /// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+  /// even if the remote does not require authentication. Throws an error if the prune fails.
   pub fn prune(
     &self,
     self_ref: Reference<Remote>,

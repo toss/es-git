@@ -51,6 +51,17 @@ describe('Repository', () => {
     await expect(fs.readFile(path.join(p, 'first'), 'utf8')).resolves.toEqual(expect.stringContaining('first'));
   });
 
+  it('rejects a missing password before cloning a local repository', async () => {
+    const localPath = await useFixture('commits');
+    const p = await makeTmpDir('clone');
+    await expect(
+      cloneRepository(localPath, p, { fetch: { credential: { type: 'Plain' } as any } })
+    ).rejects.toMatchObject({
+      code: 'InvalidArg',
+      message: 'credential.password is required for Plain credentials',
+    });
+  });
+
   it('clone from remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
     const p = await makeTmpDir('clone');
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);

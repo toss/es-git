@@ -150,6 +150,9 @@ jobs:
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
+      - name: Run Rust unit tests
+        if: ${{ matrix.settings.target == 'aarch64-apple-darwin' }}
+        run: cargo test --no-fail-fast
       - name: Check generated bindings are up to date
         if: ${{ matrix.settings.target == 'aarch64-apple-darwin' }}
         run: |

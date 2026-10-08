@@ -760,6 +760,10 @@ impl Submodule {
   /// not been initialized yet.
   /// @param {SubmoduleUpdateOptions} [options] - Configuration options for the update.
   /// @param {AbortSignal} [signal] - Optional AbortSignal to cancel the operation.
+  ///
+  /// @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+  /// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+  /// even if the remote does not require authentication. Throws an error if the update fails.
   pub fn update(
     &self,
     env: Env,
@@ -797,6 +801,10 @@ impl Submodule {
   /// @param {SubmoduleUpdateOptions} [options] - The options to use.
   /// @param {AbortSignal} [signal] - Optional AbortSignal to cancel the operation.
   /// @returns The newly created repository object.
+  ///
+  /// @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+  /// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+  /// even if the remote does not require authentication. Throws an error if the clone fails.
   pub fn clone(
     &self,
     env: Env,
