@@ -41,7 +41,8 @@
     "build:debug": "DEBUG=\"napi:*\" napi build --platform --no-const-enum --pipe=\"yarn transform:dts\"",
     "transform:dts": "jscodeshift -t transforms/dts.mjs index.d.ts",
     "check": "biome check",
-    "check:fix": "biome check --write --unsafe"
+    "check:fix": "biome check --write --unsafe",
+    "test:types": "tsc -p tests/typecheck-consumer && tsc -p tests/typecheck-consumer/tsconfig.esnext.json"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",

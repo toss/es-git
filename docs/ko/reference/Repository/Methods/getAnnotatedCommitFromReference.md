@@ -14,7 +14,7 @@ class Repository {
 
 <ul class="param-ul">
   <li class="param-li param-li-root">
-    <span class="param-name">reference</span><span class="param-required">필수</span>&nbsp;·&nbsp;<span class="param-type">GitReference</span>
+    <span class="param-name">reference</span><span class="param-required">필수</span>&nbsp;·&nbsp;<span class="param-type">Reference</span>
     <br>
     <p class="param-description">주석이 달린 커밋을 생성할 참조</p>
   </li>
