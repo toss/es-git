@@ -2817,7 +2817,7 @@ export declare class Repository {
    */
   getAnnotatedCommit(commit: Commit): AnnotatedCommit
   /**
-   * Creates a Annotated Commit from the given reference.
+   * Creates an Annotated Commit from the given reference.
    *
    * @category Repository/Methods
    * @signature
@@ -2827,7 +2827,7 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Reference} reference - Reference to creates a Annotated Commit.
+   * @param {Reference} reference - Reference to create an Annotated Commit from.
    * @returns An Annotated Commit created from reference.
    */
   getAnnotatedCommitFromReference(reference: Reference): AnnotatedCommit

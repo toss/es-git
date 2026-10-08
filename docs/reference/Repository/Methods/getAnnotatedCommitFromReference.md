@@ -1,6 +1,6 @@
 # getAnnotatedCommitFromReference
 
-Creates a Annotated Commit from the given reference.
+Creates an Annotated Commit from the given reference.
 
 ## Signature
 
@@ -14,9 +14,9 @@ class Repository {
 
 <ul class="param-ul">
   <li class="param-li param-li-root">
-    <span class="param-name">reference</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">GitReference</span>
+    <span class="param-name">reference</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">Reference</span>
     <br>
-    <p class="param-description">Reference to creates a Annotated Commit.</p>
+    <p class="param-description">Reference to create an Annotated Commit from.</p>
   </li>
 </ul>
 
