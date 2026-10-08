@@ -853,6 +853,21 @@ impl Task for CloneRepositoryTask {
 ///   },
 /// });
 /// ```
+///
+/// Shallow clone repository with only the latest commit.
+///
+/// ```ts
+/// import { cloneRepository } from 'es-git';
+///
+/// const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone', {
+///   fetch: { depth: 1 },
+/// });
+/// console.log(repo.isShallow()); // true
+///
+/// // Fetch the rest of the history later.
+/// await repo.getRemote('origin').fetch([], { fetch: { unshallow: true } });
+/// console.log(repo.isShallow()); // false
+/// ```
 pub fn clone_repository(
   url: String,
   path: String,
