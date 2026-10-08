@@ -2676,6 +2676,10 @@ export declare class Remote {
    * @param {FetchRemoteOptions} [options] - Options for fetch remote.
    * @param {AbortSignal} [signal] Abort signal.
    *
+   * @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+   * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+   * even if the remote does not require authentication. Throws an error if the fetch fails.
+   *
    * @example
    * ```ts
    * import { openRepository } from 'es-git';
@@ -2710,8 +2714,12 @@ export declare class Remote {
    * ```
    *
    * @param {string[]} refspecs - Refspecs to push to remote.
-   * @param {FetchRemoteOptions} [options] - Options for push remote.
+   * @param {PushOptions} [options] - Options for push remote.
    * @param {AbortSignal} [signal] Abort signal.
+   *
+   * @throws Throws an `InvalidArg` error if `options.credential` is missing a field required by its `type`
+   * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+   * even if the remote does not require authentication. Throws an error if the push fails.
    *
    * @example
    * ```ts
@@ -2746,6 +2754,10 @@ export declare class Remote {
    *
    * @param {PruneOptions} [options] - Options for prune remote.
    * @param {AbortSignal} [signal] Abort signal.
+   *
+   * @throws Throws an `InvalidArg` error if `options.credential` is missing a field required by its `type`
+   * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+   * even if the remote does not require authentication. Throws an error if the prune fails.
    */
   prune(options?: PruneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
@@ -6100,6 +6112,10 @@ export declare class Submodule {
    * not been initialized yet.
    * @param {SubmoduleUpdateOptions} [options] - Configuration options for the update.
    * @param {AbortSignal} [signal] - Optional AbortSignal to cancel the operation.
+   *
+   * @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+   * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+   * even if the remote does not require authentication. Throws an error if the update fails.
    */
   update(init?: boolean | undefined | null, options?: SubmoduleUpdateOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
@@ -6121,6 +6137,10 @@ export declare class Submodule {
    * @param {SubmoduleUpdateOptions} [options] - The options to use.
    * @param {AbortSignal} [signal] - Optional AbortSignal to cancel the operation.
    * @returns The newly created repository object.
+   *
+   * @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+   * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+   * even if the remote does not require authentication. Throws an error if the clone fails.
    */
   clone(options?: SubmoduleUpdateOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 }
@@ -6978,6 +6998,10 @@ export interface CherrypickOptions {
  * @param {AbortSignal|undefined|null} [signal] - Abort signal.
  * @returns Repository instance
  *
+ * @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+ * (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+ * even if the remote does not require authentication. Throws an error if the clone fails.
+ *
  * @example
  *
  * Clone repository using `https://` protocol.
@@ -7197,27 +7221,47 @@ export interface CreateTagOptions {
   force?: boolean
 }
 
-/** A interface to represent git credentials in libgit2. */
+/**
+ * An interface to represent git credentials in libgit2.
+ *
+ * `SSHKeyFromPath` requires `privateKeyPath`, `SSHKey` requires `privateKey`, and
+ * `Plain` requires `password` (an empty password is allowed). The username defaults
+ * to `"git"`. Public keys and passphrases are optional.
+ *
+ * Credentials are validated before connecting, even for public or local remotes
+ * that do not require authentication. Omit `credential` when authentication is not needed.
+ */
 export type Credential = {
  type: 'Default';
 } | {
  type: 'SSHKeyFromAgent';
+ /** Username. Defaults to `"git"`. */
  username?: string;
 } | {
  type: 'SSHKeyFromPath';
+ /** Username. Defaults to `"git"`. */
  username?: string;
+ /** Path to the public key. Optional for `SSHKeyFromPath`. */
  publicKeyPath?: string;
+ /** Path to the private key. Required for `SSHKeyFromPath`. */
  privateKeyPath: string;
+ /** Passphrase for the private key, if it is encrypted. Optional for SSH keys. */
  passphrase?: string;
 } | {
  type: 'SSHKey';
+ /** Username. Defaults to `"git"`. */
  username?: string;
+ /** Public key contents. Optional for `SSHKey`. */
  publicKey?: string;
+ /** Private key contents. Required for `SSHKey`. */
  privateKey: string;
+ /** Passphrase for the private key, if it is encrypted. Optional for SSH keys. */
  passphrase?: string;
 } | {
  type: 'Plain';
+ /** Username. Defaults to `"git"`. */
  username?: string;
+ /** Password or personal access token. Required for `Plain`; an empty string is allowed. */
  password: string;
 };
 

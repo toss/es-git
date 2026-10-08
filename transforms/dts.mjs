@@ -77,6 +77,10 @@ function transformCredentialUnion(source, j) {
       );
     })
     .replaceWith(path => {
+      if (path.node.declaration.type === 'TSTypeAliasDeclaration') {
+        return path.node;
+      }
+      const fieldComments = new Map(path.node.declaration.body.body.map(field => [field.key.name, field.comments]));
       const node = j.exportNamedDeclaration.from({
         comments: path.node.comments ?? null,
         declaration: j.tsTypeAliasDeclaration.from({
@@ -141,6 +145,11 @@ function transformCredentialUnion(source, j) {
           ]),
         }),
       });
+      for (const variant of node.declaration.typeAnnotation.types) {
+        for (const field of variant.members) {
+          field.comments = fieldComments.get(field.key.name) ?? null;
+        }
+      }
       return node;
     })
     .toSource(options);

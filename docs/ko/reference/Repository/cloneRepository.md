@@ -106,9 +106,7 @@ function cloneRepository(
           <li class="param-li">
             <span class="param-name">credential</span><span class="param-type">Credential</span>
             <br>
-            <p class="param-description">
-              인증 정보를 설정해요.
-            </p>
+            <p class="param-description">libgit2에서 Git 인증 정보를 나타내는 인터페이스예요.<br><br><code>SSHKeyFromPath</code>에는 <code>privateKeyPath</code>, <code>SSHKey</code>에는 <code>privateKey</code>, <code>Plain</code>에는 <code>password</code>가 필요해요. 빈 비밀번호도 허용하며, 사용자 이름의 기본값은 <code>&quot;git&quot;</code>이에요. 공개 키와 패스프레이즈는 선택 사항이에요.<br><br>인증 정보는 연결 전에 검증하며, 인증이 필요 없는 공개 또는 로컬 리모트에도 적용돼요. 인증이 필요하지 않으면 <code>credential</code>을 생략하세요.</p>
           </li>
           <li class="param-li">
             <span class="param-name">customHeaders</span><span class="param-type">string[]</span>
@@ -215,6 +213,16 @@ function cloneRepository(
     <span class="param-type">Promise&lt;Repository&gt;</span>
     <br>
     <p class="param-description">클론된 리포지토리를 반환해요.</p>
+  </li>
+</ul>
+
+### 에러
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description"><code>options.fetch.credential</code>에 <code>type</code>별 필수 필드(<code>SSHKeyFromPath</code>의 <code>privateKeyPath</code>, <code>SSHKey</code>의 <code>privateKey</code>, <code>Plain</code>의 <code>password</code>)가 없으면 <code>InvalidArg</code> 오류가 발생해요. 인증이 필요 없는 리모트에도 적용돼요. clone 작업이 실패해도 오류가 발생해요.</p>
   </li>
 </ul>
 

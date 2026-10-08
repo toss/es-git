@@ -770,7 +770,7 @@ impl Task for CloneRepositoryTask {
         builder.branch(branch);
       }
       if let Some(fetch) = &opts.fetch {
-        let fetch_options = fetch.to_git2_fetch_options();
+        let fetch_options = fetch.to_git2_fetch_options()?;
         builder.fetch_options(fetch_options);
       }
       if let Some(true) = &opts.recursive {
@@ -814,6 +814,10 @@ impl Task for CloneRepositoryTask {
 /// @param {RepositoryCloneOptions|undefined|null} [options] - Clone options for repository.
 /// @param {AbortSignal|undefined|null} [signal] - Abort signal.
 /// @returns Repository instance
+///
+/// @throws Throws an `InvalidArg` error if `options.fetch.credential` is missing a field required by its `type`
+/// (`privateKeyPath` for `SSHKeyFromPath`, `privateKey` for `SSHKey`, `password` for `Plain`),
+/// even if the remote does not require authentication. Throws an error if the clone fails.
 ///
 /// @example
 ///

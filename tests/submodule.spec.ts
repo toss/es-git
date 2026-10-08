@@ -92,6 +92,19 @@ describe('submodule', () => {
     await expect(submodule2.clone()).resolves.toBeTruthy();
   });
 
+  it.each(['update', 'clone'] as const)('rejects a missing password before submodule %s', async operation => {
+    const childPath = await useFixture('commits');
+    const parentPath = await useFixture('commits');
+    const parentRepo = await openRepository(parentPath);
+    const submodule = parentRepo.submodule(pathToFileURL(childPath).toString(), 'child', true);
+    const options = { fetch: { credential: { type: 'Plain' } as any } };
+    const result = operation === 'update' ? submodule.update(true, options) : submodule.clone(options);
+    await expect(result).rejects.toMatchObject({
+      code: 'InvalidArg',
+      message: 'credential.password is required for Plain credentials',
+    });
+  });
+
   it('repo init submodule', async () => {
     const childPath = await useFixture('commits');
     const parentPath = await useFixture('commits');
