@@ -32,7 +32,8 @@ export default function transform(file, { j }) {
  * @returns {string}
  */
 function transformIteratorClasses(source, j) {
-  return j(source)
+  const iteratorClasses = [];
+  const transformed = j(source)
     .find(j.ClassDeclaration, node => node.superClass?.type === 'Identifier' && node.superClass.name === 'Iterator')
     .forEach(path => {
       const node = path.node;
@@ -40,6 +41,7 @@ function transformIteratorClasses(source, j) {
       if (typeParameters?.length !== 3) {
         throw new Error(`Expected Iterator<Yield, Return, Next> for ${node.id.name}`);
       }
+      iteratorClasses.push(node.id.name);
 
       node.superClass = null;
       node.superTypeParameters = null;
@@ -77,6 +79,28 @@ function transformIteratorClasses(source, j) {
       );
     })
     .toSource(options);
+
+  return iteratorClasses.reduce((result, name) => {
+    const classStart = result.indexOf(`export declare class ${name} {`);
+    const commentEnd = result.lastIndexOf('*/', classStart);
+    const commentStart = result.lastIndexOf('/**', commentEnd);
+    const comment = result.slice(commentStart, commentEnd + 2);
+    const start = comment.indexOf("This type extends JavaScript's `Iterator`");
+    const seeLink = comment.indexOf('\n * @see', start);
+    if (
+      commentStart === -1 ||
+      result.slice(commentEnd + 2, classStart).trim() !== '' ||
+      start === -1 ||
+      seeLink === -1
+    ) {
+      throw new Error(`Expected iterator helper comment for ${name}`);
+    }
+    const updated =
+      comment.slice(0, start) +
+      'Iterator helper methods are available when supported by the runtime.\n *' +
+      comment.slice(seeLink);
+    return result.slice(0, commentStart) + updated + result.slice(commentEnd + 2);
+  }, transformed);
 }
 
 /**
