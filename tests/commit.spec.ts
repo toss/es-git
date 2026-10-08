@@ -1,7 +1,7 @@
-import { execFileSync } from 'node:child_process';
 import { createHash, generateKeyPairSync, sign, verify } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { initRepository, isValidOid, openRepository } from '../index';
 import { useFixture } from './fixtures';
@@ -435,7 +435,9 @@ describe('commit', () => {
       })
     ).toEqual(oid);
     expect(repo.extractSignature(oid)).toBeNull();
-    const rawCommit = execFileSync('git', ['cat-file', 'commit', oid], { cwd: p, encoding: 'utf8' });
+    const objectPath = path.join(p, '.git', 'objects', oid.slice(0, 2), oid.slice(2));
+    const object = inflateSync(await fs.readFile(objectPath));
+    const rawCommit = object.subarray(object.indexOf(0) + 1).toString('utf8');
     expect(rawCommit).toEqual(
       content.replace('\n\n', `\ncustom-signature ${externalSignature.replaceAll('\n', '\n ')}\n\n`)
     );
