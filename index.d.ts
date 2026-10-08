@@ -7016,6 +7016,21 @@ export interface CherrypickOptions {
  *   },
  * });
  * ```
+ *
+ * Shallow clone repository with only the latest commit.
+ *
+ * ```ts
+ * import { cloneRepository } from 'es-git';
+ *
+ * const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone', {
+ *   fetch: { depth: 1 },
+ * });
+ * console.log(repo.isShallow()); // true
+ *
+ * // Fetch the rest of the history later.
+ * await repo.getRemote('origin').fetch([], { fetch: { unshallow: true } });
+ * console.log(repo.isShallow()); // false
+ * ```
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 
@@ -7643,10 +7658,26 @@ export interface FetchOptions {
   /** Set whether to perform a prune after the fetch. */
   prune?: FetchPrune
   /**
-   * Set fetch depth, a value less or equal to 0 is interpreted as pull
-   * everything (effectively the same as not declaring a limit depth).
+   * Set fetch depth, the number of commits to fetch from the tip of each
+   * remote branch. A depth greater than 0 creates a shallow repository
+   * (see `Repository.isShallow()`).
+   *
+   * A value less or equal to 0 is interpreted as pull everything
+   * (effectively the same as not declaring a limit depth). This does not
+   * unshallow an existing shallow repository; use `unshallow` for that.
+   *
+   * Shallow fetches are not supported by the local transport, so `depth`
+   * fails for local paths and `file://` URLs.
    */
   depth?: number
+  /**
+   * Fetch the history missing from a shallow repository, like
+   * `git fetch --unshallow`. If the remote repository is itself shallow,
+   * fetch as much history as it has.
+   *
+   * When `true`, `depth` is ignored.
+   */
+  unshallow?: boolean
   /**
    * Set how to behave regarding tags on the remote, such as auto-downloading
    * tags for objects we're downloading or downloading all of them.

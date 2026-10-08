@@ -82,3 +82,35 @@ const repo = await cloneRepository('https://github.com/<owner>/<repo>', '.', {
   },
 });
 ```
+
+### Shallow Clone
+
+To clone only the latest part of the history, set `depth` in the `fetch` option. A depth of `1` fetches only the latest
+commit of each branch. Use [`isShallow()`](../reference/Repository/Methods/isShallow.md) to check whether a repository is
+shallow.
+
+```ts
+import { cloneRepository } from 'es-git';
+
+const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone', {
+  fetch: { depth: 1 },
+});
+console.log(repo.isShallow()); // true
+```
+
+::: warning
+Shallow clones need a network protocol such as `https://`, `git://` or SSH. Cloning from a local path or a `file://` URL
+with `depth` fails, because libgit2's local transport does not support shallow fetches.
+:::
+
+To fetch the rest of the history later, fetch from the remote with `unshallow: true`. This works like
+`git fetch --unshallow`.
+
+```ts
+const remote = repo.getRemote('origin');
+await remote.fetch([], { fetch: { unshallow: true } });
+console.log(repo.isShallow()); // false
+```
+
+Fetching with a larger `depth` deepens the history instead. Fetching with `depth: 0` or without `depth` does not unshallow
+a shallow repository.

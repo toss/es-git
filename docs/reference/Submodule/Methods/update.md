@@ -187,7 +187,7 @@ class Submodule {
           <li class="param-li">
             <span class="param-name">depth</span><span class="param-type">number</span>
             <br>
-            <p class="param-description">Set fetch depth, a value less or equal to 0 is interpreted as pull everything (effectively the same as not declaring a limit depth).</p>
+            <p class="param-description">Set fetch depth, the number of commits to fetch from the tip of each remote branch. A depth greater than 0 creates a shallow repository (see <code>Repository.isShallow()</code>).  A value less or equal to 0 is interpreted as pull everything (effectively the same as not declaring a limit depth). This does not unshallow an existing shallow repository; use <code>unshallow</code> for that.  Shallow fetches are not supported by the local transport, so <code>depth</code> fails for local paths and <code>file://</code> URLs.</p>
           </li>
           <li class="param-li">
             <span class="param-name">downloadTags</span><span class="param-type">AutotagOption</span>
@@ -224,12 +224,17 @@ class Submodule {
             <p class="param-description">Set whether to perform a prune after the fetch.</p>
             <p class="param-description">- <code>Unspecified</code> : Use the setting from the configuration.<br>- <code>On</code> : Force pruning on.<br>- <code>Off</code> : Force pruning off</p>
           </li>
+          <li class="param-li">
+            <span class="param-name">unshallow</span><span class="param-type">boolean</span>
+            <br>
+            <p class="param-description">Fetch the history missing from a shallow repository, like <code>git fetch --unshallow</code>. If the remote repository is itself shallow, fetch as much history as it has.  When <code>true</code>, <code>depth</code> is ignored.</p>
+          </li>
         </ul>
       </li>
     </ul>
   </li>
   <li class="param-li param-li-root">
-    <span class="param-name">signal</span><span class="param-type">null | AbortSignal</span>
+    <span class="param-name">signal</span><span class="param-type">AbortSignal | null</span>
     <br>
     <p class="param-description">Optional AbortSignal to cancel the operation.</p>
   </li>

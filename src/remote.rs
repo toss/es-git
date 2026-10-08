@@ -322,9 +322,23 @@ pub struct FetchOptions {
   pub proxy: Option<ProxyOptions>,
   /// Set whether to perform a prune after the fetch.
   pub prune: Option<FetchPrune>,
-  /// Set fetch depth, a value less or equal to 0 is interpreted as pull
-  /// everything (effectively the same as not declaring a limit depth).
+  /// Set fetch depth, the number of commits to fetch from the tip of each
+  /// remote branch. A depth greater than 0 creates a shallow repository
+  /// (see `Repository.isShallow()`).
+  ///
+  /// A value less or equal to 0 is interpreted as pull everything
+  /// (effectively the same as not declaring a limit depth). This does not
+  /// unshallow an existing shallow repository; use `unshallow` for that.
+  ///
+  /// Shallow fetches are not supported by the local transport, so `depth`
+  /// fails for local paths and `file://` URLs.
   pub depth: Option<i32>,
+  /// Fetch the history missing from a shallow repository, like
+  /// `git fetch --unshallow`. If the remote repository is itself shallow,
+  /// fetch as much history as it has.
+  ///
+  /// When `true`, `depth` is ignored.
+  pub unshallow: Option<bool>,
   /// Set how to behave regarding tags on the remote, such as auto-downloading
   /// tags for objects we're downloading or downloading all of them.
   ///
@@ -427,7 +441,10 @@ impl<'a> FetchOptions {
     if let Some(prune) = self.prune {
       fetch.prune(prune.into());
     }
-    if let Some(depth) = self.depth {
+    if self.unshallow == Some(true) {
+      // libgit2's `GIT_FETCH_DEPTH_UNSHALLOW`
+      fetch.depth(i32::MAX);
+    } else if let Some(depth) = self.depth {
       fetch.depth(depth);
     }
     if let Some(download_tags) = self.download_tags {

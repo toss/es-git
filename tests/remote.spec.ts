@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
+import { hasGit, serveGitRepositories } from './git-server';
 import { makeTmpDir } from './tmp';
 
 describe('remote', () => {
@@ -41,6 +42,26 @@ describe('remote', () => {
     const repo = await cloneRepository('https://github.com/seokju-na/dummy-repo', p);
     const remote = repo.getRemote('origin');
     await remote.fetch(['main']);
+  });
+
+  it('unshallow shallow repository', { skip: !hasGit }, async () => {
+    const root = await useFixture('commits');
+    const server = await serveGitRepositories(root);
+    try {
+      const p = await makeTmpDir('clone');
+      const repo = await cloneRepository(`${server.url}/.git`, p, { fetch: { depth: 1 } });
+      expect(repo.isShallow()).toBe(true);
+
+      await repo.getRemote('origin').fetch([], { fetch: { unshallow: true } });
+      expect(repo.isShallow()).toBe(false);
+      const revwalk = repo.revwalk();
+      revwalk.pushHead();
+      expect(revwalk.next()).toEqual('a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+      expect(revwalk.next()).toEqual('b33e0101b828225f77eeff4dfa31259dcf379002');
+      expect(revwalk.next()).toBeNull();
+    } finally {
+      await server.close();
+    }
   });
 
   it('get remote default branch', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
