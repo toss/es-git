@@ -38,32 +38,50 @@ index.write();
 
 ## Creating Signed Commits
 
-External signing is a two-step process. First, create the unsigned commit content and pass its exact UTF-8 bytes to your signing backend. Then, write the signed commit with the returned signature.
-
-Do not normalize whitespace or line endings in the content returned by `commitCreateBuffer()`. `commitSigned()` writes the commit to the object database, but it does not update `HEAD` or another reference.
+To create a signed commit and update the current branch, first use `commitCreateBuffer()` to prepare the unsigned content, sign it with GPG, and pass the signature to `commit()` with `updateRef: 'HEAD'`. This example requires GPG and a configured signing key.
 
 ```ts
 import { openRepository } from 'es-git';
+import { execFileSync } from 'node:child_process';
 
 const repo = await openRepository('.');
 const index = repo.index();
 const treeOid = index.writeTree();
 const tree = repo.getTree(treeOid);
 
-const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
-const commitContent = repo.commitCreateBuffer(tree, 'signed commit', {
-  author: signature,
-  committer: signature,
-  parents: [repo.head().target()!],
+const timeOptions = { timestamp: Math.floor(Date.now() / 1000), offset: 0 };
+const author = { name: 'Seokju Na', email: 'seokju.me@toss.im', timeOptions };
+const committer = { name: 'Seokju Na', email: 'seokju.me@toss.im', timeOptions };
+const parents = [repo.head().target()!];
+const message = 'signed commit';
+
+const content = repo.commitCreateBuffer(tree, message, { author, committer, parents });
+const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+  input: Buffer.from(content, 'utf8'),
+}).toString('utf8');
+
+const oid = repo.commit(tree, message, {
+  author,
+  committer,
+  parents,
+  signature,
+  updateRef: 'HEAD',
 });
-
-// Implement this call with your GPG or other Git-compatible signing backend.
-const externalSignature = await signCommitContent(Buffer.from(commitContent, 'utf8'));
-const oid = repo.commitSigned(commitContent, externalSignature);
-
-const signatureInfo = repo.extractSignature(oid);
-console.log(signatureInfo?.signature === externalSignature); // true
-console.log(signatureInfo?.signedData === commitContent); // true
 ```
 
-If you already have a signature for the exact commit content that `commit()` will create, you can continue to pass it through `CommitOptions.signature`.
+`commit()` rebuilds the unsigned content before attaching the signature. Both calls must use the same tree, message, author, committer, and parents. Fix `timeOptions` for both the author and committer, as above: without explicit timestamps, each call samples the current time and can produce different bytes. Sign the exact UTF-8 bytes returned by `commitCreateBuffer()` without changing whitespace or line endings.
+
+The signature is stored in Git's default `gpgsig` field. Both signed commit methods remove one trailing LF (`\n`) from the supplied signature, if present, so GPG's output does not add an extra blank line to the stored header. The commit content is unchanged. libgit2 does not cryptographically verify the signature; successfully writing or extracting it does not prove that it is valid.
+
+### Writing only the commit object
+
+To store the signed content directly, use `commitSigned()` instead of the `commit()` call above:
+
+```ts
+const oid = repo.commitSigned(content, signature);
+
+const signatureInfo = repo.extractSignature(oid);
+console.log(signatureInfo?.signedData === content); // true
+```
+
+`commitSigned()` writes the commit to the object database without updating `HEAD`, another reference, or a reflog. It uses `gpgsig` by default. An optional third argument selects a different signature field; the field name must be nonempty and contain no whitespace or NUL characters.

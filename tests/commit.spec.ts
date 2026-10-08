@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { createHash, generateKeyPairSync, sign, verify } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -366,6 +367,123 @@ describe('commit', () => {
     });
     expect(repo.head().target()).toEqual(oid);
     expect(repo.findReference('refs/heads/main')?.target()).toEqual(tip);
+  });
+
+  it.each([
+    { offset: 540, zone: '+0900' },
+    { offset: -330, zone: '-0530' },
+  ])('preserves explicit offset $zone in unsigned and signed commit bytes', async ({ offset, zone }) => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+    const author = { ...signature, timeOptions: { timestamp: 1_700_000_000, offset } };
+    const committer = { ...signature, timeOptions: { timestamp: 1_700_000_001, offset } };
+    const options = { author, committer, parents: [repo.head().target()!] };
+    const message = 'offset commit\n\n한글 message\n';
+    const content = repo.commitCreateBuffer(tree, message, options);
+    expect(content).toContain(`author ${signature.name} <${signature.email}> 1700000000 ${zone}\n`);
+    expect(content).toContain(`committer ${signature.name} <${signature.email}> 1700000001 ${zone}\n`);
+    expect(repo.commit(tree, message, options)).toEqual(oidForCommitContent(content));
+
+    const externalSignature = signCommitContent(content);
+    const objectOid = repo.commitSigned(content, externalSignature);
+    const oid = repo.commit(tree, message, { ...options, signature: externalSignature, updateRef: 'HEAD' });
+    expect(oid).toEqual(objectOid);
+    expect(repo.head().target()).toEqual(oid);
+    const extracted = repo.extractSignature(oid)!;
+    expect(extracted.signedData).toEqual(content);
+    expect(verifyCommitSignature(extracted.signedData, extracted.signature)).toBe(true);
+  });
+
+  it('normalizes a trailing signature newline in both signing APIs', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+    const headBefore = repo.head().target()!;
+    const reflogBefore = repo.reflog('HEAD').get(0)?.idNew();
+    const options = { author: fixedSignature, committer: fixedSignature, parents: [headBefore] };
+    const content = repo.commitCreateBuffer(tree, 'signed commit', options);
+    const externalSignature = signCommitContent(content);
+    const oid = repo.commitSigned(content, externalSignature);
+    expect(repo.commitSigned(content, `${externalSignature}\n`)).toEqual(oid);
+    const doubleNewlineOid = repo.commitSigned(content, `${externalSignature}\n\n`);
+    expect(repo.extractSignature(doubleNewlineOid)?.signature).toEqual(`${externalSignature}\n`);
+    expect(repo.head().target()).toEqual(headBefore);
+    expect(repo.reflog('HEAD').get(0)?.idNew()).toEqual(reflogBefore);
+    expect(
+      repo.commit(tree, 'signed commit', { ...options, signature: `${externalSignature}\n`, updateRef: 'HEAD' })
+    ).toEqual(oid);
+    const extracted = repo.extractSignature(oid)!;
+    expect(extracted.signature).toEqual(externalSignature);
+    expect(extracted.signedData).toEqual(content);
+    expect(verifyCommitSignature(extracted.signedData, extracted.signature)).toBe(true);
+  });
+
+  it('uses a custom signature field in both signing APIs', async () => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+    const options = { author: fixedSignature, committer: fixedSignature };
+    const content = repo.commitCreateBuffer(tree, 'custom signature', options);
+    const externalSignature = signCommitContent(content);
+    const oid = repo.commitSigned(content, externalSignature, 'custom-signature');
+    expect(
+      repo.commit(tree, 'custom signature', {
+        ...options,
+        signature: externalSignature,
+        signatureField: 'custom-signature',
+      })
+    ).toEqual(oid);
+    expect(repo.extractSignature(oid)).toBeNull();
+    const rawCommit = execFileSync('git', ['cat-file', 'commit', oid], { cwd: p, encoding: 'utf8' });
+    expect(rawCommit).toEqual(
+      content.replace('\n\n', `\ncustom-signature ${externalSignature.replaceAll('\n', '\n ')}\n\n`)
+    );
+  });
+
+  it.each([
+    '',
+    'x y',
+    'x\ty',
+    'x\ny',
+    'x\ry',
+    'x\0y',
+    'x\u00a0y',
+  ])('rejects malformed signature field %j before updating HEAD', async signatureField => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+    const headBefore = repo.head().target()!;
+    const options = { author: fixedSignature, committer: fixedSignature, parents: [headBefore] };
+    const content = repo.commitCreateBuffer(tree, 'invalid field', options);
+    const externalSignature = signCommitContent(content);
+    expect(() => repo.commitSigned(content, externalSignature, signatureField)).toThrow(/signature field/);
+    expect(() =>
+      repo.commit(tree, 'invalid field', {
+        ...options,
+        signature: externalSignature,
+        signatureField,
+        updateRef: 'HEAD',
+      })
+    ).toThrow(/signature field/);
+    expect(repo.head().target()).toEqual(headBefore);
+  });
+
+  it.each([
+    'author',
+    'committer',
+  ] as const)('rejects invalid explicit %s in both content creation paths', async role => {
+    const p = await useFixture('commits');
+    const repo = await openRepository(p);
+    const tree = repo.head().peelToTree();
+    const options = {
+      author: fixedSignature,
+      committer: fixedSignature,
+      [role]: { ...fixedSignature, name: 'invalid\0name' },
+    };
+    expect(() => repo.commitCreateBuffer(tree, 'invalid identity', options)).toThrow();
+    expect(() => repo.commit(tree, 'invalid identity', options)).toThrow();
+    expect(() => repo.commit(tree, 'invalid identity', { ...options, signature: gpgSignature })).toThrow();
   });
 
   it('extract signature from unsigned commit', async () => {

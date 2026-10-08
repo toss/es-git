@@ -9,6 +9,11 @@ current branch and make it point to this commit. If the reference
 doesn't exist yet, it will be created. If it does exist, the first
 parent must be the tip of this branch.
 
+For external signing, obtain the content with `commitCreateBuffer` and pass
+the same tree, message, parents, author and committer with fixed `timeOptions`
+to both calls. This method rebuilds the content and does not verify that
+`signature` matches it. Different timestamps or content invalidate the signature.
+
 ## Signature
 
 ```ts
@@ -29,13 +34,13 @@ class Repository {
     <br>
   </li>
   <li class="param-li param-li-root">
-    <span class="param-name">options</span><span class="param-type">null | CommitOptions</span>
+    <span class="param-name">options</span><span class="param-type">CommitOptions | null</span>
     <br>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">author</span><span class="param-type">SignaturePayload</span>
         <br>
-        <p class="param-description">Signature for author.  If not provided, the default signature of the repository will be used. If there is no default signature set for the repository, an error will occur.</p>
+        <p class="param-description">Author identity (name, email and time).  If not provided, the default signature of the repository will be used. If there is no default signature set for the repository, an error will occur.</p>
         <ul class="param-ul">
           <li class="param-li">
             <span class="param-name">email</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">string</span>
@@ -68,7 +73,7 @@ class Repository {
       <li class="param-li">
         <span class="param-name">committer</span><span class="param-type">SignaturePayload</span>
         <br>
-        <p class="param-description">Signature for commiter.  If not provided, the default signature of the repository will be used. If there is no default signature set for the repository, an error will occur.</p>
+        <p class="param-description">Committer identity (name, email and time).  If not provided, the default signature of the repository will be used. If there is no default signature set for the repository, an error will occur.</p>
         <ul class="param-ul">
           <li class="param-li">
             <span class="param-name">email</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">string</span>
@@ -105,12 +110,12 @@ class Repository {
       <li class="param-li">
         <span class="param-name">signature</span><span class="param-type">string</span>
         <br>
-        <p class="param-description">GPG signature string for signed commits.  If provided, this will create a signed commit.</p>
+        <p class="param-description">ASCII-armored signature over the exact UTF-8 commit content. It is not verified.  Use <code>commitCreateBuffer</code> to obtain the content and pass the same author and committer identities with fixed <code>timeOptions</code> to both calls. A single trailing newline is removed from the signature before storing it.</p>
       </li>
       <li class="param-li">
         <span class="param-name">signatureField</span><span class="param-type">string</span>
         <br>
-        <p class="param-description">Custom signature field name.  If not provided, the default signature field (gpgsig) will be used.</p>
+        <p class="param-description">Header field name for the signature. Must not be empty or contain whitespace or NUL bytes.  If not provided, the default signature field (gpgsig) will be used.</p>
       </li>
       <li class="param-li">
         <span class="param-name">updateRef</span><span class="param-type">string</span>
