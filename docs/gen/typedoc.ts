@@ -46,9 +46,10 @@ function formatType(type?: SomeType): string {
       return `${type.name}<${type.typeArguments.map(formatType).join(', ')}>`;
     }
     case 'union':
-      return type.types.map(formatType).join(' | ');
+      return type.types.map(x => (x.type === 'reflection' ? `(${formatType(x)})` : formatType(x))).join(' | ');
     case 'unknown':
-      return 'unknown';
+      // typedoc keeps types it can't model, such as some unions in a return position, as text.
+      return type.name;
     case 'array': {
       const single =
         type.elementType.type === 'intrinsic' ||

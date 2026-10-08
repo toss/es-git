@@ -1,9 +1,12 @@
 use crate::js::{JsCallback, JsCallbackExt};
 use crate::repository::Repository;
 use napi::bindgen_prelude::*;
+use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
+use napi::{JsValue, ValueType};
 use napi_derive::napi;
 use std::path::Path;
-use std::sync::RwLock;
+use std::sync::{mpsc, Arc, RwLock};
+use std::time::Duration;
 
 #[napi(string_enum)]
 /// - `Fetch` : Fetch direction.
@@ -54,13 +57,39 @@ impl<'a> TryFrom<git2::Refspec<'a>> for Refspec {
 }
 
 #[napi(string_enum)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum CredentialType {
   Default,
   SSHKeyFromAgent,
   SSHKeyFromPath,
   SSHKey,
   Plain,
+}
+
+impl CredentialType {
+  const ALL: [CredentialType; 5] = [
+    CredentialType::Default,
+    CredentialType::SSHKeyFromAgent,
+    CredentialType::SSHKeyFromPath,
+    CredentialType::SSHKey,
+    CredentialType::Plain,
+  ];
+
+  fn to_git2(self) -> git2::CredentialType {
+    match self {
+      CredentialType::Default => git2::CredentialType::DEFAULT,
+      CredentialType::SSHKeyFromAgent | CredentialType::SSHKeyFromPath => git2::CredentialType::SSH_KEY,
+      CredentialType::SSHKey => git2::CredentialType::SSH_MEMORY,
+      CredentialType::Plain => git2::CredentialType::USER_PASS_PLAINTEXT,
+    }
+  }
+
+  fn allowed_by(allowed: git2::CredentialType) -> Vec<CredentialType> {
+    Self::ALL
+      .into_iter()
+      .filter(|x| allowed.intersects(x.to_git2()))
+      .collect()
+  }
 }
 
 #[napi(object)]
@@ -104,6 +133,294 @@ impl Credential {
     }?;
     Ok(cred)
   }
+}
+
+/// How many times a credential callback may be called for a single operation.
+///
+/// libgit2 asks again whenever the remote rejects a credential, and its SSH transport never gives up
+/// on its own, so a callback that keeps returning the same rejected credential would loop forever.
+const MAX_CREDENTIAL_ATTEMPTS: usize = 10;
+
+/// How often a worker thread waiting for a credential checks whether the callback was released.
+const CREDENTIAL_POLL_INTERVAL: Duration = Duration::from_millis(100);
+
+#[napi(object, object_from_js = false, use_nullable = true)]
+/// Arguments passed to a credential callback.
+pub struct CredentialCallbackArgs {
+  /// URL of the remote that asks for authentication.
+  pub url: String,
+  /// Username embedded in the URL, such as `git` in `ssh://git@github.com/toss/es-git`.
+  /// `null` if the URL has none.
+  pub username_from_url: Option<String>,
+  /// Credential types the remote accepts. The returned credential must be one of these.
+  ///
+  /// SSH remotes without a username in the URL first ask for the username alone; this list is
+  /// empty then, and only the `username` of the returned credential is used.
+  #[napi(ts_type = "CredentialType[]")]
+  pub allowed_types: Vec<CredentialType>,
+}
+
+type CredentialAnswer = std::result::Result<Option<Credential>, String>;
+
+/// A request for a credential, sent from a libgit2 worker thread to the JavaScript thread.
+pub struct CredentialRequest {
+  args: CredentialCallbackArgs,
+  sender: mpsc::Sender<CredentialAnswer>,
+}
+
+/// Calls the user's credential function on the JavaScript thread.
+///
+/// The threadsafe function wraps a no-op; the user's function is called by our own callback instead,
+/// so that whatever it throws (including non-`Error` values) is caught here and turned into an answer.
+pub type CredentialCallback = Arc<ThreadsafeFunction<CredentialRequest, (), (), Status, false, true>>;
+
+/// Either a static `Credential` or a function returning one, accepted by `credential` options.
+pub enum CredentialOption {
+  Static(Credential),
+  Callback(CredentialCallback),
+}
+
+impl TypeName for CredentialOption {
+  fn type_name() -> &'static str {
+    "Credential | CredentialCallback"
+  }
+
+  fn value_type() -> ValueType {
+    ValueType::Unknown
+  }
+}
+
+impl FromNapiValue for CredentialOption {
+  unsafe fn from_napi_value(env: napi::sys::napi_env, napi_val: napi::sys::napi_value) -> Result<Self> {
+    let value = unsafe { Unknown::from_napi_value(env, napi_val) }?;
+    if value.get_type()? == ValueType::Function {
+      let user_fn = unsafe { FunctionRef::<CredentialCallbackArgs, Unknown>::from_napi_value(env, napi_val) }?;
+      let env = Env::from_raw(env);
+      let noop = env.create_function_from_closure::<(), (), _>("credential", |_| Ok(()))?;
+      let callback = noop
+        .build_threadsafe_function::<CredentialRequest>()
+        .callee_handled::<false>()
+        .weak::<true>()
+        .build_callback(move |ctx| {
+          call_credential_fn(&ctx.env, &user_fn, ctx.value);
+          Ok(())
+        })?;
+      return Ok(Self::Callback(Arc::new(callback)));
+    }
+    let credential = unsafe { Credential::from_napi_value(env, napi_val) }?;
+    Ok(Self::Static(credential))
+  }
+}
+
+impl CredentialOption {
+  pub(crate) fn install<'a>(&'a self, callbacks: &mut git2::RemoteCallbacks<'a>) {
+    match self {
+      Self::Static(cred) => {
+        callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+      }
+      Self::Callback(callback) => {
+        let mut attempts = 0;
+        callbacks.credentials(move |url, username_from_url, allowed| {
+          attempts += 1;
+          if attempts > MAX_CREDENTIAL_ATTEMPTS {
+            return Err(credential_error(format!(
+              "credential callback was called {MAX_CREDENTIAL_ATTEMPTS} times for {url} without a successful authentication; giving up"
+            )));
+          }
+          request_credential(callback, url, username_from_url, allowed)
+        });
+      }
+    }
+  }
+}
+
+/// Ask the JavaScript callback for a credential and block until it answers.
+///
+/// This runs on the libuv worker thread executing the git operation, never on the JavaScript thread,
+/// so blocking here leaves the JavaScript thread free to run the callback and settle its promise.
+fn request_credential(
+  callback: &CredentialCallback,
+  url: &str,
+  username_from_url: Option<&str>,
+  allowed: git2::CredentialType,
+) -> std::result::Result<git2::Cred, git2::Error> {
+  let args = CredentialCallbackArgs {
+    url: url.to_string(),
+    username_from_url: username_from_url.map(str::to_string),
+    allowed_types: CredentialType::allowed_by(allowed),
+  };
+  let (sender, receiver) = mpsc::channel::<CredentialAnswer>();
+  let status = callback.call(
+    CredentialRequest { args, sender },
+    ThreadsafeFunctionCallMode::NonBlocking,
+  );
+  if status != Status::Ok {
+    return Err(credential_error(format!(
+      "failed to call the credential callback: {status}"
+    )));
+  }
+  let answer = loop {
+    match receiver.recv_timeout(CREDENTIAL_POLL_INTERVAL) {
+      Ok(answer) => break answer,
+      Err(mpsc::RecvTimeoutError::Timeout) if callback.aborted() => {
+        return Err(credential_error("credential callback was released before it answered"));
+      }
+      Err(mpsc::RecvTimeoutError::Timeout) => continue,
+      Err(mpsc::RecvTimeoutError::Disconnected) => {
+        return Err(credential_error("credential callback did not answer"));
+      }
+    }
+  };
+  let cred = answer
+    .map_err(credential_error)?
+    .ok_or_else(|| credential_error(format!("credential callback returned no credential for {url}")))?;
+  if !allowed.intersects(cred.r#type.to_git2()) {
+    if allowed.contains(git2::CredentialType::USERNAME) {
+      return git2::Cred::username(cred.username.as_deref().unwrap_or("git"));
+    }
+    let accepted = CredentialType::allowed_by(allowed)
+      .iter()
+      .map(|x| format!("{x:?}"))
+      .collect::<Vec<_>>();
+    let accepted = match accepted.is_empty() {
+      true => "no supported credential type".to_string(),
+      false => format!("only {}", accepted.join(", ")),
+    };
+    return Err(credential_error(format!(
+      "credential callback returned a {:?} credential, but {url} accepts {accepted}",
+      cred.r#type
+    )));
+  }
+  if let Some(field) = missing_required_field(&cred) {
+    return Err(credential_error(format!(
+      "credential callback returned a {:?} credential without {field}",
+      cred.r#type
+    )));
+  }
+  cred.to_git2_cred()
+}
+
+/// The field a credential of its type cannot be built without, if it is missing.
+///
+/// `to_git2_cred()` unwraps these, and a panic there would abort the process.
+fn missing_required_field(cred: &Credential) -> Option<&'static str> {
+  match cred.r#type {
+    CredentialType::SSHKeyFromPath if cred.private_key_path.is_none() => Some("privateKeyPath"),
+    CredentialType::SSHKey if cred.private_key.is_none() => Some("privateKey"),
+    CredentialType::Plain if cred.password.is_none() => Some("password"),
+    _ => None,
+  }
+}
+
+/// Call the user's credential function and send its answer back, waiting for it first if it is a
+/// promise.
+///
+/// Runs on the JavaScript thread. Never fails: every outcome, including a thrown value, is sent as an answer.
+fn call_credential_fn(env: &Env, user_fn: &FunctionRef<CredentialCallbackArgs, Unknown>, request: CredentialRequest) {
+  let CredentialRequest { args, sender } = request;
+  match call_catching(env, user_fn, args) {
+    Ok(value) => receive_credential(value, sender),
+    Err(answer) => {
+      let _ = sender.send(Err(answer));
+    }
+  }
+  // Converting the returned credential runs user code (getters) that may throw; the answer already
+  // carries the failure.
+  clear_pending_exception(env.raw());
+}
+
+fn call_catching<'env>(
+  env: &'env Env,
+  user_fn: &FunctionRef<CredentialCallbackArgs, Unknown>,
+  args: CredentialCallbackArgs,
+) -> std::result::Result<Unknown<'env>, String> {
+  let failed = |e: Error| format!("failed to call the credential callback: {}", e.reason);
+  let func = user_fn.borrow_back(env).map_err(failed)?;
+  let raw_env = env.raw();
+  let raw_args = unsafe { CredentialCallbackArgs::to_napi_value(raw_env, args) }.map_err(failed)?;
+  let mut this = std::ptr::null_mut();
+  let mut ret = std::ptr::null_mut();
+  let status = unsafe {
+    napi::sys::napi_get_undefined(raw_env, &mut this);
+    napi::sys::napi_call_function(raw_env, this, func.raw(), 1, [raw_args].as_ptr(), &mut ret)
+  };
+  if status == napi::sys::Status::napi_pending_exception {
+    let mut exception = std::ptr::null_mut();
+    unsafe { napi::sys::napi_get_and_clear_last_exception(raw_env, &mut exception) };
+    let thrown = unsafe { Unknown::from_napi_value(raw_env, exception) }.map_err(failed)?;
+    return Err(format!("credential callback threw: {}", describe_js_value(thrown)));
+  }
+  if status != napi::sys::Status::napi_ok {
+    return Err(failed(Error::from_status(Status::from(status))));
+  }
+  unsafe { Unknown::from_napi_value(raw_env, ret) }.map_err(failed)
+}
+
+/// Turn the callback's return value into an answer, waiting for it first if it is a promise.
+///
+/// Runs on the JavaScript thread.
+fn receive_credential(value: Unknown, sender: mpsc::Sender<CredentialAnswer>) {
+  if !matches!(value.is_promise(), Ok(true)) {
+    let _ = sender.send(to_credential_answer(value));
+    return;
+  }
+  let promise = PromiseRaw::<Unknown>::new(value.value().env, value.raw());
+  let on_fulfilled = sender.clone();
+  let on_rejected = sender.clone();
+  let chained = promise
+    .then(move |ctx| {
+      let _ = on_fulfilled.send(to_credential_answer(ctx.value));
+      Ok(())
+    })
+    .and_then(|promise| {
+      promise.catch(move |ctx: CallbackContext<Unknown>| {
+        let _ = on_rejected.send(Err(format!(
+          "credential callback rejected: {}",
+          describe_js_value(ctx.value)
+        )));
+        Ok(())
+      })
+    });
+  if let Err(e) = chained {
+    let _ = sender.send(Err(format!("failed to wait for the credential callback: {}", e.reason)));
+  }
+}
+
+fn to_credential_answer(value: Unknown) -> CredentialAnswer {
+  match value.get_type() {
+    Ok(ValueType::Null | ValueType::Undefined) => Ok(None),
+    _ => unsafe { Credential::from_napi_value(value.value().env, value.raw()) }
+      .map(Some)
+      .map_err(|e| format!("credential callback returned an invalid credential: {}", e.reason)),
+  }
+}
+
+fn describe_js_value(value: Unknown) -> String {
+  let raw_env = value.value().env;
+  // Coercion runs user code (`toString()`) and throws for values such as symbols.
+  value
+    .coerce_to_string()
+    .and_then(|x| x.into_utf8())
+    .and_then(|x| x.into_owned())
+    .unwrap_or_else(|_| {
+      clear_pending_exception(raw_env);
+      "unknown error".to_string()
+    })
+}
+
+/// Drop an exception left by a failed conversion, so it does not escape to the threadsafe function
+/// dispatcher, which treats it as fatal.
+fn clear_pending_exception(raw_env: napi::sys::napi_env) {
+  let mut pending = false;
+  unsafe { napi::sys::napi_is_exception_pending(raw_env, &mut pending) };
+  if pending {
+    let mut exception = std::ptr::null_mut();
+    unsafe { napi::sys::napi_get_and_clear_last_exception(raw_env, &mut exception) };
+  }
+}
+
+fn credential_error(message: impl AsRef<str>) -> git2::Error {
+  git2::Error::new(git2::ErrorCode::Auth, git2::ErrorClass::Callback, message.as_ref())
 }
 
 #[napi(object)]
@@ -316,7 +633,21 @@ pub struct RemoteCallbacks {
 
 #[napi(object, object_to_js = false)]
 pub struct FetchOptions {
-  pub credential: Option<Credential>,
+  /// Credential to authenticate with, or a function that returns one.
+  ///
+  /// A function is called only when the remote asks for authentication, with the remote URL, the
+  /// username in the URL and the credential types the remote accepts. It may return the credential
+  /// or a promise for it. It is called again whenever the remote rejects the credential; return
+  /// `null`/`undefined` or throw to give up, which fails the operation with that reason. After
+  /// 10 calls in one operation the operation fails.
+  ///
+  /// The operation waits for the function, so a promise that never settles never finishes it.
+  /// The wait occupies a libuv threadpool thread, so do not make the function wait for other
+  /// threadpool work (such as `fs.promises`) when the pool may be exhausted by waiting operations.
+  #[napi(
+    ts_type = "Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)"
+  )]
+  pub credential: Option<CredentialOption>,
   pub callbacks: Option<RemoteCallbacks>,
   /// Set the proxy options to use for the fetch operation.
   pub proxy: Option<ProxyOptions>,
@@ -414,8 +745,7 @@ impl<'a> FetchOptions {
     let mut fetch = git2::FetchOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
-      // TODO: support credential callback
-      callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+      cred.install(&mut callbacks);
     }
     if let Some(cbs) = &self.callbacks {
       callbacks.apply(cbs);
@@ -446,7 +776,21 @@ impl<'a> FetchOptions {
 #[napi(object, object_to_js = false)]
 /// Options to control the behavior of a git push.
 pub struct PushOptions {
-  pub credential: Option<Credential>,
+  /// Credential to authenticate with, or a function that returns one.
+  ///
+  /// A function is called only when the remote asks for authentication, with the remote URL, the
+  /// username in the URL and the credential types the remote accepts. It may return the credential
+  /// or a promise for it. It is called again whenever the remote rejects the credential; return
+  /// `null`/`undefined` or throw to give up, which fails the operation with that reason. After
+  /// 10 calls in one operation the operation fails.
+  ///
+  /// The operation waits for the function, so a promise that never settles never finishes it.
+  /// The wait occupies a libuv threadpool thread, so do not make the function wait for other
+  /// threadpool work (such as `fs.promises`) when the pool may be exhausted by waiting operations.
+  #[napi(
+    ts_type = "Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)"
+  )]
+  pub credential: Option<CredentialOption>,
   pub callbacks: Option<RemoteCallbacks>,
   /// Set the proxy options to use for the push operation.
   pub proxy: Option<ProxyOptions>,
@@ -474,8 +818,7 @@ impl<'a> PushOptions {
     let mut push = git2::PushOptions::new();
     let mut callbacks = git2::RemoteCallbacks::new();
     if let Some(cred) = &self.credential {
-      // TODO: support credential callback
-      callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+      cred.install(&mut callbacks);
     }
     if let Some(cbs) = &self.callbacks {
       callbacks.apply(cbs);
@@ -512,9 +855,16 @@ pub struct FetchRemoteOptions {
   pub reflog_msg: Option<String>,
 }
 
-#[napi(object)]
+#[napi(object, object_to_js = false)]
 pub struct PruneOptions {
-  pub credential: Option<Credential>,
+  /// Credential to authenticate with, or a function that returns one.
+  ///
+  /// Pruning compares against the references from the last connection to the remote and does not
+  /// connect again, so this is currently never used.
+  #[napi(
+    ts_type = "Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)"
+  )]
+  pub credential: Option<CredentialOption>,
 }
 
 pub struct FetchRemoteTask {
@@ -611,7 +961,7 @@ impl Task for PruneRemoteTask {
         credential: Some(cred), ..
       }) => {
         let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.credentials(move |_url, _username, _cred| cred.to_git2_cred());
+        cred.install(&mut callbacks);
         Some(callbacks)
       }
       _ => None,
@@ -799,6 +1149,22 @@ impl Remote {
   ///
   /// // Providing an empty array fetches data using the default Refspec configured for the remote
   /// await remote.fetch([]);
+  /// ```
+  ///
+  /// Pick a credential when the remote asks for one.
+  ///
+  /// ```ts
+  /// await remote.fetch(['main'], {
+  ///   fetch: {
+  ///     credential: ({ url, usernameFromUrl, allowedTypes }) => {
+  ///       if (allowedTypes.includes('SSHKeyFromAgent')) {
+  ///         return { type: 'SSHKeyFromAgent', username: usernameFromUrl ?? 'git' };
+  ///       }
+  ///       // Return `null` to give up.
+  ///       return { type: 'Plain', password: tokenFor(new URL(url).host) };
+  ///     },
+  ///   },
+  /// });
   /// ```
   pub fn fetch(
     &self,

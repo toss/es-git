@@ -72,8 +72,9 @@ class Remote {
         </ul>
       </li>
       <li class="param-li">
-        <span class="param-name">credential</span><span class="param-type">Credential</span>
+        <span class="param-name">credential</span><span class="param-type">Credential | ((args: CredentialCallbackArgs) =&gt; Credential | Promise&lt;Credential | null | undefined&gt; | null | undefined)</span>
         <br>
+        <p class="param-description">Credential to authenticate with, or a function that returns one.  A function is called only when the remote asks for authentication, with the remote URL, the username in the URL and the credential types the remote accepts. It may return the credential or a promise for it. It is called again whenever the remote rejects the credential; return <code>null</code>/<code>undefined</code> or throw to give up, which fails the operation with that reason. After 10 calls in one operation the operation fails.  The operation waits for the function, so a promise that never settles never finishes it. The wait occupies a libuv threadpool thread, so do not make the function wait for other threadpool work (such as <code>fs.promises</code>) when the pool may be exhausted by waiting operations.</p>
         <p class="param-description">A interface to represent git credentials in libgit2.</p>
       </li>
       <li class="param-li">

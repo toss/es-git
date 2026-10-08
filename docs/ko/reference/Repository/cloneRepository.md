@@ -104,8 +104,9 @@ function cloneRepository(
             </ul>
           </li>
           <li class="param-li">
-            <span class="param-name">credential</span><span class="param-type">Credential</span>
+            <span class="param-name">credential</span><span class="param-type">Credential | ((args: CredentialCallbackArgs) =&gt; Credential | Promise&lt;Credential | null | undefined&gt; | null | undefined)</span>
             <br>
+            <p class="param-description">인증에 사용할 credential, 또는 credential을 반환하는 함수예요.  함수는 리모트가 인증을 요청할 때만 호출되고, 리모트 URL, URL에 들어 있는 사용자 이름, 리모트가 허용하는 credential 유형을 받아요. credential을 바로 반환하거나 Promise로 반환할 수 있어요. 리모트가 credential을 거부하면 다시 호출돼요. <code>null</code>/<code>undefined</code>를 반환하거나 에러를 던지면 인증을 포기하고, 작업은 그 이유와 함께 실패해요. 한 작업에서 10번 호출된 뒤에는 작업이 실패해요.  작업은 함수의 응답을 기다리므로, 완료되지 않는 Promise를 반환하면 작업도 끝나지 않아요. 기다리는 동안 libuv 스레드 풀의 스레드 하나를 점유하므로, 기다리는 작업으로 스레드 풀이 가득 찰 수 있는 상황에서는 함수 안에서 다른 스레드 풀 작업(예: <code>fs.promises</code>)을 기다리지 마세요.</p>
             <p class="param-description">
               인증 정보를 설정해요.
             </p>
@@ -253,6 +254,18 @@ const repo = await cloneRepository('git@github.com:toss/es-git', '.', {
     credential: {
       type: 'SSHKeyFromAgent',
     },
+  },
+});
+```
+
+서버가 인증을 요청할 때만 토큰을 읽어 리포지토리를 클론해요.
+
+```ts
+import { cloneRepository } from 'es-git';
+
+const repo = await cloneRepository('https://github.com/toss/es-git', '.', {
+  fetch: {
+    credential: async () => ({ type: 'Plain', password: await readTokenFromKeychain() }),
   },
 });
 ```

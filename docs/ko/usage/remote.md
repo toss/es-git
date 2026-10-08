@@ -81,3 +81,12 @@ await remote.push(['refs/heads/main:refs/heads/other'], {
   },
 });
 ```
+
+`credential`에 리모트가 인증을 요청할 때 credential을 반환하는 함수를 지정할 수도 있어요.
+[인증을 요청받을 때 credential 고르기](./repository.md#인증을-요청받을-때-credential-고르기)를 참고하세요.
+
+```ts
+await remote.push(['refs/heads/main:refs/heads/other'], {
+  credential: ({ url }) => ({ type: 'Plain', password: tokenFor(new URL(url).host) }),
+});
+```

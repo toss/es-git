@@ -82,3 +82,31 @@ const repo = await cloneRepository('https://github.com/<owner>/<repo>', '.', {
   },
 });
 ```
+
+#### Choosing a credential when asked
+
+`credential` also accepts a function. It is called only when the server asks for authentication, with the remote
+`url`, the `usernameFromUrl` (for example `git` in `git@github.com:toss/es-git`, or `null`) and the `allowedTypes`
+the server accepts. Use it to pick a credential per host, or to read a token lazily. It may return the credential
+or a promise for it.
+
+```ts
+import { cloneRepository } from 'es-git';
+
+const repo = await cloneRepository('https://github.com/<owner>/<repo>', '.', {
+  fetch: {
+    credential: async ({ url, usernameFromUrl, allowedTypes }) => {
+      if (allowedTypes.includes('SSHKeyFromAgent')) {
+        return { type: 'SSHKeyFromAgent', username: usernameFromUrl ?? 'git' };
+      }
+      const token = await readTokenFor(new URL(url).host);
+      // Returning `null` gives up and fails the clone.
+      return token != null ? { type: 'Plain', password: token } : null;
+    },
+  },
+});
+```
+
+The function is called again whenever the server rejects the credential it returned. Return `null` or `undefined`,
+or throw, to give up; the operation then fails with that reason. After 10 calls the operation fails on its own.
+The operation waits for the function to answer, so make sure a returned promise settles.

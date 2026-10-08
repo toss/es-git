@@ -80,3 +80,12 @@ await remote.push(['refs/heads/main:refs/heads/other'], {
   },
 });
 ```
+
+`credential` can also be a function that returns the credential when the remote asks for one. See
+[Choosing a credential when asked](./repository.md#choosing-a-credential-when-asked).
+
+```ts
+await remote.push(['refs/heads/main:refs/heads/other'], {
+  credential: ({ url }) => ({ type: 'Plain', password: tokenFor(new URL(url).host) }),
+});
+```

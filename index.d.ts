@@ -2689,6 +2689,22 @@ export declare class Remote {
    * // Providing an empty array fetches data using the default Refspec configured for the remote
    * await remote.fetch([]);
    * ```
+   *
+   * Pick a credential when the remote asks for one.
+   *
+   * ```ts
+   * await remote.fetch(['main'], {
+   *   fetch: {
+   *     credential: ({ url, usernameFromUrl, allowedTypes }) => {
+   *       if (allowedTypes.includes('SSHKeyFromAgent')) {
+   *         return { type: 'SSHKeyFromAgent', username: usernameFromUrl ?? 'git' };
+   *       }
+   *       // Return `null` to give up.
+   *       return { type: 'Plain', password: tokenFor(new URL(url).host) };
+   *     },
+   *   },
+   * });
+   * ```
    */
   fetch(refspecs: Array<string>, options?: FetchRemoteOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<void>
   /**
@@ -7016,6 +7032,18 @@ export interface CherrypickOptions {
  *   },
  * });
  * ```
+ *
+ * Clone repository with a token that is read only when the server asks for authentication.
+ *
+ * ```ts
+ * import { cloneRepository } from 'es-git';
+ *
+ * const repo = await cloneRepository('https://github.com/toss/es-git', '.', {
+ *   fetch: {
+ *     credential: async () => ({ type: 'Plain', password: await readTokenFromKeychain() }),
+ *   },
+ * });
+ * ```
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 
@@ -7220,6 +7248,24 @@ export type Credential = {
  username?: string;
  password: string;
 };
+
+/** Arguments passed to a credential callback. */
+export interface CredentialCallbackArgs {
+  /** URL of the remote that asks for authentication. */
+  url: string
+  /**
+   * Username embedded in the URL, such as `git` in `ssh://git@github.com/toss/es-git`.
+   * `null` if the URL has none.
+   */
+  usernameFromUrl: string | null
+  /**
+   * Credential types the remote accepts. The returned credential must be one of these.
+   *
+   * SSH remotes without a username in the URL first ask for the username alone; this list is
+   * empty then, and only the `username` of the returned credential is used.
+   */
+  allowedTypes: CredentialType[]
+}
 
 export type CredentialType =  'Default'|
 'SSHKeyFromAgent'|
@@ -7636,7 +7682,20 @@ export interface ExtractedSignature {
 }
 
 export interface FetchOptions {
-  credential?: Credential
+  /**
+   * Credential to authenticate with, or a function that returns one.
+   *
+   * A function is called only when the remote asks for authentication, with the remote URL, the
+   * username in the URL and the credential types the remote accepts. It may return the credential
+   * or a promise for it. It is called again whenever the remote rejects the credential; return
+   * `null`/`undefined` or throw to give up, which fails the operation with that reason. After
+   * 10 calls in one operation the operation fails.
+   *
+   * The operation waits for the function, so a promise that never settles never finishes it.
+   * The wait occupies a libuv threadpool thread, so do not make the function wait for other
+   * threadpool work (such as `fs.promises`) when the pool may be exhausted by waiting operations.
+   */
+  credential?: Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)
   callbacks?: RemoteCallbacks
   /** Set the proxy options to use for the fetch operation. */
   proxy?: ProxyOptions
@@ -8428,12 +8487,31 @@ export interface ProxyOptions {
 }
 
 export interface PruneOptions {
-  credential?: Credential
+  /**
+   * Credential to authenticate with, or a function that returns one.
+   *
+   * Pruning compares against the references from the last connection to the remote and does not
+   * connect again, so this is currently never used.
+   */
+  credential?: Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)
 }
 
 /** Options to control the behavior of a git push. */
 export interface PushOptions {
-  credential?: Credential
+  /**
+   * Credential to authenticate with, or a function that returns one.
+   *
+   * A function is called only when the remote asks for authentication, with the remote URL, the
+   * username in the URL and the credential types the remote accepts. It may return the credential
+   * or a promise for it. It is called again whenever the remote rejects the credential; return
+   * `null`/`undefined` or throw to give up, which fails the operation with that reason. After
+   * 10 calls in one operation the operation fails.
+   *
+   * The operation waits for the function, so a promise that never settles never finishes it.
+   * The wait occupies a libuv threadpool thread, so do not make the function wait for other
+   * threadpool work (such as `fs.promises`) when the pool may be exhausted by waiting operations.
+   */
+  credential?: Credential | ((args: CredentialCallbackArgs) => Credential | null | undefined | Promise<Credential | null | undefined>)
   callbacks?: RemoteCallbacks
   /** Set the proxy options to use for the push operation. */
   proxy?: ProxyOptions

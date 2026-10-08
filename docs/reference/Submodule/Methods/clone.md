@@ -19,7 +19,7 @@ class Submodule {
 
 <ul class="param-ul">
   <li class="param-li param-li-root">
-    <span class="param-name">options</span><span class="param-type">null | SubmoduleUpdateOptions</span>
+    <span class="param-name">options</span><span class="param-type">SubmoduleUpdateOptions | null</span>
     <br>
     <p class="param-description">The options to use.</p>
     <ul class="param-ul">
@@ -166,8 +166,50 @@ class Submodule {
         <p class="param-description">Options which control the fetch, including callbacks.</p>
         <ul class="param-ul">
           <li class="param-li">
-            <span class="param-name">credential</span><span class="param-type">Credential</span>
+            <span class="param-name">callbacks</span><span class="param-type">RemoteCallbacks</span>
             <br>
+            <ul class="param-ul">
+              <li class="param-li">
+                <span class="param-name">packProgress</span><span class="param-type">(stage: PackBuilderStage, current: number, total: number) =&gt; void</span>
+                <br>
+                <p class="param-description">Function to call with progress information during pack building.  Be aware that this is called inline with pack building operations, so performance may be affected.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushNegotiation</span><span class="param-type">(update: PushUpdate[]) =&gt; void</span>
+                <br>
+                <p class="param-description">The callback is called once between the negotiation step and the upload.  The argument to the callback is a slice containing the updates which will be sent as commands to the destination.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushTransferProgress</span><span class="param-type">(current: number, total: number, bytes: number) =&gt; void</span>
+                <br>
+                <p class="param-description">The callback through which progress of push transfer is monitored</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">pushUpdateReference</span><span class="param-type">(refname: string, status: string | null) =&gt; void</span>
+                <br>
+                <p class="param-description">Set a callback to get invoked for each updated reference on a push.  The first argument to the callback is the name of the reference and the second is a status message sent by the server. If the status is not <code>null</code> then the push was rejected.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">sidebandProgress</span><span class="param-type">(data: Uint8Array) =&gt; void</span>
+                <br>
+                <p class="param-description">Textual progress from the remote.  Text sent over the progress side-band will be passed to this function (this is the &#39;counting objects&#39; output).</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">transferProgress</span><span class="param-type">(data: RemoteTransferProgress) =&gt; void</span>
+                <br>
+                <p class="param-description">Called with transfer progress during fetch.</p>
+              </li>
+              <li class="param-li">
+                <span class="param-name">updateTips</span><span class="param-type">(refname: string, oldId: string, newId: string) =&gt; void</span>
+                <br>
+                <p class="param-description">Each time a reference is updated locally, the callback will be called with information about it.</p>
+              </li>
+            </ul>
+          </li>
+          <li class="param-li">
+            <span class="param-name">credential</span><span class="param-type">Credential | ((args: CredentialCallbackArgs) =&gt; Credential | Promise&lt;Credential | null | undefined&gt; | null | undefined)</span>
+            <br>
+            <p class="param-description">Credential to authenticate with, or a function that returns one.  A function is called only when the remote asks for authentication, with the remote URL, the username in the URL and the credential types the remote accepts. It may return the credential or a promise for it. It is called again whenever the remote rejects the credential; return <code>null</code>/<code>undefined</code> or throw to give up, which fails the operation with that reason. After 10 calls in one operation the operation fails.  The operation waits for the function, so a promise that never settles never finishes it. The wait occupies a libuv threadpool thread, so do not make the function wait for other threadpool work (such as <code>fs.promises</code>) when the pool may be exhausted by waiting operations.</p>
             <p class="param-description">A interface to represent git credentials in libgit2.</p>
           </li>
           <li class="param-li">
@@ -220,7 +262,7 @@ class Submodule {
     </ul>
   </li>
   <li class="param-li param-li-root">
-    <span class="param-name">signal</span><span class="param-type">null | AbortSignal</span>
+    <span class="param-name">signal</span><span class="param-type">AbortSignal | null</span>
     <br>
     <p class="param-description">Optional AbortSignal to cancel the operation.</p>
   </li>

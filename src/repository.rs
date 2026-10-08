@@ -853,6 +853,18 @@ impl Task for CloneRepositoryTask {
 ///   },
 /// });
 /// ```
+///
+/// Clone repository with a token that is read only when the server asks for authentication.
+///
+/// ```ts
+/// import { cloneRepository } from 'es-git';
+///
+/// const repo = await cloneRepository('https://github.com/toss/es-git', '.', {
+///   fetch: {
+///     credential: async () => ({ type: 'Plain', password: await readTokenFromKeychain() }),
+///   },
+/// });
+/// ```
 pub fn clone_repository(
   url: String,
   path: String,
