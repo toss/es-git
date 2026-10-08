@@ -36,7 +36,10 @@ function transformIteratorClasses(source, j) {
     .find(j.ClassDeclaration, node => node.superClass?.type === 'Identifier' && node.superClass.name === 'Iterator')
     .forEach(path => {
       const node = path.node;
-      const typeParameters = node.superTypeParameters?.params ?? [];
+      const typeParameters = node.superTypeParameters?.params;
+      if (typeParameters?.length !== 3) {
+        throw new Error(`Expected Iterator<Yield, Return, Next> for ${node.id.name}`);
+      }
 
       node.superClass = null;
       node.superTypeParameters = null;
