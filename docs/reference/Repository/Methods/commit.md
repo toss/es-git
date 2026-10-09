@@ -28,14 +28,17 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-name">tree</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">Tree</span>
     <br>
+    <p class="param-description">Tree of the commit.</p>
   </li>
   <li class="param-li param-li-root">
     <span class="param-name">message</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
+    <p class="param-description">Full commit message.</p>
   </li>
   <li class="param-li param-li-root">
     <span class="param-name">options</span><span class="param-type">CommitOptions | null</span>
     <br>
+    <p class="param-description">Options for creating the commit.</p>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">author</span><span class="param-type">SignaturePayload</span>
@@ -132,5 +135,15 @@ class Repository {
     <span class="param-type">string</span>
     <br>
     <p class="param-description">ID(SHA1) of created commit.</p>
+  </li>
+</ul>
+
+### Errors
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description">If an explicit author or committer identity is invalid (for example an empty<br>name or email, or one containing  <code>&lt;</code> ,  <code>&gt;</code>  or a NUL byte), an omitted identity has no<br>configured repository default, a parent commit does not exist, or  <code>updateRef</code>  cannot<br>be updated. For signed commits, also throws if  <code>signatureField</code>  is empty or contains<br>whitespace or NUL bytes. Invalid explicit identities never fall back to the repository default.</p>
   </li>
 </ul>

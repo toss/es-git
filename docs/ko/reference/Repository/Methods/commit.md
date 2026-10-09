@@ -31,12 +31,12 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-name">message</span><span class="param-required">필수</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
-    <p class="param-description">커밋 메시지예요.</p>
+    <p class="param-description">전체 커밋 메시지예요.</p>
   </li>
   <li class="param-li param-li-root">
     <span class="param-name">options</span><span class="param-type">null | CommitOptions</span>
     <br>
-    <p class="param-description">커밋 옵션이에요.</p>
+    <p class="param-description">커밋을 생성할 때 사용할 옵션이에요.</p>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">author</span><span class="param-type">SignaturePayload</span>
@@ -148,5 +148,15 @@ class Repository {
     <p class="param-description">
       생성된 커밋의 SHA-1 ID를 반환해요.
     </p>
+  </li>
+</ul>
+
+### 에러
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description">명시적으로 지정한 작성자나 커미터 정보가 유효하지 않으면 오류가 발생해요. 예를 들어 이름이나 이메일이 비어 있거나 <code>&lt;</code>, <code>&gt;</code>, NUL 바이트를 포함하는 경우예요. 생략한 정보에 사용할 리포지토리 기본 서명이 없거나, 부모 커밋이 존재하지 않거나, <code>updateRef</code>를 업데이트할 수 없는 경우에도 오류가 발생해요. 서명된 커밋에서는 <code>signatureField</code>가 비어 있거나 공백 문자 또는 NUL 바이트를 포함해도 오류가 발생해요. 유효하지 않은 명시적 작성자나 커미터 정보를 리포지토리 기본값으로 대체하지 않아요.</p>
   </li>
 </ul>

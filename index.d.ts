@@ -3297,7 +3297,15 @@ export declare class Repository {
    * }
    * ```
    *
+   * @param {Tree} tree - Tree of the commit.
+   * @param {string} message - Full commit message.
+   * @param {CommitOptions} [options] - Options for creating the commit.
    * @returns ID(SHA1) of created commit.
+   * @throws If an explicit author or committer identity is invalid (for example an empty
+   * name or email, or one containing `<`, `>` or a NUL byte), an omitted identity has no
+   * configured repository default, a parent commit does not exist, or `updateRef` cannot
+   * be updated. For signed commits, also throws if `signatureField` is empty or contains
+   * whitespace or NUL bytes. Invalid explicit identities never fall back to the repository default.
    */
   commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
   /**
