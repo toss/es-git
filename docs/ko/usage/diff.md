@@ -82,16 +82,15 @@ console.log(diff.print());
  * --- a/first
  * +++ b/first
  * @@ -1 +1,2 @@
- * first
- * first modified
- *
+ *  first
+ * +first modified
  * diff --git a/second b/second
  * deleted file mode 100644
  * index e019be0..0000000
  * --- a/second
  * +++ /dev/null
  * @@ -1 +0,0 @@
- * second
+ * -second
  */
 ```
 
