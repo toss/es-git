@@ -38,37 +38,50 @@ index.write();
 
 ## Creating Signed Commits
 
-You can create GPG signed commits by providing a signature string:
+To create a signed commit and update the current branch, first use `commitCreateBuffer()` to prepare the unsigned content, sign it with GPG, and pass the signature to `commit()` with `updateRef: 'HEAD'`. This example requires GPG and a configured signing key.
 
 ```ts
 import { openRepository } from 'es-git';
+import { execFileSync } from 'node:child_process';
 
 const repo = await openRepository('.');
 const index = repo.index();
 const treeOid = index.writeTree();
 const tree = repo.getTree(treeOid);
 
-const signature = { name: 'Seokju Na', email: 'seokju.me@toss.im' };
+const timeOptions = { timestamp: Math.floor(Date.now() / 1000), offset: 0 };
+const author = { name: 'Seokju Na', email: 'seokju.me@toss.im', timeOptions };
+const committer = { name: 'Seokju Na', email: 'seokju.me@toss.im', timeOptions };
+const parents = [repo.head().target()!];
+const message = 'signed commit';
 
-// Create a signed commit
-const oid = repo.commit(tree, 'signed commit', {
-    updateRef: 'HEAD',
-    author: signature,
-    committer: signature,
-    parents: [repo.head().target()!],
-    signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----'
+const content = repo.commitCreateBuffer(tree, message, { author, committer, parents });
+const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+  input: Buffer.from(content, 'utf8'),
+}).toString('utf8');
+
+const oid = repo.commit(tree, message, {
+  author,
+  committer,
+  parents,
+  signature,
+  updateRef: 'HEAD',
 });
-
-// Extract signature from the commit
-const signatureInfo = repo.extractSignature(oid);
-console.log(signatureInfo.signature);
-// {
-//  signature: '-----BEGIN PGP SIGNATURE-----\\nVersion: GnuPG v1\\n\\niQEcBAABAgAGBQJTest123\\n-----END PGP SIGNATURE-----',
-//  signedData: 'tree ab9abf28de846b5968a8f12156f1d5ce3f4a198e\n' +
-//  'parent a01e9888e46729ef4aa68953ba19b02a7a64eb82\n' +
-//  'author Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  'committer Seokju Na <seokju.me@toss.im> 1744517729 +0000\n' +
-//  '\n' +
-//  'signed commit'
-// }
 ```
+
+`commit()` rebuilds the unsigned content before attaching the signature. Both calls must use the same tree, message, author, committer, and parents. Fix `timeOptions` for both the author and committer, as above: without explicit timestamps, each call samples the current time and can produce different bytes. Sign the exact UTF-8 bytes returned by `commitCreateBuffer()` without changing whitespace or line endings.
+
+The signature is stored in Git's default `gpgsig` field. Both signed commit methods remove one trailing LF (`\n`) from the supplied signature, if present, so GPG's output does not add an extra blank line to the stored header. The commit content is unchanged. libgit2 does not cryptographically verify the signature; successfully writing or extracting it does not prove that it is valid.
+
+### Writing only the commit object
+
+To store the signed content directly, use `commitSigned()` instead of the `commit()` call above:
+
+```ts
+const oid = repo.commitSigned(content, signature);
+
+const signatureInfo = repo.extractSignature(oid);
+console.log(signatureInfo?.signedData === content); // true
+```
+
+`commitSigned()` writes the commit to the object database without updating `HEAD`, another reference, or a reflog. It uses `gpgsig` by default. An optional third argument selects a different signature field; the field name must be nonempty and contain no whitespace or NUL characters.

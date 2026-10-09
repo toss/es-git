@@ -1,24 +1,26 @@
-# commit
+# commitCreateBuffer
 
-Create new commit in the repository.
+Create the raw content of a commit object for external signing.
 
-If the `updateRef` is not `null`, name of the reference that will be
-updated to point to this commit. If the reference is not direct, it will
-be resolved to a direct reference. Use "HEAD" to update the HEAD of the
-current branch and make it point to this commit. If the reference
-doesn't exist yet, it will be created. If it does exist, the first
-parent must be the tip of this branch.
+This creates unsigned commit content without writing it to the object database.
+Sign the exact UTF-8 bytes of the returned string, then use `commit` with
+`signature` and `updateRef` to write the signed commit and move a reference.
+Use `commitSigned` to write only the object without updating any reference.
+Changing the content, including whitespace or line endings, invalidates the signature.
 
-For external signing, obtain the content with `commitCreateBuffer` and pass
-the same tree, message, parents, author and committer with fixed `timeOptions`
-to both calls. This method rebuilds the content and does not verify that
-`signature` matches it. Different timestamps or content invalidate the signature.
+When using `commit`, pass the same tree, message, parents, author and committer
+with fixed `timeOptions` to both calls. Otherwise timestamps can differ when
+`commit` rebuilds the content. Neither method verifies the signature.
 
 ## Signature
 
 ```ts
 class Repository {
-  commit(tree: Tree, message: string, options?: CommitOptions | null | undefined): string;
+  commitCreateBuffer(
+    tree: Tree,
+    message: string,
+    options?: CommitCreateBufferOptions | null | undefined,
+  ): string;
 }
 ```
 
@@ -28,17 +30,17 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-name">tree</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">Tree</span>
     <br>
-    <p class="param-description">Tree of the commit.</p>
+    <p class="param-description">Tree object to create commit content from.</p>
   </li>
   <li class="param-li param-li-root">
     <span class="param-name">message</span><span class="param-required">required</span>&nbsp;·&nbsp;<span class="param-type">string</span>
     <br>
-    <p class="param-description">Full commit message.</p>
+    <p class="param-description">Commit message.</p>
   </li>
   <li class="param-li param-li-root">
-    <span class="param-name">options</span><span class="param-type">CommitOptions | null</span>
+    <span class="param-name">options</span><span class="param-type">CommitCreateBufferOptions | null</span>
     <br>
-    <p class="param-description">Options for creating the commit.</p>
+    <p class="param-description">Options for creating commit content.</p>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">author</span><span class="param-type">SignaturePayload</span>
@@ -109,20 +111,7 @@ class Repository {
       <li class="param-li">
         <span class="param-name">parents</span><span class="param-type">string[]</span>
         <br>
-      </li>
-      <li class="param-li">
-        <span class="param-name">signature</span><span class="param-type">string</span>
-        <br>
-        <p class="param-description">ASCII-armored signature over the exact UTF-8 commit content. It is not verified.  Use <code>commitCreateBuffer</code> to obtain the content and pass the same author and committer identities with fixed <code>timeOptions</code> to both calls. A single trailing newline is removed from the signature before storing it.</p>
-      </li>
-      <li class="param-li">
-        <span class="param-name">signatureField</span><span class="param-type">string</span>
-        <br>
-        <p class="param-description">Header field name for the signature. Must not be empty or contain whitespace or NUL bytes.  If not provided, the default signature field (gpgsig) will be used.</p>
-      </li>
-      <li class="param-li">
-        <span class="param-name">updateRef</span><span class="param-type">string</span>
-        <br>
+        <p class="param-description">Parent commit IDs. The first parent is the commit this one follows; omit for a root commit.</p>
       </li>
     </ul>
   </li>
@@ -134,7 +123,7 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">ID(SHA1) of created commit.</p>
+    <p class="param-description">Commit content to sign externally.</p>
   </li>
 </ul>
 
@@ -144,6 +133,25 @@ class Repository {
   <li class="param-li param-li-root">
     <span class="param-type">Error</span>
     <br>
-    <p class="param-description">If an explicit author or committer identity is invalid (for example an empty<br>name or email, or one containing  <code>&lt;</code> ,  <code>&gt;</code>  or a NUL byte), an omitted identity has no<br>configured repository default, a parent commit does not exist, or  <code>updateRef</code>  cannot<br>be updated. For signed commits, also throws if  <code>signatureField</code>  is empty or contains<br>whitespace or NUL bytes. Invalid explicit identities never fall back to the repository default.</p>
+    <p class="param-description">If an author or committer identity is invalid, no default signature is<br>configured, or a parent commit does not exist.</p>
   </li>
 </ul>
+
+## Examples
+
+```ts
+import { execFileSync } from 'node:child_process';
+
+// Requires GPG with a signing key configured.
+const identity = {
+  name: 'Seokju Na',
+  email: 'seokju.me@toss.im',
+  timeOptions: { timestamp: Math.floor(Date.now() / 1000), offset: 0 },
+};
+const options = { author: identity, committer: identity, parents: [repo.head().target()!] };
+const content = repo.commitCreateBuffer(tree, 'signed commit', options);
+const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+  input: Buffer.from(content, 'utf8'),
+}).toString('utf8');
+const oid = repo.commit(tree, 'signed commit', { ...options, signature, updateRef: 'HEAD' });
+```
