@@ -40,7 +40,7 @@ Windows/macOS/Linux 운영체제 모두 호환해요.
 
 ## 설치
 
-`es-git`은 Node.js 10.20 또는 이후 버전을 지원해요. `es-git`을 설치하려면 다음 명령어를 실행하세요.
+`es-git`은 Node.js 20 이상 버전을 지원해요. `es-git`을 설치하려면 다음 명령어를 실행하세요.
 
 ::: code-group
 

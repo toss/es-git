@@ -40,7 +40,7 @@ It is compatible with all Windows/macOS/Linux operating systems.
 
 ## Installation
 
-`es-git` supports Node.js 10.20 or later. To install `es-git`, run one of the following commands:
+`es-git` supports Node.js 20 or later. To install `es-git`, run one of the following commands:
 
 ::: code-group
 
