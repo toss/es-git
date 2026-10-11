@@ -10,25 +10,43 @@ use std::ops::Deref;
 #[napi(object)]
 pub struct CommitOptions {
   pub update_ref: Option<String>,
-  /// Signature for author.
+  /// Author identity (name, email and time).
   ///
   /// If not provided, the default signature of the repository will be used.
   /// If there is no default signature set for the repository, an error will occur.
   pub author: Option<SignaturePayload>,
-  /// Signature for commiter.
+  /// Committer identity (name, email and time).
   ///
   /// If not provided, the default signature of the repository will be used.
   /// If there is no default signature set for the repository, an error will occur.
   pub committer: Option<SignaturePayload>,
   pub parents: Option<Vec<String>>,
-  /// GPG signature string for signed commits.
+  /// ASCII-armored signature over the exact UTF-8 commit content. It is not verified.
   ///
-  /// If provided, this will create a signed commit.
+  /// Use `commitCreateBuffer` to obtain the content and pass the same author and
+  /// committer identities with fixed `timeOptions` to both calls.
+  /// A single trailing newline is removed from the signature before storing it.
   pub signature: Option<String>,
-  /// Custom signature field name.
+  /// Header field name for the signature. Must not be empty or contain whitespace or NUL bytes.
   ///
   /// If not provided, the default signature field (gpgsig) will be used.
   pub signature_field: Option<String>,
+}
+
+#[napi(object)]
+pub struct CommitCreateBufferOptions {
+  /// Author identity (name, email and time).
+  ///
+  /// If not provided, the default signature of the repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
+  pub author: Option<SignaturePayload>,
+  /// Committer identity (name, email and time).
+  ///
+  /// If not provided, the default signature of the repository will be used.
+  /// If there is no default signature set for the repository, an error will occur.
+  pub committer: Option<SignaturePayload>,
+  /// Parent commit IDs. The first parent is the commit this one follows; omit for a root commit.
+  pub parents: Option<Vec<String>>,
 }
 
 #[napi(object)]
@@ -383,6 +401,120 @@ impl Repository {
   }
 
   #[napi]
+  /// Create the raw content of a commit object for external signing.
+  ///
+  /// This creates unsigned commit content without writing it to the object database.
+  /// Sign the exact UTF-8 bytes of the returned string, then use `commit` with
+  /// `signature` and `updateRef` to write the signed commit and move a reference.
+  /// Use `commitSigned` to write only the object without updating any reference.
+  /// Changing the content, including whitespace or line endings, invalidates the signature.
+  ///
+  /// When using `commit`, pass the same tree, message, parents, author and committer
+  /// with fixed `timeOptions` to both calls. Otherwise timestamps can differ when
+  /// `commit` rebuilds the content. Neither method verifies the signature.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   commitCreateBuffer(
+  ///     tree: Tree,
+  ///     message: string,
+  ///     options?: CommitCreateBufferOptions | null | undefined,
+  ///   ): string;
+  /// }
+  /// ```
+  ///
+  /// @param {Tree} tree - Tree object to create commit content from.
+  /// @param {string} message - Commit message.
+  /// @param {CommitCreateBufferOptions} [options] - Options for creating commit content.
+  /// @returns Commit content to sign externally.
+  /// @throws If an author or committer identity is invalid, no default signature is
+  /// configured, or a parent commit does not exist.
+  ///
+  /// @example
+  /// ```ts
+  /// import { execFileSync } from 'node:child_process';
+  ///
+  /// // Requires GPG with a signing key configured.
+  /// const identity = {
+  ///   name: 'Seokju Na',
+  ///   email: 'seokju.me@toss.im',
+  ///   timeOptions: { timestamp: Math.floor(Date.now() / 1000), offset: 0 },
+  /// };
+  /// const options = { author: identity, committer: identity, parents: [repo.head().target()!] };
+  /// const content = repo.commitCreateBuffer(tree, 'signed commit', options);
+  /// const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+  ///   input: Buffer.from(content, 'utf8'),
+  /// }).toString('utf8');
+  /// const oid = repo.commit(tree, 'signed commit', { ...options, signature, updateRef: 'HEAD' });
+  /// ```
+  pub fn commit_create_buffer(
+    &self,
+    tree: &Tree,
+    message: String,
+    options: Option<CommitCreateBufferOptions>,
+  ) -> crate::Result<String> {
+    let (author, committer, parents) = match options {
+      Some(opts) => (opts.author, opts.committer, opts.parents),
+      None => (None, None, None),
+    };
+    let author = self.resolve_signature(author)?;
+    let committer = self.resolve_signature(committer)?;
+    let parents = self.resolve_parents(parents)?;
+    self.create_commit_content(tree, &message, &author, &committer, &parents)
+  }
+
+  #[napi]
+  /// Create a signed commit from externally signed commit content.
+  ///
+  /// This writes the signed commit to the object database but does not update
+  /// `HEAD` or any other reference. Use `commit` with `signature` and `updateRef`
+  /// to also move a reference. If `signatureField` is omitted, Git's default
+  /// `gpgsig` field is used. The signature itself is not verified.
+  /// A single trailing newline is removed from the signature before storing it.
+  ///
+  /// @category Repository/Methods
+  ///
+  /// @signature
+  /// ```ts
+  /// class Repository {
+  ///   commitSigned(commitContent: string, signature: string, signatureField?: string | null | undefined): string;
+  /// }
+  /// ```
+  ///
+  /// @param {string} commitContent - Commit content returned by `commitCreateBuffer`.
+  /// @param {string} signature - ASCII-armored signature over `commitContent`, such as the output of `gpg --detach-sign --armor` or `ssh-keygen -Y sign -n git`.
+  /// @param {string} [signatureField] - Header field name. Defaults to `gpgsig`; must not be empty or contain whitespace or NUL bytes.
+  /// @returns ID(SHA1) of created commit.
+  /// @throws If the commit content cannot be parsed, its tree or a parent does not exist,
+  /// an argument contains a NUL byte, or the signature field is empty or contains whitespace.
+  ///
+  /// @example
+  /// ```ts
+  /// import { execFileSync } from 'node:child_process';
+  ///
+  /// // Requires GPG with a signing key configured.
+  /// const content = repo.commitCreateBuffer(tree, 'signed commit', {
+  ///   parents: [repo.head().target()!],
+  /// });
+  /// const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+  ///   input: Buffer.from(content, 'utf8'),
+  /// }).toString('utf8');
+  /// const oid = repo.commitSigned(content, signature); // HEAD is unchanged.
+  /// ```
+  pub fn commit_signed(
+    &self,
+    commit_content: String,
+    signature: String,
+    signature_field: Option<String>,
+  ) -> crate::Result<String> {
+    let oid = self.write_signed_commit(&commit_content, &signature, signature_field.as_deref())?;
+    Ok(oid.to_string())
+  }
+
+  #[napi]
   /// Create new commit in the repository.
   ///
   /// If the `updateRef` is not `null`, name of the reference that will be
@@ -391,6 +523,11 @@ impl Repository {
   /// current branch and make it point to this commit. If the reference
   /// doesn't exist yet, it will be created. If it does exist, the first
   /// parent must be the tip of this branch.
+  ///
+  /// For external signing, obtain the content with `commitCreateBuffer` and pass
+  /// the same tree, message, parents, author and committer with fixed `timeOptions`
+  /// to both calls. This method rebuilds the content and does not verify that
+  /// `signature` matches it. Different timestamps or content invalidate the signature.
   ///
   /// @category Repository/Methods
   ///
@@ -401,37 +538,30 @@ impl Repository {
   /// }
   /// ```
   ///
+  /// @param {Tree} tree - Tree of the commit.
+  /// @param {string} message - Full commit message.
+  /// @param {CommitOptions} [options] - Options for creating the commit.
   /// @returns ID(SHA1) of created commit.
+  /// @throws If an explicit author or committer identity is invalid (for example an empty
+  /// name or email, or one containing `<`, `>` or a NUL byte), an omitted identity has no
+  /// configured repository default, a parent commit does not exist, or `updateRef` cannot
+  /// be updated. For signed commits, also throws if `signatureField` is empty or contains
+  /// whitespace or NUL bytes. Invalid explicit identities never fall back to the repository default.
   pub fn commit(&self, tree: &Tree, message: String, options: Option<CommitOptions>) -> crate::Result<String> {
     let (update_ref, author, committer, parents, signature, signature_field) = match options {
-      Some(opts) => {
-        let update_ref = opts.update_ref;
-        let author = opts.author.and_then(|x| Signature::try_from(x).ok());
-        let committer = opts.committer.and_then(|x| Signature::try_from(x).ok());
-        let parents = match opts.parents {
-          Some(parents) => {
-            let commits: crate::Result<Vec<git2::Commit>> = parents
-              .iter()
-              .map(|x| self.inner.find_commit_by_prefix(x).map_err(crate::Error::from))
-              .collect();
-            Some(commits?)
-          }
-          None => None,
-        };
-        let signature = opts.signature;
-        let signature_field = opts.signature_field;
-        (update_ref, author, committer, parents, signature, signature_field)
-      }
+      Some(opts) => (
+        opts.update_ref,
+        opts.author,
+        opts.committer,
+        opts.parents,
+        opts.signature,
+        opts.signature_field,
+      ),
       None => (None, None, None, None, None, None),
     };
-    let author = author
-      .and_then(|x| git2::Signature::try_from(x).ok())
-      .or_else(|| self.inner.signature().ok())
-      .ok_or(crate::Error::SignatureNotFound)?;
-    let committer = committer
-      .and_then(|x| git2::Signature::try_from(x).ok())
-      .or_else(|| self.inner.signature().ok())
-      .ok_or(crate::Error::SignatureNotFound)?;
+    let author = self.resolve_signature(author)?;
+    let committer = self.resolve_signature(committer)?;
+    let parents = self.resolve_parents(parents)?;
 
     let oid = if let Some(signature_str) = signature {
       // `commit_signed()` only writes the commit object, unlike `commit()` which
@@ -442,7 +572,6 @@ impl Repository {
         .map(|name| self.resolve_commit_update_ref(name))
         .transpose()?;
 
-      let parents = parents.unwrap_or_default();
       if let Some(CommitUpdateRef::Resolved(reference)) = &update_target {
         // Validate before writing the object so a failure leaves no orphaned
         // commit in the odb, matching libgit2's ordering.
@@ -459,19 +588,8 @@ impl Repository {
         }
       }
 
-      let commit_content = self.inner.commit_create_buffer(
-        &author,
-        &committer,
-        &message,
-        &tree.inner,
-        &parents.iter().collect::<Vec<_>>(),
-      )?;
-
-      let commit_content_str = std::str::from_utf8(&commit_content)?.to_string();
-
-      let oid = self
-        .inner
-        .commit_signed(&commit_content_str, &signature_str, signature_field.as_deref())?;
+      let commit_content = self.create_commit_content(tree, &message, &author, &committer, &parents)?;
+      let oid = self.write_signed_commit(&commit_content, &signature_str, signature_field.as_deref())?;
 
       if let Some(update_target) = update_target {
         self.update_ref_for_commit(update_target, oid)?;
@@ -485,7 +603,7 @@ impl Repository {
         &committer,
         &message,
         &tree.inner,
-        &parents.unwrap_or_default().iter().collect::<Vec<_>>(),
+        &parents.iter().collect::<Vec<_>>(),
       )?
     };
 
@@ -504,6 +622,60 @@ enum CommitUpdateRef<'repo> {
 }
 
 impl Repository {
+  fn resolve_signature(&self, payload: Option<SignaturePayload>) -> crate::Result<git2::Signature<'static>> {
+    match payload {
+      Some(payload) => git2::Signature::try_from(payload),
+      None => self.inner.signature().map_err(|_| crate::Error::SignatureNotFound),
+    }
+  }
+
+  fn resolve_parents(&self, parents: Option<Vec<String>>) -> crate::Result<Vec<git2::Commit<'_>>> {
+    parents
+      .unwrap_or_default()
+      .iter()
+      .map(|oid| self.inner.find_commit_by_prefix(oid).map_err(crate::Error::from))
+      .collect()
+  }
+
+  fn create_commit_content(
+    &self,
+    tree: &Tree,
+    message: &str,
+    author: &git2::Signature<'_>,
+    committer: &git2::Signature<'_>,
+    parents: &[git2::Commit<'_>],
+  ) -> crate::Result<String> {
+    let content = self.inner.commit_create_buffer(
+      author,
+      committer,
+      message,
+      &tree.inner,
+      &parents.iter().collect::<Vec<_>>(),
+    )?;
+    Ok(std::str::from_utf8(&content)?.to_string())
+  }
+
+  fn write_signed_commit(
+    &self,
+    content: &str,
+    signature: &str,
+    signature_field: Option<&str>,
+  ) -> crate::Result<git2::Oid> {
+    if let Some(field) = signature_field {
+      if field.is_empty() || field.chars().any(|c| c.is_whitespace() || c == '\0') {
+        return Err(
+          napi::Error::new(
+            napi::Status::InvalidArg,
+            "signature field must not be empty or contain whitespace or NUL bytes",
+          )
+          .into(),
+        );
+      }
+    }
+    let signature = signature.strip_suffix('\n').unwrap_or(signature);
+    Ok(self.inner.commit_signed(content, signature, signature_field)?)
+  }
+
   /// Mirrors `git_reference_lookup_resolved` as used by libgit2 when creating
   /// a commit: a missing ref or a symbolic ref to an unborn branch (e.g. HEAD
   /// in a fresh repository) is not an error, anything else propagates.
