@@ -17,7 +17,90 @@ export default function transform(file, { j }) {
   let source = file.source;
   source = transformStringEnums(source, j, ['CredentialType']);
   source = transformCredentialUnion(source, j);
+  source = transformIteratorClasses(source, j);
   return source;
+}
+
+/**
+ * `#[napi(iterator)]` classes are generated as `extends Iterator<Yield, Return, Next>`,
+ * but the global `Iterator` only exists as an extendable class when the esnext.iterator
+ * lib is loaded. Under a plain ES2022 target it resolves to the ES2015 `Iterator`
+ * interface, which a class cannot `extends`. Declare the class separately from
+ * the IteratorObject interface so iterator helpers remain available in ESNext.
+ * @param {string} source
+ * @param {import('jscodeshift').API.j} j
+ * @returns {string}
+ */
+function transformIteratorClasses(source, j) {
+  const iteratorClasses = [];
+  const transformed = j(source)
+    .find(j.ClassDeclaration, node => node.superClass?.type === 'Identifier' && node.superClass.name === 'Iterator')
+    .forEach(path => {
+      const node = path.node;
+      const typeParameters = node.superTypeParameters?.params;
+      if (typeParameters?.length !== 3) {
+        throw new Error(`Expected Iterator<Yield, Return, Next> for ${node.id.name}`);
+      }
+      iteratorClasses.push(node.id.name);
+
+      node.superClass = null;
+      node.superTypeParameters = null;
+
+      const hasSymbolIterator = node.body.body.some(
+        member =>
+          member.computed &&
+          member.key.type === 'MemberExpression' &&
+          member.key.object.name === 'Symbol' &&
+          member.key.property.name === 'iterator'
+      );
+      if (!hasSymbolIterator) {
+        const method = j.tsDeclareMethod(
+          j.memberExpression(j.identifier('Symbol'), j.identifier('iterator')),
+          [],
+          j.tsTypeAnnotation(j.tsTypeReference(j.identifier(node.id.name)))
+        );
+        method.computed = true;
+        node.body.body.push(method);
+      }
+
+      path.parent.insertAfter(
+        j.exportNamedDeclaration(
+          j.tsInterfaceDeclaration.from({
+            id: j.identifier(node.id.name),
+            body: j.tsInterfaceBody([]),
+            extends: [
+              j.tsExpressionWithTypeArguments(
+                j.identifier('IteratorObject'),
+                j.tsTypeParameterInstantiation(typeParameters)
+              ),
+            ],
+          })
+        )
+      );
+    })
+    .toSource(options);
+
+  return iteratorClasses.reduce((result, name) => {
+    const classStart = result.indexOf(`export declare class ${name} {`);
+    const commentEnd = result.lastIndexOf('*/', classStart);
+    const commentStart = result.lastIndexOf('/**', commentEnd);
+    const comment = result.slice(commentStart, commentEnd + 2);
+    const start = comment.indexOf("This type extends JavaScript's `Iterator`");
+    const seeLink = comment.indexOf('\n * @see', start);
+    if (
+      commentStart === -1 ||
+      result.slice(commentEnd + 2, classStart).trim() !== '' ||
+      start === -1 ||
+      seeLink === -1
+    ) {
+      throw new Error(`Expected iterator helper comment for ${name}`);
+    }
+    const updated =
+      comment.slice(0, start) +
+      'Iterator helper methods are available when supported by the runtime.\n *' +
+      comment.slice(seeLink);
+    return result.slice(0, commentStart) + updated + result.slice(commentEnd + 2);
+  }, transformed);
 }
 
 /**

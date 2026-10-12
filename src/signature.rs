@@ -105,3 +105,19 @@ impl TryFrom<SignaturePayload> for Signature {
     Ok(signature)
   }
 }
+
+impl TryFrom<SignaturePayload> for git2::Signature<'static> {
+  type Error = crate::Error;
+
+  fn try_from(value: SignaturePayload) -> Result<Self, Self::Error> {
+    let signature = match value.time_options {
+      Some(options) => git2::Signature::new(
+        &value.name,
+        &value.email,
+        &git2::Time::new(options.timestamp, options.offset.unwrap_or(0)),
+      ),
+      None => git2::Signature::now(&value.name, &value.email),
+    }?;
+    Ok(signature)
+  }
+}

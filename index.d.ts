@@ -176,30 +176,32 @@ export declare class Blame {
 /**
  * An iterator over blame hunks.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class BlameHunks extends Iterator<BlameHunk, void, void> {
-
-  next(value?: void): IteratorResult<BlameHunk, void>
+export declare class BlameHunks {
+ next(value?: void): IteratorResult<BlameHunk, void>
+ [Symbol.iterator](): BlameHunks;
 }
+
+export interface BlameHunks extends IteratorObject<BlameHunk, void, void> {}
 
 /**
  * Iterator over blame hunks collected line by line.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class BlameHunksByLine extends Iterator<BlameHunk, void, void> {
-
-  next(value?: void): IteratorResult<BlameHunk, void>
+export declare class BlameHunksByLine {
+ next(value?: void): IteratorResult<BlameHunk, void>
+ [Symbol.iterator](): BlameHunksByLine;
 }
+
+export interface BlameHunksByLine extends IteratorObject<BlameHunk, void, void> {}
 
 /**
  * A class to represent a git [blob][1].
@@ -410,16 +412,17 @@ export declare class Branch {
 /**
  * An iterator over the branches inside of a repository.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Branches extends Iterator<BranchesItem, void, void> {
-
-  next(value?: void): IteratorResult<BranchesItem, void>
+export declare class Branches {
+ next(value?: void): IteratorResult<BranchesItem, void>
+ [Symbol.iterator](): Branches;
 }
+
+export interface Branches extends IteratorObject<BranchesItem, void, void> {}
 
 /** A class to represent a git commit. */
 export declare class Commit {
@@ -1058,30 +1061,32 @@ export declare class Config {
 /**
  * An iterator over the `ConfigEntry` values of a config.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class ConfigEntries extends Iterator<ConfigEntry, void, void> {
-
-  next(value?: void): IteratorResult<ConfigEntry, void>
+export declare class ConfigEntries {
+ next(value?: void): IteratorResult<ConfigEntry, void>
+ [Symbol.iterator](): ConfigEntries;
 }
+
+export interface ConfigEntries extends IteratorObject<ConfigEntry, void, void> {}
 
 /**
  * An iterator over the diffs in a delta.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Deltas extends Iterator<DiffDelta, void, void> {
-
-  next(value?: void): IteratorResult<DiffDelta, void>
+export declare class Deltas {
+ next(value?: void): IteratorResult<DiffDelta, void>
+ [Symbol.iterator](): Deltas;
 }
+
+export interface Deltas extends IteratorObject<DiffDelta, void, void> {}
 
 /**
  * The result of a `describe` operation on either an `Describe` or a
@@ -1873,16 +1878,17 @@ export declare class Index {
 /**
  * An iterator over the entries in an index.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class IndexEntries extends Iterator<IndexEntry, void, void> {
-
-  next(value?: void): IteratorResult<IndexEntry, void>
+export declare class IndexEntries {
+ next(value?: void): IteratorResult<IndexEntry, void>
+ [Symbol.iterator](): IndexEntries;
 }
+
+export interface IndexEntries extends IteratorObject<IndexEntry, void, void> {}
 
 /** A wrapper around git2::Mailmap providing Node.js bindings */
 export declare class Mailmap {
@@ -2002,16 +2008,17 @@ export declare class Note {
 /**
  * An iterator over all of the notes within a repository.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class Notes extends Iterator<NoteIterItem, void, void> {
-
-  next(value?: void): IteratorResult<NoteIterItem, void>
+export declare class Notes {
+ next(value?: void): IteratorResult<NoteIterItem, void>
+ [Symbol.iterator](): Notes;
 }
+
+export interface Notes extends IteratorObject<NoteIterItem, void, void> {}
 
 /**
  * Representation of a rebase
@@ -2559,16 +2566,17 @@ export declare class ReflogEntry {
 /**
  * An iterator over the entries in a reflog.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class ReflogIter extends Iterator<ReflogEntry, void, void> {
-
-  next(value?: void): IteratorResult<ReflogEntry, void>
+export declare class ReflogIter {
+ next(value?: void): IteratorResult<ReflogEntry, void>
+ [Symbol.iterator](): ReflogIter;
 }
+
+export interface ReflogIter extends IteratorObject<ReflogEntry, void, void> {}
 
 /**
  * A class representing a [remote][1] of a git repository.
@@ -2801,7 +2809,7 @@ export declare class Repository {
    */
   getAnnotatedCommit(commit: Commit): AnnotatedCommit
   /**
-   * Creates a Annotated Commit from the given reference.
+   * Creates an Annotated Commit from the given reference.
    *
    * @category Repository/Methods
    * @signature
@@ -2811,10 +2819,10 @@ export declare class Repository {
    * }
    * ```
    *
-   * @param {Reference} reference - Reference to creates a Annotated Commit.
+   * @param {Reference} reference - Reference to create an Annotated Commit from.
    * @returns An Annotated Commit created from reference.
    */
-  getAnnotatedCommitFromReference(reference: GitReference): AnnotatedCommit
+  getAnnotatedCommitFromReference(reference: Reference): AnnotatedCommit
   /**
    * Creates a Annotated Commit from `FETCH_HEAD`.
    *
@@ -3182,6 +3190,98 @@ export declare class Repository {
    */
   getCommit(oid: string): Commit
   /**
+   * Create the raw content of a commit object for external signing.
+   *
+   * This creates unsigned commit content without writing it to the object database.
+   * Sign the exact UTF-8 bytes of the returned string, then use `commit` with
+   * `signature` and `updateRef` to write the signed commit and move a reference.
+   * Use `commitSigned` to write only the object without updating any reference.
+   * Changing the content, including whitespace or line endings, invalidates the signature.
+   *
+   * When using `commit`, pass the same tree, message, parents, author and committer
+   * with fixed `timeOptions` to both calls. Otherwise timestamps can differ when
+   * `commit` rebuilds the content. Neither method verifies the signature.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commitCreateBuffer(
+   *     tree: Tree,
+   *     message: string,
+   *     options?: CommitCreateBufferOptions | null | undefined,
+   *   ): string;
+   * }
+   * ```
+   *
+   * @param {Tree} tree - Tree object to create commit content from.
+   * @param {string} message - Commit message.
+   * @param {CommitCreateBufferOptions} [options] - Options for creating commit content.
+   * @returns Commit content to sign externally.
+   * @throws If an author or committer identity is invalid, no default signature is
+   * configured, or a parent commit does not exist.
+   *
+   * @example
+   * ```ts
+   * import { execFileSync } from 'node:child_process';
+   *
+   * // Requires GPG with a signing key configured.
+   * const identity = {
+   *   name: 'Seokju Na',
+   *   email: 'seokju.me@toss.im',
+   *   timeOptions: { timestamp: Math.floor(Date.now() / 1000), offset: 0 },
+   * };
+   * const options = { author: identity, committer: identity, parents: [repo.head().target()!] };
+   * const content = repo.commitCreateBuffer(tree, 'signed commit', options);
+   * const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+   *   input: Buffer.from(content, 'utf8'),
+   * }).toString('utf8');
+   * const oid = repo.commit(tree, 'signed commit', { ...options, signature, updateRef: 'HEAD' });
+   * ```
+   */
+  commitCreateBuffer(tree: Tree, message: string, options?: CommitCreateBufferOptions | undefined | null): string
+  /**
+   * Create a signed commit from externally signed commit content.
+   *
+   * This writes the signed commit to the object database but does not update
+   * `HEAD` or any other reference. Use `commit` with `signature` and `updateRef`
+   * to also move a reference. If `signatureField` is omitted, Git's default
+   * `gpgsig` field is used. The signature itself is not verified.
+   * A single trailing newline is removed from the signature before storing it.
+   *
+   * @category Repository/Methods
+   *
+   * @signature
+   * ```ts
+   * class Repository {
+   *   commitSigned(commitContent: string, signature: string, signatureField?: string | null | undefined): string;
+   * }
+   * ```
+   *
+   * @param {string} commitContent - Commit content returned by `commitCreateBuffer`.
+   * @param {string} signature - ASCII-armored signature over `commitContent`, such as the output of `gpg --detach-sign --armor` or `ssh-keygen -Y sign -n git`.
+   * @param {string} [signatureField] - Header field name. Defaults to `gpgsig`; must not be empty or contain whitespace or NUL bytes.
+   * @returns ID(SHA1) of created commit.
+   * @throws If the commit content cannot be parsed, its tree or a parent does not exist,
+   * an argument contains a NUL byte, or the signature field is empty or contains whitespace.
+   *
+   * @example
+   * ```ts
+   * import { execFileSync } from 'node:child_process';
+   *
+   * // Requires GPG with a signing key configured.
+   * const content = repo.commitCreateBuffer(tree, 'signed commit', {
+   *   parents: [repo.head().target()!],
+   * });
+   * const signature = execFileSync('gpg', ['--detach-sign', '--armor'], {
+   *   input: Buffer.from(content, 'utf8'),
+   * }).toString('utf8');
+   * const oid = repo.commitSigned(content, signature); // HEAD is unchanged.
+   * ```
+   */
+  commitSigned(commitContent: string, signature: string, signatureField?: string | undefined | null): string
+  /**
    * Create new commit in the repository.
    *
    * If the `updateRef` is not `null`, name of the reference that will be
@@ -3190,6 +3290,11 @@ export declare class Repository {
    * current branch and make it point to this commit. If the reference
    * doesn't exist yet, it will be created. If it does exist, the first
    * parent must be the tip of this branch.
+   *
+   * For external signing, obtain the content with `commitCreateBuffer` and pass
+   * the same tree, message, parents, author and committer with fixed `timeOptions`
+   * to both calls. This method rebuilds the content and does not verify that
+   * `signature` matches it. Different timestamps or content invalidate the signature.
    *
    * @category Repository/Methods
    *
@@ -3200,7 +3305,15 @@ export declare class Repository {
    * }
    * ```
    *
+   * @param {Tree} tree - Tree of the commit.
+   * @param {string} message - Full commit message.
+   * @param {CommitOptions} [options] - Options for creating the commit.
    * @returns ID(SHA1) of created commit.
+   * @throws If an explicit author or committer identity is invalid (for example an empty
+   * name or email, or one containing `<`, `>` or a NUL byte), an omitted identity has no
+   * configured repository default, a parent commit does not exist, or `updateRef` cannot
+   * be updated. For signed commits, also throws if `signatureField` is empty or contains
+   * whitespace or NUL bytes. Invalid explicit identities never fall back to the repository default.
    */
   commit(tree: Tree, message: string, options?: CommitOptions | undefined | null): string
   /**
@@ -5667,16 +5780,17 @@ export declare class StashList {
 }
 
 /**
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class StashListIter extends Iterator<StashEntry, void, void> {
-
-  next(value?: void): IteratorResult<StashEntry, void>
+export declare class StashListIter {
+ next(value?: void): IteratorResult<StashEntry, void>
+ [Symbol.iterator](): StashListIter;
 }
+
+export interface StashListIter extends IteratorObject<StashEntry, void, void> {}
 
 /** A structure representing an entry in the `Statuses` structure. */
 export declare class StatusEntry {
@@ -5795,16 +5909,17 @@ export declare class Statuses {
 }
 
 /**
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class StatusesIter extends Iterator<StatusEntry, void, void> {
-
-  next(value?: void): IteratorResult<StatusEntry, void>
+export declare class StatusesIter {
+ next(value?: void): IteratorResult<StatusEntry, void>
+ [Symbol.iterator](): StatusesIter;
 }
+
+export interface StatusesIter extends IteratorObject<StatusEntry, void, void> {}
 
 export declare class Submodule {
   /**
@@ -6493,16 +6608,17 @@ export declare class TreeEntry {
 /**
  * An iterator over the entries in a tree.
  *
- * This type extends JavaScript's `Iterator`, and so has the iterator helper
- * methods. It may extend the upcoming TypeScript `Iterator` class in the future.
+ * Iterator helper methods are available when supported by the runtime.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator#iterator_helper_methods
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html#iterator-helper-methods
  */
-export declare class TreeIter extends Iterator<TreeEntry, void, void> {
-
-  next(value?: void): IteratorResult<TreeEntry, void>
+export declare class TreeIter {
+ next(value?: void): IteratorResult<TreeEntry, void>
+ [Symbol.iterator](): TreeIter;
 }
+
+export interface TreeIter extends IteratorObject<TreeEntry, void, void> {}
 
 /** A class to represent a git worktree. */
 export declare class Worktree {
@@ -7019,17 +7135,36 @@ export interface CherrypickOptions {
  */
 export declare function cloneRepository(url: string, path: string, options?: RepositoryCloneOptions | undefined | null, signal?: AbortSignal | undefined | null): Promise<Repository>
 
-export interface CommitOptions {
-  updateRef?: string
+export interface CommitCreateBufferOptions {
   /**
-   * Signature for author.
+   * Author identity (name, email and time).
    *
    * If not provided, the default signature of the repository will be used.
    * If there is no default signature set for the repository, an error will occur.
    */
   author?: SignaturePayload
   /**
-   * Signature for commiter.
+   * Committer identity (name, email and time).
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  committer?: SignaturePayload
+  /** Parent commit IDs. The first parent is the commit this one follows; omit for a root commit. */
+  parents?: Array<string>
+}
+
+export interface CommitOptions {
+  updateRef?: string
+  /**
+   * Author identity (name, email and time).
+   *
+   * If not provided, the default signature of the repository will be used.
+   * If there is no default signature set for the repository, an error will occur.
+   */
+  author?: SignaturePayload
+  /**
+   * Committer identity (name, email and time).
    *
    * If not provided, the default signature of the repository will be used.
    * If there is no default signature set for the repository, an error will occur.
@@ -7037,13 +7172,15 @@ export interface CommitOptions {
   committer?: SignaturePayload
   parents?: Array<string>
   /**
-   * GPG signature string for signed commits.
+   * ASCII-armored signature over the exact UTF-8 commit content. It is not verified.
    *
-   * If provided, this will create a signed commit.
+   * Use `commitCreateBuffer` to obtain the content and pass the same author and
+   * committer identities with fixed `timeOptions` to both calls.
+   * A single trailing newline is removed from the signature before storing it.
    */
   signature?: string
   /**
-   * Custom signature field name.
+   * Header field name for the signature. Must not be empty or contain whitespace or NUL bytes.
    *
    * If not provided, the default signature field (gpgsig) will be used.
    */
