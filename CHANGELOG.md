@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- fix(remote): reject credentials with missing required fields before connecting (#223). `SSHKeyFromPath` requires `privateKeyPath`, `SSHKey` requires `privateKey`, and `Plain` requires `password`. These inputs now fail with `InvalidArg` even for public or local remotes that previously ignored unused credentials. Omit `credential` when authentication is not needed, or provide the required field. Empty passwords and SSH keys without a passphrase remain supported.
+
 ## Version v0.7.0
 
 Released on May 17th, 2026.

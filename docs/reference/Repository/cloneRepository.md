@@ -93,7 +93,7 @@ function cloneRepository(
           <li class="param-li">
             <span class="param-name">credential</span><span class="param-type">Credential</span>
             <br>
-            <p class="param-description">A interface to represent git credentials in libgit2.</p>
+            <p class="param-description">An interface to represent git credentials in libgit2.<br><br><code>SSHKeyFromPath</code> requires <code>privateKeyPath</code>, <code>SSHKey</code> requires <code>privateKey</code>, and<br><code>Plain</code> requires <code>password</code> (an empty password is allowed). The username defaults<br>to <code>&quot;git&quot;</code>. Public keys and passphrases are optional.<br><br>Credentials are validated before connecting, even for public or local remotes<br>that do not require authentication. Omit <code>credential</code> when authentication is not needed.</p>
           </li>
           <li class="param-li">
             <span class="param-name">customHeaders</span><span class="param-type">string[]</span>
@@ -163,6 +163,16 @@ function cloneRepository(
     <span class="param-type">Promise&lt;Repository&gt;</span>
     <br>
     <p class="param-description">Repository instance</p>
+  </li>
+</ul>
+
+### Errors
+
+<ul class="param-ul">
+  <li class="param-li param-li-root">
+    <span class="param-type">Error</span>
+    <br>
+    <p class="param-description">Throws an  <code>InvalidArg</code>  error if  <code>options.fetch.credential</code>  is missing a field required by its  <code>type</code> <br>( <code>privateKeyPath</code>  for  <code>SSHKeyFromPath</code> ,  <code>privateKey</code>  for  <code>SSHKey</code> ,  <code>password</code>  for  <code>Plain</code> ),<br>even if the remote does not require authentication. Throws an error if the clone fails.</p>
   </li>
 </ul>
 
