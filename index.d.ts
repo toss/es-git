@@ -9093,6 +9093,8 @@ export interface Signature {
   email: string
   /** Time in seconds, from epoch */
   timestamp: number
+  /** Timezone offset, in minutes */
+  offset: number
 }
 
 export interface SignaturePayload {

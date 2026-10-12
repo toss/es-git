@@ -1,14 +1,24 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { openRepository, type RebaseOperation } from '../index';
+import { openRepository, type RebaseOperation, type Signature, type SignaturePayload } from '../index';
 import { useFixture } from './fixtures';
 
 describe('rebase', () => {
   it('rebase (no-conflict): feature onto main', async () => {
     const p = await useFixture('empty');
     const repo = await openRepository(p);
-    const sig = { name: 'Test User', email: 'test@example.com' };
+    const sig = {
+      name: 'Test User',
+      email: 'test@example.com',
+      timeOptions: { timestamp: 1678886400, offset: 0 },
+    } satisfies SignaturePayload;
+    const expectedCommitter: Signature = {
+      name: sig.name,
+      email: sig.email,
+      timestamp: sig.timeOptions.timestamp,
+      offset: sig.timeOptions.offset,
+    };
 
     // initial commit (o0)
     let index = repo.index();
@@ -79,6 +89,7 @@ describe('rebase', () => {
     const featureAfter = repo.getReference('refs/heads/feature').target()!;
     const featureCommit = repo.getCommit(featureAfter);
     expect(featureCommit.message()).toBe('feat-1');
+    expect(featureCommit.committer()).toEqual(expectedCommitter);
     expect(repo.getMergeBase(featureAfter, o1)).toEqual(o1);
 
     const mainStatus = repo.getStatusFile('main.txt');
