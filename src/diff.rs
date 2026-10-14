@@ -366,6 +366,12 @@ impl Diff {
   #[napi]
   /// Iterate over a diff generating formatted text output.
   ///
+  /// The output follows `git diff`. For the `Patch` and `PatchId` formats, each
+  /// content line is prefixed with its origin: `+` for an added line, `-` for a
+  /// deleted line and a single space for a context line. File headers, hunk
+  /// headers (`@@ ... @@`), binary notices and `\ No newline at end of file`
+  /// markers are emitted as-is.
+  ///
   /// @category Diff/Methods
   /// @signature
   /// ```ts
@@ -375,7 +381,19 @@ impl Diff {
   /// ```
   ///
   /// @param {DiffPrintOptions} [options] - Print options for diff.
-  /// @returns Formatted text output.
+  /// @returns Formatted text output. With the default `Patch` format, this is a unified patch like `git diff`.
+  /// @example
+  /// ```ts
+  /// const diff = repo.diffIndexToWorkdir();
+  /// console.log(diff.print());
+  /// // diff --git a/A b/A
+  /// // index f70f10e..784f93d 100644
+  /// // --- a/A
+  /// // +++ b/A
+  /// // @@ -1 +1 @@
+  /// // -A
+  /// // +A modified
+  /// ```
   pub fn print(&self, options: Option<DiffPrintOptions>) -> String {
     let format = options.and_then(|x| x.format).unwrap_or_default();
     let mut lines: Vec<String> = vec![];
