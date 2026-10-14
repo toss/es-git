@@ -120,7 +120,7 @@ function cloneRepository(
           <li class="param-li">
             <span class="param-name">depth</span><span class="param-type">number</span>
             <br>
-            <p class="param-description">클론할 커밋 깊이를 설정해요. 0 이하의 값이면 전체 이력을 클론해요.</p>
+            <p class="param-description">fetch 깊이로, 각 원격 브랜치의 최신 커밋부터 가져올 커밋 수를 설정해요. 0보다 크면 얕은 리포지토리가 만들어져요(<code>Repository.isShallow()</code> 참고).  0 이하의 값이면 모든 커밋을 가져와요(사실상 깊이 제한을 선언하지 않은 것과 같아요). 이미 얕은 리포지토리를 전체 리포지토리로 바꾸지는 않으므로, 그럴 때는 <code>unshallow</code>를 사용해요.  로컬 전송은 얕은 fetch를 지원하지 않아서 로컬 경로나 <code>file://</code> URL에서는 <code>depth</code>가 실패해요.</p>
           </li>
           <li class="param-li">
             <span class="param-name">downloadTags</span><span class="param-type">AutotagOption</span>
@@ -186,6 +186,11 @@ function cloneRepository(
               - <code>On</code> : 자동으로 삭제<br>
               - <code>Off</code> : 삭제하지 않음
             </p>
+          </li>
+          <li class="param-li">
+            <span class="param-name">unshallow</span><span class="param-type">boolean</span>
+            <br>
+            <p class="param-description"><code>git fetch --unshallow</code>처럼 얕은 리포지토리에 없는 히스토리를 가져와요. 원격 리포지토리도 얕은 리포지토리라면 원격에 있는 만큼만 가져와요.  <code>true</code>이면 <code>depth</code>는 무시돼요.</p>
           </li>
         </ul>
       </li>
@@ -255,4 +260,19 @@ const repo = await cloneRepository('git@github.com:toss/es-git', '.', {
     },
   },
 });
+```
+
+최신 커밋만 가져오는 얕은 클론을 해요.
+
+```ts
+import { cloneRepository } from 'es-git';
+
+const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone', {
+  fetch: { depth: 1 },
+});
+console.log(repo.isShallow()); // true
+
+// 나머지 히스토리는 나중에 가져와요.
+await repo.getRemote('origin').fetch([], { fetch: { unshallow: true } });
+console.log(repo.isShallow()); // false
 ```

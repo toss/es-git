@@ -83,3 +83,33 @@ const repo = await cloneRepository('https://github.com/<owner>/<repo>', '.', {
   },
 });
 ```
+
+### 얕은 클론하기
+
+히스토리의 최근 일부만 클론하려면 `fetch` 옵션에 `depth`를 설정하세요. `depth`가 `1`이면 각 브랜치의 최신 커밋만
+가져와요. 리포지토리가 얕은 리포지토리인지는 [`isShallow()`](../reference/Repository/Methods/isShallow.md)로 확인할 수 있어요.
+
+```ts
+import { cloneRepository } from 'es-git';
+
+const repo = await cloneRepository('https://github.com/toss/es-git', '/path/to/clone', {
+  fetch: { depth: 1 },
+});
+console.log(repo.isShallow()); // true
+```
+
+::: warning
+얕은 클론은 `https://`, `git://`, SSH 같은 네트워크 프로토콜에서만 동작해요. libgit2의 로컬 전송은 얕은 fetch를
+지원하지 않기 때문에, 로컬 경로나 `file://` URL에서 `depth`를 설정해 클론하면 실패해요.
+:::
+
+나머지 히스토리를 나중에 가져오려면 `unshallow: true`로 리모트에서 fetch하세요. `git fetch --unshallow`와 같아요.
+
+```ts
+const remote = repo.getRemote('origin');
+await remote.fetch([], { fetch: { unshallow: true } });
+console.log(repo.isShallow()); // false
+```
+
+더 큰 `depth`로 fetch하면 히스토리를 그만큼 더 가져와요. `depth: 0`으로 fetch하거나 `depth`를 지정하지 않으면 얕은
+리포지토리가 전체 리포지토리로 바뀌지 않아요.

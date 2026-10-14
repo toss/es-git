@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { cloneRepository, initRepository, openRepository } from '../index';
 import { isTarget } from './env';
 import { useFixture } from './fixtures';
+import { hasGit, serveGitRepositories } from './git-server';
 import { makeTmpDir } from './tmp';
 
 describe('Repository', () => {
@@ -49,6 +50,30 @@ describe('Repository', () => {
     const p = await makeTmpDir('clone');
     await cloneRepository(localPath, p);
     await expect(fs.readFile(path.join(p, 'first'), 'utf8')).resolves.toEqual(expect.stringContaining('first'));
+  });
+
+  it('shallow clone', { skip: !hasGit }, async () => {
+    const root = await useFixture('commits');
+    const server = await serveGitRepositories(root);
+    try {
+      const p = await makeTmpDir('clone');
+      const repo = await cloneRepository(`${server.url}/.git`, p, { fetch: { depth: 1 } });
+      expect(repo.isShallow()).toBe(true);
+      const revwalk = repo.revwalk();
+      revwalk.pushHead();
+      expect(revwalk.next()).toEqual('a01e9888e46729ef4aa68953ba19b02a7a64eb82');
+      expect(revwalk.next()).toBeNull();
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('shallow clone is not supported from local path', async () => {
+    const localPath = await useFixture('commits');
+    const p = await makeTmpDir('clone');
+    await expect(cloneRepository(localPath, p, { fetch: { depth: 1 } })).rejects.toThrowError(
+      /shallow fetch is not supported by the local transport/
+    );
   });
 
   it('clone from remote', { skip: isTarget('linux', undefined, 'gnu') }, async () => {
