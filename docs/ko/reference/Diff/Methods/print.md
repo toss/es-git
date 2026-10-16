@@ -2,6 +2,8 @@
 
 포맷된 텍스트 출력을 생성하며 diff를 순회해요.
 
+출력은 `git diff`를 따릅니다. `Patch`와 `PatchId` 포맷에서는 각 본문 줄 앞에 origin이 붙어요. 추가 줄은 `+`, 삭제 줄은 `-`, 컨텍스트 줄은 공백 한 칸이에요. 파일 헤더, hunk 헤더(`@@ ... @@`), binary 안내, `\ No newline at end of file` 마커는 그대로 출력돼요.
+
 ## 시그니처
 
 ```ts
@@ -16,7 +18,7 @@ class Diff {
   <li class="param-li param-li-root">
     <span class="param-name">options</span><span class="param-type">null | DiffPrintOptions</span>
     <br>
-    <p class="param-description">츌력에 사용할 옵션이에요.</p>
+    <p class="param-description">출력에 사용할 옵션이에요.</p>
     <ul class="param-ul">
       <li class="param-li">
         <span class="param-name">format</span><span class="param-type">DiffFormat</span>
@@ -33,6 +35,20 @@ class Diff {
   <li class="param-li param-li-root">
     <span class="param-type">string</span>
     <br>
-    <p class="param-description">포맷팅된 출력 값을 반환해요.</p>
+    <p class="param-description">포맷팅된 출력 값을 반환해요. 기본 <code>Patch</code> 포맷이면 <code>git diff</code>와 같은 unified patch예요.</p>
   </li>
 </ul>
+
+### 예제
+
+```ts
+const diff = repo.diffIndexToWorkdir();
+console.log(diff.print());
+// diff --git a/A b/A
+// index f70f10e..784f93d 100644
+// --- a/A
+// +++ b/A
+// @@ -1 +1 @@
+// -A
+// +A modified
+```

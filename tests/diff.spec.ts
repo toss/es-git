@@ -163,8 +163,8 @@ index f70f10e..784f93d 100644
 --- a/A
 +++ b/A
 @@ -1 +1 @@
-A
-A modified
+-A
++A modified
 \\ No newline at end of file
 diff --git a/B b/B
 deleted file mode 100644
@@ -172,7 +172,7 @@ index 223b783..0000000
 --- a/B
 +++ /dev/null
 @@ -1 +0,0 @@
-B
+-B
 `);
     expect(diff.print({ format: 'PatchHeader' })).toEqual(`diff --git a/A b/A
 index f70f10e..784f93d 100644
