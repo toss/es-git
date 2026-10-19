@@ -231,4 +231,51 @@ B
     expect(deltas.length).toBe(expected.length);
     expect(deltas.map(flattenDiffDelta)).toEqual(expect.arrayContaining(expected));
   });
+
+  it('find renamed diff delta from rewritten file', async () => {
+    const p = await useFixture('diff');
+    const repo = await openRepository(p);
+    const original = Array.from({ length: 30 }, (_, i) => `original line ${i + 1}\n`).join('');
+    const rewritten = Array.from({ length: 30 }, (_, i) => `rewritten line ${i + 1}\n`).join('');
+    const index = repo.index();
+    await fs.writeFile(path.join(p, 'A'), original);
+    index.addPath('A');
+    const oldTree = repo.getTree(index.writeTree());
+    await fs.writeFile(path.join(p, 'A'), rewritten);
+    await fs.writeFile(path.join(p, 'A-renamed'), original);
+    index.addPath('A');
+    index.addPath('A-renamed');
+    const newTree = repo.getTree(index.writeTree());
+    const diff = repo.diffTreeToTree(oldTree, newTree);
+    diff.findSimilar({ renamesFromRewrites: true });
+    const deltas = [...diff.deltas()].map(delta => ({
+      status: delta.status(),
+      oldPath: delta.oldFile().path(),
+      newPath: delta.newFile().path(),
+    }));
+    expect(deltas).toEqual([
+      { status: 'Added', oldPath: 'A', newPath: 'A' },
+      { status: 'Renamed', oldPath: 'A', newPath: 'A-renamed' },
+    ]);
+  });
+
+  it('find renamed diff delta with renamesFromRewrites disabled', async () => {
+    const p = await useFixture('diff');
+    const repo = await openRepository(p);
+    // libgit2 falls back to `diff.renames` when no find flag is set.
+    repo.config().setBool('diff.renames', false);
+    const headTree = repo.head().peelToTree();
+    await fs.rename(path.join(p, 'A'), path.join(p, 'A-renamed'));
+    const index = repo.index();
+    index.addPath('A-renamed');
+    index.write();
+    const diff = repo.diffTreeToWorkdirWithIndex(headTree);
+    diff.findSimilar({ renames: true, renamesFromRewrites: false });
+    const deltas = [...diff.deltas()].map(delta => ({
+      status: delta.status(),
+      oldPath: delta.oldFile().path(),
+      newPath: delta.newFile().path(),
+    }));
+    expect(deltas).toEqual([{ status: 'Renamed', oldPath: 'A', newPath: 'A-renamed' }]);
+  });
 });

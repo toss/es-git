@@ -218,7 +218,7 @@ impl From<DiffFindOptions> for git2::DiffFindOptions {
       opts.renames(flag);
     }
     if let Some(flag) = value.renames_from_rewrites {
-      opts.renames(flag);
+      opts.renames_from_rewrites(flag);
     }
     if let Some(flag) = value.copies {
       opts.copies(flag);
